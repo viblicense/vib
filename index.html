@@ -342,7 +342,24 @@ function getSortedToolsForDashboard(tools){
   return arr;
 }
 
-function renderDashboard(){let users=allUsers(),cost=state.tools.reduce((s,t)=>s+Number(t.cost||0),0),seats=state.tools.reduce((s,t)=>s+Number(t.seats||0),0);$("kpiTools").textContent=state.tools.length;$("kpiSeats").textContent=seats;$("kpiUsers").textContent=users.length;$("kpiCost").textContent=money(cost);let rows=state.tools.map(t=>{let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length;return `<tr><td><strong>${esc(t.name)}</strong></td><td>${esc(t.vendor)}</td><td>${costLabel(t)}</td><td><div class="dash-usage-mini"><div class="dash-usage-track"><div class="dash-usage-fill" style="width:${Math.min(100, t.seats ? Math.round(used/t.seats*100) : 0)}%"></div><span class="dash-usage-num">${used}/${t.seats}</span></div></div></td><td><span class="chip ${daysLeft(t.renewal)<=7?'bad-chip':daysLeft(t.renewal)<=30?'warn-chip':'active-chip'}">${daysLeft(t.renewal)} days</span></td><td>${formatDateVN(t.renewal)}</td></tr>`}).join("");$("costTable").innerHTML=`
+
+function dashboardOrderedTools(){
+  const tools = Array.isArray(state.tools) ? [...state.tools] : [];
+
+  return tools.sort(function(a,b){
+    const aApp = typeof isAppTool === "function" ? isAppTool(a) : ["AI Tool","AI IDE","Other"].includes(a.type);
+    const bApp = typeof isAppTool === "function" ? isAppTool(b) : ["AI Tool","AI IDE","Other"].includes(b.type);
+
+    // License first, App second
+    if(!aApp && bApp) return -1;
+    if(aApp && !bApp) return 1;
+
+    // keep manual order inside each group
+    return 0;
+  });
+}
+
+function renderDashboard(){let users=allUsers(),cost=state.tools.reduce((s,t)=>s+Number(t.cost||0),0),seats=state.tools.reduce((s,t)=>s+Number(t.seats||0),0);$("kpiTools").textContent=state.tools.length;$("kpiSeats").textContent=seats;$("kpiUsers").textContent=users.length;$("kpiCost").textContent=money(cost);let rows=dashboardOrderedTools().map(t=>{let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length;return `<tr><td><strong>${esc(t.name)}</strong></td><td>${esc(t.vendor)}</td><td>${costLabel(t)}</td><td><div class="dash-usage-mini"><div class="dash-usage-track"><div class="dash-usage-fill" style="width:${Math.min(100, t.seats ? Math.round(used/t.seats*100) : 0)}%"></div><span class="dash-usage-num">${used}/${t.seats}</span></div></div></td><td><span class="chip ${daysLeft(t.renewal)<=7?'bad-chip':daysLeft(t.renewal)<=30?'warn-chip':'active-chip'}">${daysLeft(t.renewal)} days</span></td><td>${formatDateVN(t.renewal)}</td></tr>`}).join("");$("costTable").innerHTML=`
 
 <div class="table-wrap"><table><thead><tr><th>Software</th><th>Vendor</th><th>Cost</th><th onclick="sortDashboardBy('usage')" style="cursor:pointer">Usage ↕</th><th>Days Left</th><th onclick="sortDashboardBy('renewal')" style="cursor:pointer">Renewal ↕</th></tr></thead><tbody>${rows}</tbody></table></div>`}
 function toolCard(t,i){let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length,p=t.seats?Math.round(used/t.seats*100):0;return `<div class="tool-card"><div class="tool-top"><div><div class="icon">${esc(t.type[0]||"T")}</div><div class="tool-name">${esc(t.name)}</div></div><span class="chip ${used<t.seats?"active-chip":"warn-chip"}">${used<t.seats?"Available":"Full"}</span></div><div><div class="bar"><div style="width:${Math.min(100,p)}%"></div></div><div class="muted" style="display:flex;justify-content:space-between;margin-top:7px"><span>${used}/${t.seats} users</span><span>${p}%</span></div></div><div class="meta"><div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div><div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div><div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div></div><div class="actions"><button class="btn-secondary" onclick="openUsersModal(${i})">Users</button><button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button><button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button><button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},-1)">↑</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},1)">↓</button></div></div>`}
@@ -843,7 +860,12 @@ async function putOnlineRecord(record, allowUrl){
     body: JSON.stringify(record)
   });
 
-  if(!res.ok) throw new Error(await res.text());
+  if(!res.ok){
+    const text = await res.text();
+    throw new Error(
+      "JSONBin PUT failed | HTTP " + res.status + " " + res.statusText + " | " + text
+    );
+  }
 }
 
 function currentOnlinePayload(){
@@ -909,7 +931,7 @@ function startAutoRefresh(){
     if(new URLSearchParams(location.search).get("action")) return;
     if(!jsonBinConfig(false)) return;
     loadOnlineData(true);
-  }, 10000);
+  }, 60000);
 }
 
 function pageBaseUrl(){
@@ -1095,22 +1117,79 @@ function clearLocalDirtySoon(){
 
 async function autoSaveOnlineData(reason){
   try{
-    if(typeof isAdmin === "function" && !isAdmin()) return;
-    if(typeof jsonBinConfig !== "function" || !jsonBinConfig(false)) return;
-    if(typeof isOnlineLoading !== "undefined" && isOnlineLoading) return;
-    if(autoSaveOnlineBusy) return;
+    if(typeof isAdmin === "function" && !isAdmin()){
+      console.info("[AutoSave] Skipped: not admin");
+      return;
+    }
+
+    if(typeof jsonBinConfig !== "function"){
+      console.warn("[AutoSave] Failed: jsonBinConfig function missing");
+      if(typeof toast === "function") toast("Auto save failed: config function missing");
+      return;
+    }
+
+    const cfg = jsonBinConfig(false);
+    if(!cfg){
+      console.warn("[AutoSave] Failed: JSONBin config missing");
+      if(typeof toast === "function") toast("Auto save failed: missing JSONBin config");
+      return;
+    }
+
+    if(typeof isOnlineLoading !== "undefined" && isOnlineLoading){
+      console.info("[AutoSave] Skipped: online loading in progress");
+      return;
+    }
+
+    if(autoSaveOnlineBusy){
+      console.info("[AutoSave] Skipped: previous autosave still running");
+      return;
+    }
 
     autoSaveOnlineBusy = true;
     markLocalDirty();
 
+    console.info("[AutoSave] Saving online...", {
+      reason: reason || "unknown",
+      binId: cfg.binId,
+      url: cfg.url,
+      tools: state && state.tools ? state.tools.length : 0,
+      emailLogs: typeof emailLogs !== "undefined" && Array.isArray(emailLogs) ? emailLogs.length : 0
+    });
+
     await putOnlineRecord(currentOnlinePayload(), false);
 
     clearLocalDirtySoon();
+    console.info("[AutoSave] Saved online successfully");
     if(typeof toast === "function") toast("Auto saved online");
+
   }catch(e){
-    console.error(e);
     clearLocalDirtySoon();
-    if(typeof toast === "function") toast("Auto save online failed");
+
+    const msg = String(
+      (e && e.message) ||
+      e ||
+      "Unknown error"
+    );
+
+    console.error("[AutoSave] Failed detail:", e);
+
+    let shortMsg = msg;
+    try{
+      const parsed = JSON.parse(msg);
+      shortMsg = parsed.message || parsed.error || msg;
+    }catch(_){}
+
+    if(typeof toast === "function"){
+      toast("Auto save failed: " + shortMsg.slice(0, 120));
+    }
+
+    window.lastAutoSaveError = {
+      time: new Date().toLocaleString(),
+      message: msg,
+      reason: reason || "",
+      config: typeof jsonBinConfig === "function" ? jsonBinConfig(false) : null
+    };
+
   }finally{
     autoSaveOnlineBusy = false;
   }
@@ -1118,12 +1197,20 @@ async function autoSaveOnlineData(reason){
 
 function scheduleAutoSaveOnline(reason){
   if(applyingOnlinePayload) return;
+
+  // Only autosave online in admin mode.
+  // This avoids failed autosave messages for normal users/viewers.
+  if(typeof isAdmin === "function" && !isAdmin()) return;
+
+  // If JSONBin config is missing/invalid, do not attempt autosave.
+  if(typeof jsonBinConfig === "function" && !jsonBinConfig(false)) return;
+
   markLocalDirty();
 
   if(autoSaveOnlineTimer) clearTimeout(autoSaveOnlineTimer);
   autoSaveOnlineTimer = setTimeout(function(){
     autoSaveOnlineData(reason);
-  }, 500);
+  }, 800);
 }
 
 // Wrap saveState: mọi thay đổi local như thêm/sửa/xóa tool, user đều tự save online.
@@ -2738,94 +2825,81 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 
 
 
+
+
+
 <script>
-// ===== PERSISTENT DASHBOARD SORT =====
+// ===== MANUAL ONLINE SAVE BUTTON =====
 (function(){
-  let sortState = JSON.parse(localStorage.getItem("vib_dashboard_sort_state") || '{"col":null,"asc":true}');
+  if(window.__manualOnlineSaveButtonInstalled) return;
+  window.__manualOnlineSaveButtonInstalled = true;
 
-  function getToolValue(tool, col){
-    const used = (tool.users || []).length;
-    const seats = Number(tool.seats || 0);
-
-    switch(col){
-      case 0: return String(tool.name || "").toLowerCase();
-      case 1: return String(tool.vendor || "").toLowerCase();
-      case 2: return Number(tool.cost || 0);
-      case 3: return seats ? used / seats : 0;
-      case 4:
-        if(typeof daysLeft === "function") return Number(daysLeft(tool.renewal));
-        return 999999;
-      case 5:
-        return new Date(tool.renewal || 0).getTime() || 0;
-      default:
-        return "";
-    }
-  }
-
-  window.sortDashboardTable = function(col){
-    if(typeof state === "undefined" || !Array.isArray(state.tools)) return;
-
-    if(sortState.col === col){
-      sortState.asc = !sortState.asc;
-    }else{
-      sortState.col = col;
-      sortState.asc = true;
-    }
-
-    const asc = sortState.asc ? 1 : -1;
-
-    state.tools.sort((a,b)=>{
-      const av = getToolValue(a,col);
-      const bv = getToolValue(b,col);
-
-      if(typeof av === "number" && typeof bv === "number"){
-        return (av - bv) * asc;
+  window.manualSaveOnline = async function(){
+    try{
+      if(typeof requireAdmin === "function" && !requireAdmin()) return;
+      if(typeof saveOnlineData === "function"){
+        await saveOnlineData();
+      }else if(typeof putOnlineRecord === "function" && typeof currentOnlinePayload === "function"){
+        await putOnlineRecord(currentOnlinePayload(), false);
+        if(typeof toast === "function") toast("Saved online data");
       }
-
-      return String(av).localeCompare(String(bv)) * asc;
-    });
-
-    localStorage.setItem("vib_dashboard_sort_state", JSON.stringify(sortState));
-
-    if(typeof saveState === "function") saveState();
-    if(typeof renderAll === "function") renderAll();
-
-    if(typeof toast === "function"){
-      toast("Dashboard order saved");
+    }catch(e){
+      console.error(e);
+      alert("Save Online failed. Check JSONBin Bin ID / Access Key / internet permission.");
     }
   };
 
-  function applySortableHeaders(){
-    const table = document.querySelector("#costTable table");
-    if(!table || !table.tHead) return;
+  window.addEventListener("load", function(){
+    setTimeout(function(){
+      const topActions = document.querySelector(".top .actions");
+      if(topActions && !document.getElementById("manualSaveOnlineBtn")){
+        const btn = document.createElement("button");
+        btn.id = "manualSaveOnlineBtn";
+        btn.className = "btn-secondary admin-only";
+        btn.textContent = "Save Online";
+        btn.onclick = window.manualSaveOnline;
+        topActions.appendChild(btn);
+      }
+    }, 300);
+  });
+})();
+</script>
 
-    Array.from(table.tHead.rows[0].cells).forEach((th, i)=>{
-      if(th.dataset.sortReady === "1") return;
-      th.dataset.sortReady = "1";
-      th.style.cursor = "pointer";
-      th.style.userSelect = "none";
 
-      const base = th.innerHTML.replace(/\s*[↕↑↓]/g, "");
-      const arrow = sortState.col === i ? (sortState.asc ? " ↑" : " ↓") : " ↕";
-      th.innerHTML = base + arrow;
+<script>
+// ===== AUTOSAVE ERROR DETAIL VIEW =====
+(function(){
+  if(window.__autoSaveErrorDetailInstalled) return;
+  window.__autoSaveErrorDetailInstalled = true;
 
-      th.onclick = function(){
-        sortDashboardTable(i);
-      };
-    });
-  }
+  window.showAutoSaveError = function(){
+    const e = window.lastAutoSaveError;
+    if(!e){
+      alert("No autosave error recorded yet.");
+      return;
+    }
 
-  const oldRenderDashboard = window.renderDashboard;
-  if(typeof oldRenderDashboard === "function" && !oldRenderDashboard.__persistentSortWrapped){
-    window.renderDashboard = function(){
-      oldRenderDashboard.apply(this, arguments);
-      setTimeout(applySortableHeaders, 0);
-    };
-    window.renderDashboard.__persistentSortWrapped = true;
-  }
+    alert(
+      "Last AutoSave Error\n\n" +
+      "Time: " + (e.time || "-") + "\n" +
+      "Reason: " + (e.reason || "-") + "\n" +
+      "Bin ID: " + ((e.config && e.config.binId) || "-") + "\n\n" +
+      "Message:\n" + (e.message || "-")
+    );
+  };
 
   window.addEventListener("load", function(){
-    setTimeout(applySortableHeaders, 500);
+    setTimeout(function(){
+      const topActions = document.querySelector(".top .actions");
+      if(topActions && !document.getElementById("autoSaveErrorBtn")){
+        const btn = document.createElement("button");
+        btn.id = "autoSaveErrorBtn";
+        btn.className = "btn-secondary admin-only";
+        btn.textContent = "AutoSave Error";
+        btn.onclick = window.showAutoSaveError;
+        topActions.appendChild(btn);
+      }
+    }, 500);
   });
 })();
 </script>
