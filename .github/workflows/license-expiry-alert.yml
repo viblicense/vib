@@ -24,14 +24,11 @@ jobs:
           JSONBIN_ACCESS_KEY: ${{ secrets.JSONBIN_ACCESS_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
-
         run: |
-          node <<'EOF'
-
+          cat > alert.js <<'EOF'
           const nodemailer = require("nodemailer");
 
           async function main() {
-
             const response = await fetch(
               `https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}/latest`,
               {
@@ -42,29 +39,22 @@ jobs:
             );
 
             const data = await response.json();
-
             const tools = data.record.tools || [];
 
             const today = new Date();
-
-            const alertDays = [60,30,15,7,3,1];
+            const alertDays = [60, 30, 15, 7, 3, 1];
 
             const expiring = tools.map(tool => {
-
               const renewal = new Date(tool.renewal);
-
-              const daysLeft = Math.ceil(
-                (renewal - today) / (1000*60*60*24)
-              );
+              const daysLeft = Math.ceil((renewal - today) / (1000 * 60 * 60 * 24));
 
               return {
-                name: tool.name,
-                vendor: tool.vendor,
-                renewal: tool.renewal,
+                name: tool.name || "",
+                vendor: tool.vendor || "",
+                renewal: tool.renewal || "",
                 daysLeft,
                 users: (tool.users || []).length
               };
-
             }).filter(t => alertDays.includes(t.daysLeft));
 
             if (!expiring.length) {
@@ -72,14 +62,16 @@ jobs:
               return;
             }
 
-            const body = expiring.map(t => `
-Software: ${t.name}
-Vendor: ${t.vendor}
-Renewal: ${t.renewal}
-Days Left: ${t.daysLeft}
-Users: ${t.users}
------------------------------------
-`).join("\n");
+            const body = expiring.map(t => {
+              return [
+                `Software: ${t.name}`,
+                `Vendor: ${t.vendor}`,
+                `Renewal: ${t.renewal}`,
+                `Days Left: ${t.daysLeft}`,
+                `Users: ${t.users}`,
+                "-----------------------------------"
+              ].join("\n");
+            }).join("\n\n");
 
             const transporter = nodemailer.createTransport({
               service: "gmail",
@@ -93,12 +85,16 @@ Users: ${t.users}
               from: process.env.GMAIL_USER,
               to: "quang.phamvan@vib.com.vn",
               subject: "[VIB] License Expiry Alert",
-              text: body
+              text: "Các license sắp hết hạn:\n\n" + body
             });
 
             console.log("Email sent");
           }
 
-          main();
-
+          main().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
           EOF
+
+          node alert.js
