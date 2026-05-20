@@ -280,7 +280,7 @@ Nếu không còn nhu cầu sử dụng, vui lòng phản hồi để IT thực 
 
 Trân trọng,
 IT Software Asset Management`}};
-function $(id){return document.getElementById(id)}function saveState(){localStorage.setItem(LS_KEY,JSON.stringify(state))}function toast(msg){let t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}function money(v){return Number(v||0).toLocaleString("en-US",{maximumFractionDigits:0})+" VND"}function daysLeft(d){if(!d)return"-";let now=new Date(),end=new Date(d);return Math.ceil((end-now)/(1000*60*60*24))}function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function initials(n){return String(n||"?").split(/\s+/).filter(Boolean).slice(-2).map(x=>x[0]).join("").toUpperCase()}function allUsers(){return state.tools.flatMap((t,ti)=>(t.users||[]).map((u,ui)=>({tool:t,toolIndex:ti,user:u,userIndex:ui})))}function statusClass(s){return s==="Confirmed"?"active-chip":s==="Declined"?"bad-chip":"warn-chip"}function isAppTool(t){return["AI Tool","AI IDE"].includes(t.type)}
+function $(id){return document.getElementById(id)}function saveState(){localStorage.setItem(LS_KEY,JSON.stringify(state))}function toast(msg){let t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),7000)}function money(v){return Number(v||0).toLocaleString("en-US",{maximumFractionDigits:0})+" VND"}function daysLeft(d){if(!d)return"-";let now=new Date(),end=new Date(d);return Math.ceil((end-now)/(1000*60*60*24))}function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function initials(n){return String(n||"?").split(/\s+/).filter(Boolean).slice(-2).map(x=>x[0]).join("").toUpperCase()}function allUsers(){return state.tools.flatMap((t,ti)=>(t.users||[]).map((u,ui)=>({tool:t,toolIndex:ti,user:u,userIndex:ui})))}function statusClass(s){return s==="Confirmed"?"active-chip":s==="Declined"?"bad-chip":"warn-chip"}function isAppTool(t){return["AI Tool","AI IDE"].includes(t.type)}
 function uniqueVendors(list){
   return [...new Set((list||[]).map(t=>t.vendor).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
 }
@@ -1115,6 +1115,41 @@ function clearLocalDirtySoon(){
   }, 1300);
 }
 
+
+function showAutoSaveFailedDetail(error){
+  const msg = String((error && error.message) || error || "Unknown error");
+
+  let detail = msg;
+
+  if(msg.includes("HTTP 401")){
+    detail = "JSONBin Access Key sai hoặc hết quyền. HTTP 401.";
+  }else if(msg.includes("HTTP 403")){
+    detail = "JSONBin Access Key không có quyền ghi bin này. HTTP 403.";
+  }else if(msg.includes("HTTP 404")){
+    detail = "JSONBin Bin ID không tồn tại hoặc sai. HTTP 404.";
+  }else if(msg.includes("HTTP 429")){
+    detail = "JSONBin bị giới hạn request quá nhiều. HTTP 429.";
+  }else if(msg.includes("Failed to fetch")){
+    detail = "Không gọi được JSONBin. Có thể mạng/CORS/adblock chặn.";
+  }else if(msg.includes("Missing JSONBin config")){
+    detail = "Thiếu JSONBin Bin ID hoặc Access Key.";
+  }
+
+  window.lastAutoSaveError = {
+    time: new Date().toLocaleString(),
+    message: msg,
+    detail: detail
+  };
+
+  if(typeof toast === "function"){
+    toast("AutoSave lỗi: " + detail);
+  }else{
+    alert("AutoSave lỗi: " + detail + "\n\nChi tiết:\n" + msg);
+  }
+
+  console.error("[AutoSave Detail]", window.lastAutoSaveError);
+}
+
 async function autoSaveOnlineData(reason){
   try{
     if(typeof isAdmin === "function" && !isAdmin()){
@@ -1179,9 +1214,7 @@ async function autoSaveOnlineData(reason){
       shortMsg = parsed.message || parsed.error || msg;
     }catch(_){}
 
-    if(typeof toast === "function"){
-      toast("Auto save failed: " + shortMsg.slice(0, 120));
-    }
+    showAutoSaveFailedDetail(e);
 
     window.lastAutoSaveError = {
       time: new Date().toLocaleString(),
@@ -2884,7 +2917,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       "Time: " + (e.time || "-") + "\n" +
       "Reason: " + (e.reason || "-") + "\n" +
       "Bin ID: " + ((e.config && e.config.binId) || "-") + "\n\n" +
-      "Message:\n" + (e.message || "-")
+      "Detail: " + (e.detail || "-") + "\n\nMessage:\n" + (e.message || "-")
     );
   };
 
