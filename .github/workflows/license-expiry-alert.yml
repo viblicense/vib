@@ -24,11 +24,14 @@ jobs:
           JSONBIN_ACCESS_KEY: ${{ secrets.JSONBIN_ACCESS_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+
         run: |
           cat > alert.js <<'EOF'
+
           const nodemailer = require("nodemailer");
 
           async function main() {
+
             const response = await fetch(
               `https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}/latest`,
               {
@@ -39,22 +42,27 @@ jobs:
             );
 
             if (!response.ok) {
-              throw new Error("JSONBin error: " + await response.text());
+              throw new Error(
+                "JSONBin error: " + await response.text()
+              );
             }
 
             const data = await response.json();
+
             const tools = data.record.tools || [];
 
             const today = new Date();
 
-            // Test mode: true = gửi tất cả license để test mail
-            // Sau khi test OK, đổi thành false
-            const TEST_SEND_ALL = true;
+            // true = gửi tất cả để test
+            // false = chỉ gửi license <= 90 ngày
+            const TEST_SEND_ALL = false;
 
-            const alertDays = [60, 30, 15, 7, 3, 1];
+            const alertThreshold = 90;
 
             const licenses = tools.map(tool => {
+
               const renewal = new Date(tool.renewal);
+
               const daysLeft = Math.ceil(
                 (renewal - today) / (1000 * 60 * 60 * 24)
               );
@@ -68,11 +76,14 @@ jobs:
                 seats: tool.seats || 0,
                 cost: tool.cost || 0
               };
+
             });
 
             const expiring = TEST_SEND_ALL
               ? licenses
-              : licenses.filter(t => alertDays.includes(t.daysLeft));
+              : licenses.filter(
+                  t => t.daysLeft <= alertThreshold
+                );
 
             if (!expiring.length) {
               console.log("No expiring licenses");
@@ -80,6 +91,11 @@ jobs:
             }
 
             const body = expiring.map(t => {
+
+              const costVND =
+                Number(t.cost || 0)
+                  .toLocaleString("vi-VN") + " VNĐ";
+
               return [
                 `Software: ${t.name}`,
                 `Vendor: ${t.vendor}`,
@@ -87,24 +103,28 @@ jobs:
                 `Days Left: ${t.daysLeft}`,
                 `Users: ${t.users}`,
                 `Seats: ${t.seats}`,
-                `Cost: ${t.cost}`,
+                `Cost: ${costVND}`,
                 "-----------------------------------"
               ].join("\n");
+
             }).join("\n\n");
 
-            const transporter = nodemailer.createTransport({
-              service: "gmail",
-              auth: {
-                user: process.env.GMAIL_USER,
-                pass: process.env.GMAIL_PASS
-              }
-            });
+            const transporter =
+              nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                  user: process.env.GMAIL_USER,
+                  pass: process.env.GMAIL_PASS
+                }
+              });
 
             await transporter.sendMail({
               from: process.env.GMAIL_USER,
               to: "quang.phamvan@vib.com.vn",
               subject: "[VIB] License Expiry Alert",
-              text: "Các license sắp hết hạn:\n\n" + body
+              text:
+                "Các license sắp hết hạn (<= 90 ngày):\n\n"
+                + body
             });
 
             console.log("Email sent");
@@ -114,6 +134,7 @@ jobs:
             console.error(err);
             process.exit(1);
           });
+
           EOF
 
           node alert.js
