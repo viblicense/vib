@@ -2735,47 +2735,35 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 </script>
 
 
+
+
+
 <script>
-// ===== SAFE DASHBOARD TABLE SORT =====
+// ===== PERSISTENT DASHBOARD SORT =====
 (function(){
-  let sortState = { col: null, asc: true };
+  let sortState = JSON.parse(localStorage.getItem("vib_dashboard_sort_state") || '{"col":null,"asc":true}');
 
-  function getCellValue(row, col){
-    const text = (row.children[col]?.innerText || "").trim();
+  function getToolValue(tool, col){
+    const used = (tool.users || []).length;
+    const seats = Number(tool.seats || 0);
 
-    if(col === 2){ // Cost
-      return Number(text.replace(/[^\d.-]/g, "")) || 0;
+    switch(col){
+      case 0: return String(tool.name || "").toLowerCase();
+      case 1: return String(tool.vendor || "").toLowerCase();
+      case 2: return Number(tool.cost || 0);
+      case 3: return seats ? used / seats : 0;
+      case 4:
+        if(typeof daysLeft === "function") return Number(daysLeft(tool.renewal));
+        return 999999;
+      case 5:
+        return new Date(tool.renewal || 0).getTime() || 0;
+      default:
+        return "";
     }
-
-    if(col === 3){ // Usage, e.g. 12/20
-      const m = text.match(/(\d+)\s*\/\s*(\d+)/);
-      if(m){
-        const used = Number(m[1]);
-        const seats = Number(m[2]);
-        return seats ? used / seats : 0;
-      }
-      return 0;
-    }
-
-    if(col === 4){ // Days Left
-      const m = text.match(/-?\d+/);
-      return m ? Number(m[0]) : 999999;
-    }
-
-    if(col === 5){ // Renewal dd-mm-yyyy or yyyy-mm-dd
-      const m1 = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-      if(m1) return new Date(`${m1[3]}-${m1[2]}-${m1[1]}`).getTime();
-      const m2 = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if(m2) return new Date(text).getTime();
-      return new Date(text).getTime() || 0;
-    }
-
-    return text.toLowerCase();
   }
 
   window.sortDashboardTable = function(col){
-    const table = document.querySelector("#costTable table");
-    if(!table || !table.tBodies[0]) return;
+    if(typeof state === "undefined" || !Array.isArray(state.tools)) return;
 
     if(sortState.col === col){
       sortState.asc = !sortState.asc;
@@ -2784,20 +2772,27 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       sortState.asc = true;
     }
 
-    const rows = Array.from(table.tBodies[0].rows);
+    const asc = sortState.asc ? 1 : -1;
 
-    rows.sort((a,b)=>{
-      const av = getCellValue(a,col);
-      const bv = getCellValue(b,col);
+    state.tools.sort((a,b)=>{
+      const av = getToolValue(a,col);
+      const bv = getToolValue(b,col);
 
       if(typeof av === "number" && typeof bv === "number"){
-        return (av - bv) * (sortState.asc ? 1 : -1);
+        return (av - bv) * asc;
       }
 
-      return String(av).localeCompare(String(bv)) * (sortState.asc ? 1 : -1);
+      return String(av).localeCompare(String(bv)) * asc;
     });
 
-    rows.forEach(r => table.tBodies[0].appendChild(r));
+    localStorage.setItem("vib_dashboard_sort_state", JSON.stringify(sortState));
+
+    if(typeof saveState === "function") saveState();
+    if(typeof renderAll === "function") renderAll();
+
+    if(typeof toast === "function"){
+      toast("Dashboard order saved");
+    }
   };
 
   function applySortableHeaders(){
@@ -2809,17 +2804,24 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       th.dataset.sortReady = "1";
       th.style.cursor = "pointer";
       th.style.userSelect = "none";
-      th.innerHTML = th.innerHTML.replace(/\s*↕/g,"") + " ↕";
-      th.onclick = function(){ sortDashboardTable(i); };
+
+      const base = th.innerHTML.replace(/\s*[↕↑↓]/g, "");
+      const arrow = sortState.col === i ? (sortState.asc ? " ↑" : " ↓") : " ↕";
+      th.innerHTML = base + arrow;
+
+      th.onclick = function(){
+        sortDashboardTable(i);
+      };
     });
   }
 
   const oldRenderDashboard = window.renderDashboard;
-  if(typeof oldRenderDashboard === "function"){
+  if(typeof oldRenderDashboard === "function" && !oldRenderDashboard.__persistentSortWrapped){
     window.renderDashboard = function(){
       oldRenderDashboard.apply(this, arguments);
       setTimeout(applySortableHeaders, 0);
     };
+    window.renderDashboard.__persistentSortWrapped = true;
   }
 
   window.addEventListener("load", function(){
