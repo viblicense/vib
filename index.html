@@ -2532,4 +2532,25 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 })();
 </script>
 
+
+<script>
+// ===== AUTO REFRESH EMAIL CONFIRM =====
+(function(){
+  function autoRefreshEmailTab(){
+    try{
+      const emailTab = document.getElementById("tab-email");
+      if(emailTab && emailTab.style.display !== "none"){
+        if(typeof renderEmail === "function"){
+          renderEmail();
+        }
+      }
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  setInterval(autoRefreshEmailTab, 10000);
+})();
+</script>
+
 </body></html>
