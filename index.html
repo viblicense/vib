@@ -2324,206 +2324,211 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 </script>
 
 
+
+
+
 <script>
-// ===== CONFIRM RESPONSE UPDATE FIX =====
+// ===== CONFIRM RESPONSE FINAL OVERRIDE =====
 (function(){
   function safe(v){ return String(v == null ? "" : v); }
-
-  function getCurrentPageUrl(){
-    return location.href.split("?")[0].split("#")[0];
+  function pageUrl(){ return location.href.split("?")[0].split("#")[0]; }
+  function statusFromAction(action){
+    action = safe(action).toLowerCase();
+    if(action === "confirm") return "Confirmed";
+    if(action === "decline") return "Declined";
+    return "Pending";
+  }
+  function htmlEsc(s){
+    return safe(s).replace(/[&<>"']/g, function(m){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
+    });
   }
 
-  async function loadOnlineForResponse(){
+  async function loadRecord(){
     if(typeof fetchOnlineRecord === "function"){
       return await fetchOnlineRecord(true);
     }
     return {
-      tools: (typeof state !== "undefined" ? state.tools : []) || [],
-      emailConfig: (typeof state !== "undefined" ? state.emailConfig : {}) || {},
-      emailLogs: (typeof emailLogs !== "undefined" ? emailLogs : []) || []
+      tools: typeof state !== "undefined" ? (state.tools || []) : [],
+      emailConfig: typeof state !== "undefined" ? (state.emailConfig || {}) : {},
+      emailLogs: typeof emailLogs !== "undefined" ? (emailLogs || []) : []
     };
   }
 
-  async function saveOnlineForResponse(record){
+  async function saveRecord(record){
+    record.updatedAt = new Date().toISOString();
+
     if(typeof putOnlineRecord === "function"){
       await putOnlineRecord(record, true);
-      return;
     }
+
     if(typeof state !== "undefined"){
       state.tools = record.tools || [];
       state.emailConfig = record.emailConfig || {};
-      if(typeof saveState === "function") saveState();
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
     }
+
     if(typeof emailLogs !== "undefined"){
       emailLogs = record.emailLogs || [];
       try{ localStorage.setItem(LOG_KEY, JSON.stringify(emailLogs)); }catch(e){}
     }
   }
 
-  function normalizeStatus(action){
-    action = safe(action).toLowerCase();
-    if(action === "confirm") return "Confirmed";
-    if(action === "decline") return "Declined";
-    return "Pending";
-  }
-
-  function findCampaign(record, campaignId, toolName){
-    const logs = record.emailLogs || record.logs || [];
-    return logs.find(function(l){
-      return safe(l.campaignId) === safe(campaignId) && (!toolName || safe(l.tool).toLowerCase() === safe(toolName).toLowerCase());
-    }) || null;
-  }
-
-  function findUserByEmail(record, toolName, email){
-    let result = null;
+  function findUser(record, toolName, email){
+    let found = null;
     (record.tools || []).forEach(function(t){
       if(safe(t.name).toLowerCase() === safe(toolName).toLowerCase()){
         (t.users || []).forEach(function(u){
           if(safe(u.email).toLowerCase() === safe(email).toLowerCase()){
-            result = {tool:t, user:u};
+            found = {tool:t, user:u};
           }
         });
       }
     });
-    return result;
+    return found;
   }
 
-  function renderSuccessPage(status, email, toolName, campaignId, already){
-    try{ history.replaceState({}, "", getCurrentPageUrl() + "?result=success"); }catch(e){}
+  function campaignRecipients(record, toolName, cid){
+    const logs = record.emailLogs || record.logs || [];
+    const c = logs.find(function(l){
+      return safe(l.campaignId) === safe(cid) &&
+        (!toolName || safe(l.tool).toLowerCase() === safe(toolName).toLowerCase());
+    });
+    return c && Array.isArray(c.recipients) ? c.recipients : [];
+  }
+
+  async function recordResponse(action, toolName, email, cid){
+    const status = statusFromAction(action);
+    const record = await loadRecord();
+    record.emailLogs = record.emailLogs || record.logs || [];
+
+    let targetEmail = safe(email).trim().toLowerCase();
+
+    if(!targetEmail && cid){
+      const recipients = campaignRecipients(record, toolName, cid);
+      if(recipients.length === 1) targetEmail = safe(recipients[0]).toLowerCase();
+    }
+
+    if(!targetEmail || targetEmail.indexOf("@") === -1){
+      throw new Error("Please enter the email address that received this email.");
+    }
+
+    const match = findUser(record, toolName, targetEmail);
+    if(!match){
+      throw new Error("Email not found for this software.");
+    }
+
+    const nowIso = new Date().toISOString();
+    const nowLocal = new Date().toLocaleString();
+
+    match.user.renewalStatus = status;
+    match.user.replyDate = nowIso;
+    match.user.responseHistory = match.user.responseHistory || [];
+
+    const already = match.user.responseHistory.some(function(r){
+      return safe(r.campaignId) === safe(cid) && safe(r.status) === safe(status);
+    });
+
+    if(!already){
+      match.user.responseHistory.push({
+        campaignId: cid || "",
+        status: status,
+        time: nowIso,
+        email: targetEmail,
+        tool: toolName
+      });
+
+      record.emailLogs.unshift({
+        time: nowLocal,
+        type: "User Response",
+        count: 1,
+        sender: targetEmail,
+        status: status,
+        tool: toolName,
+        campaignId: cid || ""
+      });
+    }
+
+    record.emailLogs = record.emailLogs.slice(0, 500);
+    await saveRecord(record);
+
+    return {status:status, email:targetEmail, tool:toolName, cid:cid, already:already};
+  }
+
+  function showForm(action, toolName, cid, emailFromUrl){
+    document.body.innerHTML = [
+      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+      '<h2 style="margin-top:0;color:#0b5cab">License Confirmation</h2>',
+      '<p><b>Software:</b> ' + htmlEsc(toolName) + '</p>',
+      '<p><b>Response:</b> ' + htmlEsc(statusFromAction(action)) + '</p>',
+      '<p>Please enter your VIB email to record your response.</p>',
+      '<input id="confirmEmailInput" type="email" value="' + htmlEsc(emailFromUrl || '') + '" placeholder="your.name@vib.com.vn" style="width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:10px;font-size:15px;box-sizing:border-box">',
+      '<button id="confirmSubmitBtn" style="margin-top:14px;background:#0b5cab;color:#fff;border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer">Submit</button>',
+      '<div id="confirmMsg" style="margin-top:14px;color:#667085"></div>',
+      '</div>'
+    ].join("");
+
+    const btn = document.getElementById("confirmSubmitBtn");
+    const input = document.getElementById("confirmEmailInput");
+
+    async function submit(){
+      const msg = document.getElementById("confirmMsg");
+      const email = (input.value || "").trim().toLowerCase();
+      msg.style.color = "#667085";
+      msg.textContent = "Recording your response...";
+
+      try{
+        const result = await recordResponse(action, toolName, email, cid);
+        showSuccess(result);
+      }catch(e){
+        console.error(e);
+        msg.style.color = "#dc2626";
+        msg.textContent = "Update failed: " + safe(e.message || e);
+      }
+    }
+
+    btn.onclick = submit;
+    input.onkeydown = function(e){ if(e.key === "Enter") submit(); };
+  }
+
+  function showSuccess(result){
+    try{ history.replaceState({}, "", pageUrl() + "?result=success"); }catch(e){}
+
     document.body.innerHTML = [
       '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
       '<h2 style="margin-top:0;color:#0b5cab">Response Recorded Successfully</h2>',
-      '<p><b>Status:</b> ' + escapeHtml(status) + '</p>',
-      '<p><b>Email:</b> ' + escapeHtml(email) + '</p>',
-      '<p><b>Software:</b> ' + escapeHtml(toolName) + '</p>',
-      campaignId ? '<p><b>Campaign:</b> ' + escapeHtml(campaignId) + '</p>' : '',
-      already ? '<p style="color:#92400e">This response was already recorded before.</p>' : '<p>You can close this tab.</p>',
+      '<p><b>Status:</b> ' + htmlEsc(result.status) + '</p>',
+      '<p><b>Email:</b> ' + htmlEsc(result.email) + '</p>',
+      '<p><b>Software:</b> ' + htmlEsc(result.tool) + '</p>',
+      result.cid ? '<p><b>Campaign:</b> ' + htmlEsc(result.cid) + '</p>' : '',
+      result.already ? '<p style="color:#92400e">This response was already recorded before.</p>' : '<p>You can close this tab.</p>',
       '</div>'
     ].join("");
   }
 
-  function escapeHtml(s){
-    return safe(s).replace(/[&<>"']/g, function(m){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
-    });
-  }
+  function bootConfirmOverride(){
+    const p = new URLSearchParams(location.search);
+    const action = p.get("action");
+    const tool = p.get("tool");
+    const cid = p.get("cid") || p.get("campaignId") || "";
+    const email = (p.get("email") || "").trim().toLowerCase();
 
-  async function recordResponse(action, toolName, email, campaignId){
-    const status = normalizeStatus(action);
-    const record = await loadOnlineForResponse();
-    const logs = record.emailLogs || record.logs || [];
+    if(!action || !tool) return;
 
-    let match = null;
-    if(email){
-      match = findUserByEmail(record, toolName, email);
-    }
-
-    if(!match && !email && campaignId){
-      const campaign = findCampaign(record, campaignId, toolName);
-      const recipients = campaign && Array.isArray(campaign.recipients) ? campaign.recipients : [];
-      if(recipients.length === 1){
-        email = recipients[0];
-        match = findUserByEmail(record, toolName, email);
-      }
-    }
-
-    if(!match){
-      throw new Error("Email not found for this software/campaign. Please enter the email that received the license email.");
-    }
-
-    const now = new Date().toISOString();
-    const user = match.user;
-
-    user.renewalStatus = status;
-    user.replyDate = now;
-    user.responseHistory = user.responseHistory || [];
-
-    const exists = user.responseHistory.some(function(r){
-      return safe(r.campaignId) === safe(campaignId) && safe(r.status) === safe(status);
-    });
-
-    if(!exists){
-      user.responseHistory.push({
-        campaignId: campaignId || "",
-        status: status,
-        time: now,
-        email: email,
-        tool: toolName
-      });
-
-      logs.unshift({
-        time: new Date().toLocaleString(),
-        type: "User Response",
-        count: 1,
-        sender: email,
-        status: status,
-        tool: toolName,
-        campaignId: campaignId || ""
-      });
-    }
-
-    record.emailLogs = logs.slice(0, 500);
-    record.updatedAt = now;
-
-    await saveOnlineForResponse(record);
-
-    return {status:status, email:email, toolName:toolName, campaignId:campaignId, already:exists};
-  }
-
-  window.submitResponse = async function(action, toolName, status){
-    const input = document.getElementById("confirmEmailInput");
-    const msg = document.getElementById("confirmMsg");
-    const params = new URLSearchParams(location.search);
-    const cid = params.get("cid") || params.get("campaignId") || "";
-    const emailFromUrl = (params.get("email") || "").trim().toLowerCase();
-    const email = emailFromUrl || (input && input.value ? input.value : "").trim().toLowerCase();
-
-    if(!email || email.indexOf("@") === -1){
-      if(msg){
-        msg.style.color = "#dc2626";
-        msg.textContent = "Please enter a valid email.";
-      }
-      return;
-    }
-
-    if(msg){
-      msg.style.color = "#667085";
-      msg.textContent = "Recording your response...";
-    }
-
-    try{
-      const result = await recordResponse(action, toolName, email, cid);
-      renderSuccessPage(result.status, result.email, result.toolName, result.campaignId, result.already);
-    }catch(e){
-      console.error(e);
-      if(msg){
-        msg.style.color = "#dc2626";
-        msg.textContent = "Update failed: " + safe(e.message || e);
-      }else{
-        alert("Update failed: " + safe(e.message || e));
-      }
-    }
-  };
-
-  // If link contains email, record automatically without asking.
-  window.addEventListener("load", function(){
+    // Re-render after the old confirm page, so old internal submitResponse cannot be used.
     setTimeout(function(){
-      const p = new URLSearchParams(location.search);
-      const action = p.get("action");
-      const tool = p.get("tool");
-      const email = p.get("email");
-      const cid = p.get("cid") || p.get("campaignId") || "";
-      if(action && tool && email){
-        recordResponse(action, tool, email.toLowerCase(), cid)
-          .then(function(result){
-            renderSuccessPage(result.status, result.email, result.toolName, result.campaignId, result.already);
-          })
-          .catch(function(e){
-            console.error(e);
-          });
+      if(email){
+        document.body.innerHTML = '<div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#0b5cab">Recording response...</h2><p>Please wait.</p></div>';
+        recordResponse(action, tool, email, cid).then(showSuccess).catch(function(e){
+          document.body.innerHTML = '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)"><h2 style="color:#dc2626">Update failed</h2><p>' + htmlEsc(e.message || e) + '</p></div>';
+        });
+      }else{
+        showForm(action, tool, cid, email);
       }
-    }, 300);
-  });
+    }, 100);
+  }
+
+  window.addEventListener("load", bootConfirmOverride);
 })();
 </script>
 
