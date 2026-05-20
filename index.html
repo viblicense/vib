@@ -1049,7 +1049,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 // ===== OUTLOOK BCC MAIL + CONFIRM FORM WITH SUCCESS PAGE =====
 (function(){
 
-  const PUBLIC_URL = "https://qpcn11111.github.io/license-manager-online/";
+  const PUBLIC_URL = location.href.split("?")[0].split("#")[0];
   const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
 
   function text(v){
@@ -1313,7 +1313,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
         }, true);
       }
 
-      history.replaceState({}, "", PUBLIC_URL + "?result=success");
+      history.replaceState({}, "", location.href.split("?")[0].split("#")[0] + "?result=success");
 
       document.body.innerHTML = [
         '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
@@ -2294,6 +2294,31 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
         "IT Software Asset Management"
       ].join("\\n")
     };
+  };
+})();
+</script>
+
+
+<script>
+// ===== SAME ORIGIN RESULT URL FIX =====
+(function(){
+  window.safeResultUrl = function(){
+    return location.href.split("?")[0].split("#")[0] + "?result=success";
+  };
+
+  const oldReplaceState = history.replaceState;
+  history.replaceState = function(state, title, url){
+    try{
+      if(typeof url === "string" && /^https?:\/\//i.test(url)){
+        const target = new URL(url);
+        if(target.origin !== location.origin){
+          url = safeResultUrl();
+        }
+      }
+    }catch(e){
+      url = safeResultUrl();
+    }
+    return oldReplaceState.call(history, state, title, url);
   };
 })();
 </script>
