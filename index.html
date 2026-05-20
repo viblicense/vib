@@ -52,6 +52,85 @@ body.admin-mode .admin-banner{display:block}
 .email-log-table-v6 th{background:#f8fafc;color:#475467;font-size:12px}
 .compat-hidden{display:none!important}
 
+
+.dash-usage-mini{
+  min-width:150px;
+}
+.dash-usage-track{
+  position:relative;
+  width:100%;
+  height:24px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#fff4eb,#ffe7d1);
+  overflow:hidden;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.7),
+    inset 0 -1px 3px rgba(0,0,0,.05);
+  border:1px solid rgba(249,115,22,.12);
+}
+.dash-usage-fill{
+  position:absolute;
+  inset:0 auto 0 0;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#f97316,#f59e0b,#fbbf24);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.25),
+    0 0 10px rgba(249,115,22,.22);
+}
+.dash-usage-fill::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,.18) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255,255,255,.18) 50%,
+    rgba(255,255,255,.18) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size:16px 16px;
+  opacity:.35;
+}
+.dash-usage-num{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:900;
+  color:#0f172a;
+  letter-spacing:.2px;
+  z-index:2;
+  text-shadow:0 1px 1px rgba(255,255,255,.5);
+}
+.move-btn{
+  padding:7px 9px;
+  border-radius:10px;
+  font-size:12px;
+  line-height:1;
+}
+
+
+.dashboard-sort{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin:12px 0 18px;
+  flex-wrap:wrap;
+}
+.dashboard-sort select{
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  font-weight:700;
+}
+
 </style>
 </head>
 <body>
@@ -155,6 +234,22 @@ body.admin-mode .admin-banner{display:block}
 
 <div id="toast" class="toast"></div>
 <script>
+
+
+
+
+function formatDateVN(dateStr){
+  if(!dateStr) return "-";
+  const d = new Date(dateStr);
+  if(isNaN(d)) return dateStr;
+
+  const day = String(d.getDate()).padStart(2,"0");
+  const month = String(d.getMonth()+1).padStart(2,"0");
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}
+
 const LS_KEY="vib_lm_clean_v2",LOG_KEY="vib_lm_logs_v2";let editingToolIndex=null,currentUserToolIndex=null,currentTemplate="renew",defaultToolType="Other";
 const demoTools=[{code:"ADOBE-CC",name:"Adobe Creative Cloud",vendor:"Adobe",type:"Adobe",billingCycle:"yearly",seats:25,cost:425000000,renewal:"2026-08-15",owner:"Marketing Ops",notes:"Design team",users:[{name:"Nguyen Minh Anh",email:"anh.nguyen@vib.com.vn",dept:"Marketing",role:"Designer",date:"2025-08-15",status:"Active",renewalStatus:"Pending",lastEmailSent:""},{name:"Tran Hoang Nam",email:"nam.tran@vib.com.vn",dept:"Brand",role:"Creative Lead",date:"2025-08-15",status:"Active",renewalStatus:"Confirmed",lastEmailSent:"2026-05-02"}]},{code:"AUTOCAD-AEC",name:"AutoCAD AEC Collection",vendor:"Autodesk",type:"AutoCAD",billingCycle:"yearly",seats:8,cost:320000000,renewal:"2026-09-30",owner:"Facilities",notes:"Architecture",users:[{name:"Le Quang Huy",email:"huy.le@vib.com.vn",dept:"Facilities",role:"Engineer",date:"2025-09-30",status:"Active",renewalStatus:"Pending",lastEmailSent:""}]},{code:"IDEA-U",name:"IntelliJ IDEA Ultimate",vendor:"JetBrains",type:"JetBrains",billingCycle:"yearly",seats:35,cost:280000000,renewal:"2026-07-20",owner:"IT Engineering",notes:"Backend team",users:[{name:"Pham Duc Long",email:"long.pham@vib.com.vn",dept:"Technology",role:"Backend Dev",date:"2025-07-20",status:"Active",renewalStatus:"Pending",lastEmailSent:""}]},{code:"CURSOR-IDE",name:"Cursor AI IDE",vendor:"Cursor",type:"AI IDE",billingCycle:"monthly",seats:20,cost:96000000,renewal:"2026-06-01",owner:"AI Lab",notes:"AI coding",users:[{name:"Vo Thanh Son",email:"son.vo@vib.com.vn",dept:"AI Lab",role:"AI Engineer",date:"2026-01-10",status:"Active",renewalStatus:"Pending",lastEmailSent:""}]},{code:"TOOL-AI",name:"Tool AI Enterprise",vendor:"OpenAI/Other",type:"AI Tool",billingCycle:"monthly",seats:50,cost:300000000,renewal:"2026-06-10",owner:"Digital",notes:"AI productivity",users:[{name:"Dang Thu Ha",email:"ha.dang@vib.com.vn",dept:"Digital",role:"Product Manager",date:"2026-02-01",status:"Active",renewalStatus:"Pending",lastEmailSent:""}]}];
 let state=JSON.parse(localStorage.getItem(LS_KEY)||"null")||{tools:demoTools,emailConfig:{}};let emailLogs=JSON.parse(localStorage.getItem(LOG_KEY)||"[]");
@@ -200,8 +295,57 @@ function renderVendorFilter(selectId, tools){
 function cycleLabel(t){return t.billingCycle==="monthly"?"Monthly":"Yearly"}function costLabel(t){return t.billingCycle==="monthly"?money(Number(t.cost||0)/12)+" / month":money(t.cost)+" / year"}
 function setTab(tab){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));["dashboard","licenses","apps","email"].forEach(x=>$("tab-"+x).style.display=x===tab?"":"none");if(tab==="email")renderEmail()}document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 function renderAll(){renderDashboard();renderLicenseTools();renderAppTools();renderEmail()}
-function renderDashboard(){let users=allUsers(),cost=state.tools.reduce((s,t)=>s+Number(t.cost||0),0),seats=state.tools.reduce((s,t)=>s+Number(t.seats||0),0);$("kpiTools").textContent=state.tools.length;$("kpiSeats").textContent=seats;$("kpiUsers").textContent=users.length;$("kpiCost").textContent=money(cost);let rows=state.tools.map(t=>{let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length;return `<tr><td><strong>${esc(t.name)}</strong></td><td>${esc(t.vendor)}</td><td>${costLabel(t)}</td><td>${used}/${t.seats}</td><td><span class="chip ${daysLeft(t.renewal)<=7?'bad-chip':daysLeft(t.renewal)<=30?'warn-chip':'active-chip'}">${daysLeft(t.renewal)} days</span></td><td>${esc(t.renewal)}</td></tr>`}).join("");$("costTable").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Software</th><th>Vendor</th><th>Cost</th><th>Usage</th><th>Days Left</th><th>Renewal</th></tr></thead><tbody>${rows}</tbody></table></div>`}
-function toolCard(t,i){let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length,p=t.seats?Math.round(used/t.seats*100):0;return `<div class="tool-card"><div class="tool-top"><div><div class="icon">${esc(t.type[0]||"T")}</div><div class="tool-name">${esc(t.name)}</div></div><span class="chip ${used<t.seats?"active-chip":"warn-chip"}">${used<t.seats?"Available":"Full"}</span></div><div><div class="bar"><div style="width:${Math.min(100,p)}%"></div></div><div class="muted" style="display:flex;justify-content:space-between;margin-top:7px"><span>${used}/${t.seats} users</span><span>${p}%</span></div></div><div class="meta"><div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div><div class="meta-box"><span>Renewal</span><strong>${esc(t.renewal)}</strong></div><div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div></div><div class="actions"><button class="btn-secondary" onclick="openUsersModal(${i})">Users</button><button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button><button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button><button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button></div></div>`}
+
+function getSortedToolsForDashboard(tools){
+  const sortType =
+    document.getElementById("dashboardSort")?.value || "default";
+
+  const arr = [...tools];
+
+  switch(sortType){
+
+    case "name":
+      arr.sort((a,b)=>
+        (a.name||"").localeCompare(b.name||"")
+      );
+      break;
+
+    case "usageHigh":
+      arr.sort((a,b)=>{
+        const ua = a.seats ? ((a.users||[]).length / a.seats) : 0;
+        const ub = b.seats ? ((b.users||[]).length / b.seats) : 0;
+        return ub - ua;
+      });
+      break;
+
+    case "usageLow":
+      arr.sort((a,b)=>{
+        const ua = a.seats ? ((a.users||[]).length / a.seats) : 0;
+        const ub = b.seats ? ((b.users||[]).length / b.seats) : 0;
+        return ua - ub;
+      });
+      break;
+
+    case "renewalSoon":
+      arr.sort((a,b)=>
+        new Date(a.renewal||0) - new Date(b.renewal||0)
+      );
+      break;
+
+    case "renewalLate":
+      arr.sort((a,b)=>
+        new Date(b.renewal||0) - new Date(a.renewal||0)
+      );
+      break;
+  }
+
+  return arr;
+}
+
+function renderDashboard(){let users=allUsers(),cost=state.tools.reduce((s,t)=>s+Number(t.cost||0),0),seats=state.tools.reduce((s,t)=>s+Number(t.seats||0),0);$("kpiTools").textContent=state.tools.length;$("kpiSeats").textContent=seats;$("kpiUsers").textContent=users.length;$("kpiCost").textContent=money(cost);let rows=state.tools.map(t=>{let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length;return `<tr><td><strong>${esc(t.name)}</strong></td><td>${esc(t.vendor)}</td><td>${costLabel(t)}</td><td><div class="dash-usage-mini"><div class="dash-usage-track"><div class="dash-usage-fill" style="width:${Math.min(100, t.seats ? Math.round(used/t.seats*100) : 0)}%"></div><span class="dash-usage-num">${used}/${t.seats}</span></div></div></td><td><span class="chip ${daysLeft(t.renewal)<=7?'bad-chip':daysLeft(t.renewal)<=30?'warn-chip':'active-chip'}">${daysLeft(t.renewal)} days</span></td><td>${formatDateVN(t.renewal)}</td></tr>`}).join("");$("costTable").innerHTML=`
+
+<div class="table-wrap"><table><thead><tr><th>Software</th><th>Vendor</th><th>Cost</th><th onclick="sortDashboardBy('usage')" style="cursor:pointer">Usage ↕</th><th>Days Left</th><th onclick="sortDashboardBy('renewal')" style="cursor:pointer">Renewal ↕</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+function toolCard(t,i){let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length,p=t.seats?Math.round(used/t.seats*100):0;return `<div class="tool-card"><div class="tool-top"><div><div class="icon">${esc(t.type[0]||"T")}</div><div class="tool-name">${esc(t.name)}</div></div><span class="chip ${used<t.seats?"active-chip":"warn-chip"}">${used<t.seats?"Available":"Full"}</span></div><div><div class="bar"><div style="width:${Math.min(100,p)}%"></div></div><div class="muted" style="display:flex;justify-content:space-between;margin-top:7px"><span>${used}/${t.seats} users</span><span>${p}%</span></div></div><div class="meta"><div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div><div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div><div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div></div><div class="actions"><button class="btn-secondary" onclick="openUsersModal(${i})">Users</button><button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button><button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button><button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},-1)">↑</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},1)">↓</button></div></div>`}
 function renderLicenseTools(){renderVendorFilter("licenseVendor",state.tools.filter(t=>!isAppTool(t)));let q=$("licenseSearch").value.toLowerCase().trim(),vendor=$("licenseVendor").value;let list=state.tools.map((t,i)=>({t,i})).filter(x=>!isAppTool(x.t)).filter(x=>(vendor==="all"||x.t.vendor===vendor)&&JSON.stringify(x.t).toLowerCase().includes(q));$("licenseGrid").innerHTML=list.map(x=>toolCard(x.t,x.i)).join("")||`<div class="empty">No license tools.</div>`}
 function renderAppTools(){renderVendorFilter("appVendor",state.tools.filter(t=>isAppTool(t)||t.type==="Other"));let q=$("appSearch").value.toLowerCase().trim(),cycle=$("appCycle").value,vendor=$("appVendor").value;let list=state.tools.map((t,i)=>({t,i})).filter(x=>isAppTool(x.t)||x.t.type==="Other").filter(x=>(cycle==="all"||x.t.billingCycle===cycle)&&(vendor==="all"||x.t.vendor===vendor)&&JSON.stringify(x.t).toLowerCase().includes(q));let group=(name,items)=>items.length?`<div class="card" style="box-shadow:none"><div class="head"><div><h2>${name}</h2><p>${items.length} tools</p></div></div><div class="tool-grid">${items.map(x=>toolCard(x.t,x.i)).join("")}</div></div>`:"";$("appGroups").innerHTML=(cycle==="monthly"?group("Monthly Tools",list.filter(x=>x.t.billingCycle==="monthly")):cycle==="yearly"?group("Yearly Tools",list.filter(x=>x.t.billingCycle==="yearly")):group("Monthly Tools",list.filter(x=>x.t.billingCycle==="monthly"))+group("Yearly Tools",list.filter(x=>x.t.billingCycle==="yearly")))||`<div class="empty">No application tools.</div>`}
 ["licenseSearch","licenseVendor"].forEach(id=>$(id).oninput=$(id).onchange=renderLicenseTools);["appSearch","appCycle","appVendor"].forEach(id=>$(id).oninput=$(id).onchange=renderAppTools);
@@ -2550,6 +2694,137 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   }
 
   setInterval(autoRefreshEmailTab, 10000);
+})();
+</script>
+
+
+<script>
+// ===== MOVE LICENSE POSITION =====
+(function(){
+  window.moveTool = function(index, direction){
+    if(typeof state === "undefined" || !Array.isArray(state.tools)) return;
+
+    const newIndex = index + direction;
+    if(newIndex < 0 || newIndex >= state.tools.length){
+      return;
+    }
+
+    const item = state.tools.splice(index, 1)[0];
+    state.tools.splice(newIndex, 0, item);
+
+    if(typeof saveState === "function") saveState();
+    if(typeof renderAll === "function") renderAll();
+
+    if(typeof toast === "function"){
+      toast("License position updated");
+    }
+  };
+})();
+</script>
+
+
+<script>
+// ===== GUARD MOVE TOOL ADMIN =====
+(function(){
+  setTimeout(function(){
+    if(typeof guardAdminFunction === "function"){
+      guardAdminFunction("moveTool");
+    }
+  }, 300);
+})();
+</script>
+
+
+<script>
+// ===== SAFE DASHBOARD TABLE SORT =====
+(function(){
+  let sortState = { col: null, asc: true };
+
+  function getCellValue(row, col){
+    const text = (row.children[col]?.innerText || "").trim();
+
+    if(col === 2){ // Cost
+      return Number(text.replace(/[^\d.-]/g, "")) || 0;
+    }
+
+    if(col === 3){ // Usage, e.g. 12/20
+      const m = text.match(/(\d+)\s*\/\s*(\d+)/);
+      if(m){
+        const used = Number(m[1]);
+        const seats = Number(m[2]);
+        return seats ? used / seats : 0;
+      }
+      return 0;
+    }
+
+    if(col === 4){ // Days Left
+      const m = text.match(/-?\d+/);
+      return m ? Number(m[0]) : 999999;
+    }
+
+    if(col === 5){ // Renewal dd-mm-yyyy or yyyy-mm-dd
+      const m1 = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+      if(m1) return new Date(`${m1[3]}-${m1[2]}-${m1[1]}`).getTime();
+      const m2 = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(m2) return new Date(text).getTime();
+      return new Date(text).getTime() || 0;
+    }
+
+    return text.toLowerCase();
+  }
+
+  window.sortDashboardTable = function(col){
+    const table = document.querySelector("#costTable table");
+    if(!table || !table.tBodies[0]) return;
+
+    if(sortState.col === col){
+      sortState.asc = !sortState.asc;
+    }else{
+      sortState.col = col;
+      sortState.asc = true;
+    }
+
+    const rows = Array.from(table.tBodies[0].rows);
+
+    rows.sort((a,b)=>{
+      const av = getCellValue(a,col);
+      const bv = getCellValue(b,col);
+
+      if(typeof av === "number" && typeof bv === "number"){
+        return (av - bv) * (sortState.asc ? 1 : -1);
+      }
+
+      return String(av).localeCompare(String(bv)) * (sortState.asc ? 1 : -1);
+    });
+
+    rows.forEach(r => table.tBodies[0].appendChild(r));
+  };
+
+  function applySortableHeaders(){
+    const table = document.querySelector("#costTable table");
+    if(!table || !table.tHead) return;
+
+    Array.from(table.tHead.rows[0].cells).forEach((th, i)=>{
+      if(th.dataset.sortReady === "1") return;
+      th.dataset.sortReady = "1";
+      th.style.cursor = "pointer";
+      th.style.userSelect = "none";
+      th.innerHTML = th.innerHTML.replace(/\s*↕/g,"") + " ↕";
+      th.onclick = function(){ sortDashboardTable(i); };
+    });
+  }
+
+  const oldRenderDashboard = window.renderDashboard;
+  if(typeof oldRenderDashboard === "function"){
+    window.renderDashboard = function(){
+      oldRenderDashboard.apply(this, arguments);
+      setTimeout(applySortableHeaders, 0);
+    };
+  }
+
+  window.addEventListener("load", function(){
+    setTimeout(applySortableHeaders, 500);
+  });
 })();
 </script>
 
