@@ -1,0 +1,2301 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIB License Manager Clean</title>
+<style>
+:root{--blue:#0b5cab;--blue2:#083f88;--orange:#f37021;--bg:#f4f7fb;--text:#172033;--muted:#667085;--border:#dfe7f3;--shadow:0 14px 32px rgba(15,23,42,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text)}.app{max-width:1450px;margin:auto;padding:22px}
+.top{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border-radius:24px;padding:22px;box-shadow:var(--shadow);display:flex;justify-content:space-between;gap:14px;align-items:center}.top h1{margin:0;font-size:24px}.top p{margin:6px 0 0;opacity:.85}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.tab{border:1px solid var(--border);background:#fff;color:#334155;padding:10px 14px;border-radius:999px;font-weight:900;cursor:pointer}.tab.active{background:var(--blue);color:#fff}
+.card{background:#fff;border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:16px}.head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}.head h2{margin:0;font-size:18px}.head p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}button{border:0;border-radius:12px;padding:10px 13px;font-weight:900;cursor:pointer}.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}.btn-orange{background:linear-gradient(135deg,#ff8a3d,var(--orange));color:#fff}.btn-secondary{background:#eef4ff;color:var(--blue);border:1px solid #cfe1ff}.btn-danger{background:#fee2e2;color:#991b1b}
+input,select,textarea{width:100%;border:1px solid var(--border);border-radius:14px;padding:11px 12px;background:#fff;font:inherit}label{display:block;font-size:12px;color:#475467;font-weight:900;margin-bottom:6px}.muted{color:var(--muted);font-size:12px}.money{color:var(--blue2);font-weight:900}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar input{max-width:360px}.toolbar select{max-width:230px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:18px;padding:14px}.kpi .num{font-size:24px;font-weight:900;color:var(--blue2);margin-top:5px}.chip{display:inline-flex;align-items:center;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900}.active-chip{background:#dcfce7;color:#166534}.warn-chip{background:#fef3c7;color:#92400e}.info-chip{background:#dbeafe;color:#1d4ed8}.bad-chip{background:#fee2e2;color:#991b1b}
+.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:900px}th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left;font-size:13px}th{font-size:12px;color:#475467;background:#f8fafc}
+.tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tool-card{border:1px solid var(--border);border-radius:20px;background:#fff;padding:16px;display:grid;gap:12px;box-shadow:0 8px 20px rgba(15,23,42,.05)}.tool-top{display:flex;justify-content:space-between;gap:12px}.icon{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--blue),#7c3aed);color:#fff;display:grid;place-items:center;font-weight:900;margin-bottom:8px}.tool-name{font-size:16px;font-weight:900}
+.bar{height:9px;background:#e8eef7;border-radius:999px;overflow:hidden}.bar div{height:100%;background:linear-gradient(90deg,var(--blue),var(--orange))}.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.meta-box{border:1px solid var(--border);border-radius:14px;background:#fbfdff;padding:10px}.meta-box span{display:block;color:var(--muted);font-size:11px}.meta-box strong{font-size:13px}
+.user-cell{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#7c3aed);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900;flex:0 0 auto}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}.modal.show{display:flex}.modal-card{width:min(1080px,100%);max-height:92vh;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);padding:20px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.full{grid-column:1/-1}
+.checks{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.check{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--border);border-radius:999px;padding:8px 10px;background:#fff;font-size:12px;font-weight:900}.check input{width:auto;margin:0}.check:has(input:checked){background:#eff6ff;border-color:#bfdbfe;color:var(--blue2)}
+.email-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}.email-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.email-tabs button.active{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}.paper{border:1px solid var(--border);border-radius:18px;background:#fbfdff;padding:18px;min-height:300px}.list{border:1px solid var(--border);border-radius:16px;background:#fff;max-height:330px;overflow:auto}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}.row:last-child{border-bottom:0}.empty{padding:18px;border:1px dashed var(--border);border-radius:18px;color:var(--muted);text-align:center;background:#fbfdff}.toast{position:fixed;right:22px;bottom:22px;background:#101828;color:#fff;padding:12px 14px;border-radius:14px;display:none;z-index:2000}.toast.show{display:block}
+@media(max-width:1100px){.grid-2,.grid-4,.tool-grid,.email-layout{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
+
+.admin-only{display:none!important}
+body.admin-mode .admin-only{display:inline-flex!important}
+body.admin-mode .admin-only.block{display:block!important}
+.admin-banner{display:none;margin-top:12px;padding:10px 12px;border-radius:14px;background:#ecfdf3;color:#027a48;font-weight:900}
+body.admin-mode .admin-banner{display:block}
+.sync-chip{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;background:#eef4ff;color:#0b5cab;font-size:12px;font-weight:900;margin-left:8px}
+
+
+.head p:empty{display:none}
+.top p:empty{display:none}
+
+
+.review-edit{display:none;margin:14px 0}
+.review-edit.show{display:block}
+.review-send-list{margin-top:16px}
+.small-input{padding:9px 10px;border-radius:12px}
+
+
+.email-campaign-card{background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.email-campaign-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:16px;background:#f8fafc;border-bottom:1px solid var(--border)}
+.email-campaign-head h3{margin:0;font-size:16px}
+.email-campaign-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.email-campaign-table{width:100%;min-width:900px}
+.email-campaign-table th,.email-campaign-table td{padding:12px;border-bottom:1px solid var(--border);font-size:13px;text-align:left}
+.email-campaign-table th{background:#f8fafc;color:#475467;font-size:12px}
+.email-log-table-v6{width:100%;min-width:900px}
+.email-log-table-v6 th,.email-log-table-v6 td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:left}
+.email-log-table-v6 th{background:#f8fafc;color:#475467;font-size:12px}
+.compat-hidden{display:none!important}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div><h1>
+<span style="display:inline-flex;align-items:center;gap:14px">
+  <img src="https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png"
+       alt="VIB Logo"
+       style="height:42px;width:auto;display:inline-block;vertical-align:middle">
+  <span>VIB Software License Manager</span>
+</span>
+</h1><p></p></div><div class="actions"><button class="btn-primary" onclick="adminLogin()">Admin Login</button><button class="btn-secondary admin-only" onclick="adminLogout()">Logout</button><button class="btn-secondary admin-only" onclick="exportJson()">Export JSON</button></div></div>
+  <div class="tabs"><button class="tab active" data-tab="dashboard">Dashboard</button><button class="tab" data-tab="licenses">License Tools</button><button class="tab" data-tab="apps">Application Tools</button><button class="tab" data-tab="email">Email Confirm</button></div>
+  <section id="tab-dashboard"><div class="grid-4"><div class="kpi"><div class="muted">Total Software</div><div class="num" id="kpiTools">0</div></div><div class="kpi"><div class="muted">Total Seats</div><div class="num" id="kpiSeats">0</div></div><div class="kpi"><div class="muted">Assigned Users</div><div class="num" id="kpiUsers">0</div></div><div class="kpi"><div class="muted">Annual Cost</div><div class="num" id="kpiCost">0</div></div></div><div class="card"><div class="head"><div><h2>Cost Overview</h2><p></p></div></div><div id="costTable"></div></div></section>
+  <section id="tab-licenses" style="display:none"><div class="card"><div class="head"><div><h2>License Tools</h2><p></p></div><button class="btn-primary admin-only" onclick="openToolModal(null,'Adobe')">+ Add License</button></div><div class="toolbar"><input id="licenseSearch" placeholder="Search license, vendor, user..."><select id="licenseVendor"><option value="all">All Vendors</option></select></div><div id="licenseGrid" class="tool-grid"></div></div></section>
+  <section id="tab-apps" style="display:none"><div class="card"><div class="head"><div><h2>Application Tools</h2><p></p></div><button class="btn-primary admin-only" onclick="openToolModal(null,'AI Tool')">+ Add App</button></div><div class="toolbar"><input id="appSearch" placeholder="Search app, vendor, user..."><select id="appCycle"><option value="all">All Cycles</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select><select id="appVendor"><option value="all">All Vendors</option></select></div><div id="appGroups"></div></div></section>
+  
+  <section id="tab-email" style="display:none">
+    <div class="card">
+      <div class="head">
+        <div><h2>Email Confirm Center</h2></div>
+        <div class="actions">
+          <button class="btn-danger admin-only" onclick="clearEmailLogs()">Clear Log</button>
+        </div>
+      </div>
+      <div class="grid-4">
+        <div class="kpi"><div class="muted">Total Sent</div><div class="num" id="emailSent">0</div></div>
+        <div class="kpi"><div class="muted">Total Pending</div><div class="num" id="emailPending">0</div></div>
+        <div class="kpi"><div class="muted">Total Confirmed</div><div class="num" id="emailConfirmed">0</div></div>
+        <div class="kpi"><div class="muted">Total Declined</div><div class="num" id="emailDeclined">0</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head"><div><h2>Campaigns Sent</h2></div></div>
+      <div id="emailCampaignRows"></div>
+    </div>
+
+    <div class="card">
+      <div class="head"><div><h2>Email Activity Log</h2></div></div>
+      <div id="emailLog"></div>
+    </div>
+
+    <div class="compat-hidden">
+      <select id="emailType"><option value="renew">Renewal Confirmation</option><option value="usage">Usage Confirmation</option></select>
+      <select id="emailProvider"><option value="mock" selected>Mock / Test</option></select>
+      <select id="senderMailbox"><option value="quang.phamvan@vib.com.vn">quang.phamvan@vib.com.vn</option><option value="custom">Custom mailbox...</option></select>
+      <input id="customSenderEmail">
+      <input id="sendDate" type="date">
+      <input id="sendTime" type="time" value="09:00">
+      <div id="emailToolChecks"></div>
+      <button id="tplRenew"></button>
+      <button id="tplUsage"></button>
+      <input id="emailSubject">
+      <textarea id="emailBody"></textarea>
+      <span id="previewType"></span>
+      <div id="previewSubject"></div>
+      <div id="previewBody"></div>
+      <div id="recipientList"></div>
+    </div>
+  </section>
+
+</div>
+<div id="toolModal" class="modal"><div class="modal-card"><div class="head"><div><h2 id="toolModalTitle">Add License</h2><p>Add or edit tool.</p></div><button class="btn-secondary" onclick="closeToolModal()">Close</button></div><div class="form-grid"><div><label>Name</label><input id="toolName"></div><div><label>Vendor</label><input id="toolVendor"></div><div><label>Billing Cycle</label><select id="toolCycle"><option value="yearly">Yearly</option><option value="monthly">Monthly</option></select></div><div><label>Seats</label><input id="toolSeats" type="number"></div><div><label>Cost</label><input id="toolCost" type="number"></div><div><label>Renewal Date</label><input id="toolRenewal" type="date"></div><div class="full"><label>Notes</label><textarea id="toolNotes"></textarea></div></div><div class="actions" style="margin-top:16px"><button class="btn-primary admin-only" onclick="saveTool()">Save Tool</button></div></div></div>
+<div id="usersModal" class="modal"><div class="modal-card"><div class="head"><div><h2 id="usersTitle">Users</h2><p>Manage users by software.</p></div><button class="btn-secondary" onclick="closeUsersModal()">Close</button></div><div class="grid-2"><div class="card" style="box-shadow:none;margin:0"><div class="head"><div><h2>Add User Manually</h2></div></div><div class="form-grid"><div><label>Name</label><input id="userName"></div><div><label>Email</label><input id="userEmail"></div><div><label>Department</label><input id="userDept"></div><div><label>Role</label><input id="userRole"></div><div><label>Date</label><input id="userDate" type="date"></div><div><label>Status</label><select id="userStatus"><option>Active</option><option>Inactive</option></select></div></div><div class="actions" style="margin-top:12px"><button class="btn-primary admin-only" onclick="addUser()">Add User</button></div></div><div class="card" style="box-shadow:none;margin:0"><div class="head"><div><h2>Import CSV</h2></div></div><input id="csvFile" type="file" accept=".csv,text/csv"><div class="actions" style="margin-top:12px"><button class="btn-orange admin-only" onclick="importCsv()">Import CSV</button><button class="btn-secondary admin-only" onclick="downloadCsvTemplate()">CSV Template</button></div></div></div><div class="card" style="box-shadow:none;margin-top:16px"><div class="head"><div><h2>User List</h2></div></div><div id="usersTable"></div></div></div></div>
+<div id="emailModal" class="modal"><div class="modal-card"><div class="head"><div><h2>Send Review</h2><p>Review and edit email content before queueing.</p></div><div class="actions"><button class="btn-secondary admin-only" onclick="toggleReviewEdit()">Edit Content</button><button class="btn-primary admin-only" onclick="saveReviewEdits()">Save Edits</button><button class="btn-primary admin-only" onclick="queueEmails(true)">Send Email</button><button class="btn-secondary" onclick="closeEmailModal()">Close</button></div></div>
+<div class="review-edit" id="reviewEditBox">
+  <div class="form-grid">
+    <div><label>Recipient Name</label><input id="reviewUserName" class="small-input"></div>
+    <div><label>Recipient Email</label><input id="reviewUserEmail" class="small-input"></div>
+    <div><label>Tool Name</label><input id="reviewToolName" class="small-input"></div>
+    <div><label>Vendor</label><input id="reviewVendor" class="small-input"></div>
+    <div><label>Renewal Date</label><input id="reviewRenewal" type="date" class="small-input"></div>
+    <div><label>Email Type</label><select id="reviewEmailType" class="small-input" onchange="onReviewEmailTypeChange()"><option value="renew">Renewal Confirmation</option><option value="usage">Usage Confirmation</option></select></div>
+    <div class="full"><label>Subject</label><input id="reviewSubjectEdit" class="small-input"></div>
+    <div class="full"><label>Body</label><textarea id="reviewBodyEdit" style="min-height:220px"></textarea></div>
+  </div>
+</div>
+<div class="meta" style="margin-bottom:12px"><div class="meta-box"><span>Recipient</span><strong id="modalRecipient">-</strong></div><div class="meta-box"><span>Tool</span><strong id="modalTool">-</strong></div><div class="meta-box"><span>Email Type</span><strong id="modalType">-</strong></div><div class="meta-box"><span>Sender</span><strong id="modalSender">-</strong></div></div><div class="paper"><div class="muted"><b>Subject</b></div><div id="modalSubject" style="font-weight:900;margin:6px 0 14px">-</div><div class="muted"><b>Body</b></div><div id="modalBody" style="line-height:1.7;margin-top:8px">-</div></div>
+<div class="review-send-list"><div class="head" style="margin:16px 0 10px"><div><h2>Recipients to Send</h2><p>Pending recipients based on current selection.</p></div></div><div id="modalSendList" class="list"></div></div>
+</div></div></div>
+
+<div id="editUserModal" class="modal">
+  <div class="modal-card" style="width:min(720px,100%)">
+    <div class="head">
+      <div><h2>Edit User</h2></div>
+      <button class="btn-secondary" onclick="closeEditUserModal()">Close</button>
+    </div>
+    <div class="form-grid">
+      <div><label>Name</label><input id="editUserName"></div>
+      <div><label>Email</label><input id="editUserEmail"></div>
+      <div><label>Department</label><input id="editUserDept"></div>
+      <div><label>Role</label><input id="editUserRole"></div>
+      <div><label>Added Date</label><input id="editUserDate" type="date"></div>
+    </div>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn-primary" onclick="saveEditUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script>
+const LS_KEY="vib_lm_clean_v2",LOG_KEY="vib_lm_logs_v2";let editingToolIndex=null,currentUserToolIndex=null,currentTemplate="renew",defaultToolType="Other";
+const demoTools=[{code:"ADOBE-CC",name:"Adobe Creative Cloud",vendor:"Adobe",type:"Adobe",billingCycle:"yearly",seats:25,cost:425000000,renewal:"2026-08-15",owner:"Marketing Ops",notes:"Design team",users:[{name:"Nguyen Minh Anh",email:"anh.nguyen@vib.com.vn",dept:"Marketing",role:"Designer",date:"2025-08-15",status:"Active",renewalStatus:"Pending",lastEmailSent:""},{name:"Tran Hoang Nam",email:"nam.tran@vib.com.vn",dept:"Brand",role:"Creative Lead",date:"2025-08-15",status:"Active",renewalStatus:"Confirmed",lastEmailSent:"2026-05-02"}]},{code:"AUTOCAD-AEC",name:"AutoCAD AEC Collection",vendor:"Autodesk",type:"AutoCAD",billingCycle:"yearly",seats:8,cost:320000000,renewal:"2026-09-30",owner:"Facilities",notes:"Architecture",users:[{name:"Le Quang Huy",email:"huy.le@vib.com.vn",dept:"Facilities",role:"Engineer",date:"2025-09-30",status:"Active",renewalStatus:"Pending",lastEmailSent:""}]},{code:"IDEA-U",name:"IntelliJ IDEA Ultimate",vendor:"JetBrains",type:"JetBrains",billingCycle:"yearly",seats:35,cost:280000000,renewal:"2026-07-20",owner:"IT Engineering",notes:"Backend team",users:[{name:"Pham Duc Long",email:"long.pham@vib.com.vn",dept:"Technology",role:"Backend Dev",date:"2025-07-20",status:"Active",renewalStatus:"Pending",lastEmailSent:""}]},{code:"CURSOR-IDE",name:"Cursor AI IDE",vendor:"Cursor",type:"AI IDE",billingCycle:"monthly",seats:20,cost:96000000,renewal:"2026-06-01",owner:"AI Lab",notes:"AI coding",users:[{name:"Vo Thanh Son",email:"son.vo@vib.com.vn",dept:"AI Lab",role:"AI Engineer",date:"2026-01-10",status:"Active",renewalStatus:"Pending",lastEmailSent:""}]},{code:"TOOL-AI",name:"Tool AI Enterprise",vendor:"OpenAI/Other",type:"AI Tool",billingCycle:"monthly",seats:50,cost:300000000,renewal:"2026-06-10",owner:"Digital",notes:"AI productivity",users:[{name:"Dang Thu Ha",email:"ha.dang@vib.com.vn",dept:"Digital",role:"Product Manager",date:"2026-02-01",status:"Active",renewalStatus:"Pending",lastEmailSent:""}]}];
+let state=JSON.parse(localStorage.getItem(LS_KEY)||"null")||{tools:demoTools,emailConfig:{}};let emailLogs=JSON.parse(localStorage.getItem(LOG_KEY)||"[]");
+const templates={renew:{label:"Renewal",subject:"[VIB] Xác nhận gia hạn license {{tool_name}}",body:`Xin chào {{user_name}},
+
+License {{tool_name}} của bạn sắp đến kỳ gia hạn.
+
+Thông tin license:
+- Phần mềm: {{tool_name}}
+- Vendor: {{vendor}}
+- Ngày gia hạn: {{renewal_date}}
+
+Vui lòng xác nhận nhu cầu tiếp tục sử dụng để IT tiến hành gia hạn license.
+
+Nếu không còn nhu cầu sử dụng, vui lòng phản hồi để IT thu hồi license nhằm tối ưu chi phí.
+
+Trân trọng,
+IT Software Asset Management`},usage:{label:"Usage Confirmation",subject:"[VIB] Xác nhận tiếp tục sử dụng license {{tool_name}}",body:`Xin chào {{user_name}},
+
+Vui lòng xác nhận bạn vẫn đang sử dụng license {{tool_name}} và có nhu cầu tiếp tục được cấp license này.
+
+Thông tin license:
+- Phần mềm: {{tool_name}}
+- Vendor: {{vendor}}
+- Người sử dụng: {{user_email}}
+
+Nếu không còn nhu cầu sử dụng, vui lòng phản hồi để IT thực hiện thu hồi license.
+
+Trân trọng,
+IT Software Asset Management`}};
+function $(id){return document.getElementById(id)}function saveState(){localStorage.setItem(LS_KEY,JSON.stringify(state))}function toast(msg){let t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}function money(v){return Number(v||0).toLocaleString("en-US",{maximumFractionDigits:0})+" VND"}function daysLeft(d){if(!d)return"-";let now=new Date(),end=new Date(d);return Math.ceil((end-now)/(1000*60*60*24))}function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function initials(n){return String(n||"?").split(/\s+/).filter(Boolean).slice(-2).map(x=>x[0]).join("").toUpperCase()}function allUsers(){return state.tools.flatMap((t,ti)=>(t.users||[]).map((u,ui)=>({tool:t,toolIndex:ti,user:u,userIndex:ui})))}function statusClass(s){return s==="Confirmed"?"active-chip":s==="Declined"?"bad-chip":"warn-chip"}function isAppTool(t){return["AI Tool","AI IDE"].includes(t.type)}
+function uniqueVendors(list){
+  return [...new Set((list||[]).map(t=>t.vendor).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+}
+function renderVendorFilter(selectId, tools){
+  const el=$(selectId);
+  if(!el)return;
+  const current=el.value||"all";
+  const vendors=uniqueVendors(tools);
+  el.innerHTML='<option value="all">All Vendors</option>'+vendors.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+  el.value=vendors.includes(current)?current:"all";
+}
+function cycleLabel(t){return t.billingCycle==="monthly"?"Monthly":"Yearly"}function costLabel(t){return t.billingCycle==="monthly"?money(Number(t.cost||0)/12)+" / month":money(t.cost)+" / year"}
+function setTab(tab){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));["dashboard","licenses","apps","email"].forEach(x=>$("tab-"+x).style.display=x===tab?"":"none");if(tab==="email")renderEmail()}document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+function renderAll(){renderDashboard();renderLicenseTools();renderAppTools();renderEmail()}
+function renderDashboard(){let users=allUsers(),cost=state.tools.reduce((s,t)=>s+Number(t.cost||0),0),seats=state.tools.reduce((s,t)=>s+Number(t.seats||0),0);$("kpiTools").textContent=state.tools.length;$("kpiSeats").textContent=seats;$("kpiUsers").textContent=users.length;$("kpiCost").textContent=money(cost);let rows=state.tools.map(t=>{let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length;return `<tr><td><strong>${esc(t.name)}</strong></td><td>${esc(t.vendor)}</td><td>${costLabel(t)}</td><td>${used}/${t.seats}</td><td><span class="chip ${daysLeft(t.renewal)<=7?'bad-chip':daysLeft(t.renewal)<=30?'warn-chip':'active-chip'}">${daysLeft(t.renewal)} days</span></td><td>${esc(t.renewal)}</td></tr>`}).join("");$("costTable").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Software</th><th>Vendor</th><th>Cost</th><th>Usage</th><th>Days Left</th><th>Renewal</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+function toolCard(t,i){let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length,p=t.seats?Math.round(used/t.seats*100):0;return `<div class="tool-card"><div class="tool-top"><div><div class="icon">${esc(t.type[0]||"T")}</div><div class="tool-name">${esc(t.name)}</div></div><span class="chip ${used<t.seats?"active-chip":"warn-chip"}">${used<t.seats?"Available":"Full"}</span></div><div><div class="bar"><div style="width:${Math.min(100,p)}%"></div></div><div class="muted" style="display:flex;justify-content:space-between;margin-top:7px"><span>${used}/${t.seats} users</span><span>${p}%</span></div></div><div class="meta"><div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div><div class="meta-box"><span>Renewal</span><strong>${esc(t.renewal)}</strong></div><div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div></div><div class="actions"><button class="btn-secondary" onclick="openUsersModal(${i})">Users</button><button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button><button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button><button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button></div></div>`}
+function renderLicenseTools(){renderVendorFilter("licenseVendor",state.tools.filter(t=>!isAppTool(t)));let q=$("licenseSearch").value.toLowerCase().trim(),vendor=$("licenseVendor").value;let list=state.tools.map((t,i)=>({t,i})).filter(x=>!isAppTool(x.t)).filter(x=>(vendor==="all"||x.t.vendor===vendor)&&JSON.stringify(x.t).toLowerCase().includes(q));$("licenseGrid").innerHTML=list.map(x=>toolCard(x.t,x.i)).join("")||`<div class="empty">No license tools.</div>`}
+function renderAppTools(){renderVendorFilter("appVendor",state.tools.filter(t=>isAppTool(t)||t.type==="Other"));let q=$("appSearch").value.toLowerCase().trim(),cycle=$("appCycle").value,vendor=$("appVendor").value;let list=state.tools.map((t,i)=>({t,i})).filter(x=>isAppTool(x.t)||x.t.type==="Other").filter(x=>(cycle==="all"||x.t.billingCycle===cycle)&&(vendor==="all"||x.t.vendor===vendor)&&JSON.stringify(x.t).toLowerCase().includes(q));let group=(name,items)=>items.length?`<div class="card" style="box-shadow:none"><div class="head"><div><h2>${name}</h2><p>${items.length} tools</p></div></div><div class="tool-grid">${items.map(x=>toolCard(x.t,x.i)).join("")}</div></div>`:"";$("appGroups").innerHTML=(cycle==="monthly"?group("Monthly Tools",list.filter(x=>x.t.billingCycle==="monthly")):cycle==="yearly"?group("Yearly Tools",list.filter(x=>x.t.billingCycle==="yearly")):group("Monthly Tools",list.filter(x=>x.t.billingCycle==="monthly"))+group("Yearly Tools",list.filter(x=>x.t.billingCycle==="yearly")))||`<div class="empty">No application tools.</div>`}
+["licenseSearch","licenseVendor"].forEach(id=>$(id).oninput=$(id).onchange=renderLicenseTools);["appSearch","appCycle","appVendor"].forEach(id=>$(id).oninput=$(id).onchange=renderAppTools);
+function openToolModal(i=null,defaultType="Adobe"){defaultToolType=defaultType;editingToolIndex=i;let t=i==null?{}:state.tools[i];$("toolModalTitle").textContent=i==null?(["AI Tool","AI IDE"].includes(defaultType)?"Add App":"Add License"):"Edit Tool";$("toolName").value=t.name||"";$("toolVendor").value=t.vendor||"";$("toolCycle").value=t.billingCycle||(["AI Tool","AI IDE"].includes(defaultType)?"monthly":"yearly");$("toolSeats").value=t.seats||0;$("toolCost").value=t.cost||0;$("toolRenewal").value=t.renewal||"";$("toolNotes").value=t.notes||"";$("toolModal").classList.add("show")}function closeToolModal(){$("toolModal").classList.remove("show")}function saveTool(){let autoType=editingToolIndex==null?defaultToolType:(state.tools[editingToolIndex]?.type||"Other");let payload={code:("TOOL-"+Date.now()),name:$("toolName").value.trim(),vendor:$("toolVendor").value.trim(),type:autoType,billingCycle:$("toolCycle").value,seats:Number($("toolSeats").value||0),cost:Number($("toolCost").value||0),renewal:$("toolRenewal").value,notes:$("toolNotes").value.trim(),users:editingToolIndex==null?[]:state.tools[editingToolIndex].users||[]};if(!payload.name){toast("Name is required");return}if(editingToolIndex==null)state.tools.push(payload);else state.tools[editingToolIndex]=payload;saveState();closeToolModal();renderAll();toast("Tool saved")}function deleteTool(i){if(confirm("Delete tool?")){state.tools.splice(i,1);saveState();renderAll();toast("Tool deleted")}}
+function openUsersModal(i){currentUserToolIndex=i;$("usersTitle").textContent=state.tools[i].name+" - Users";$("userDate").value=new Date().toISOString().slice(0,10);renderUsersTable();$("usersModal").classList.add("show")}function closeUsersModal(){$("usersModal").classList.remove("show")}function renderUsersTable(){let t=state.tools[currentUserToolIndex];let rows=(t.users||[]).map((u,ui)=>`<tr><td><div class="user-cell"><div class="avatar">${initials(u.name)}</div><div><strong>${esc(u.name)}</strong><div class="muted">${esc(u.email)}</div></div></div></td><td>${esc(u.dept)}<div class="muted">${esc(u.role)}</div></td><td><span class="chip ${u.status==="Active"?"active-chip":"info-chip"}">${esc(u.status)}</span></td><td><span class="chip ${statusClass(u.renewalStatus||"Pending")}">${esc(u.renewalStatus||"Pending")}</span></td><td><button class="btn-orange admin-only" onclick="openEmailReview(${currentUserToolIndex},${ui})">Send Review</button><button class="btn-danger admin-only" onclick="removeUser(${ui})">Remove</button></td></tr>`).join("");$("usersTable").innerHTML=rows?`<div class="table-wrap"><table><thead><tr><th>User</th><th>Department / Role</th><th>Status</th><th>Days Left</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="empty">No users.</div>`}
+function addUser(){let t=state.tools[currentUserToolIndex],name=$("userName").value.trim(),email=$("userEmail").value.trim();if(!name||!email){toast("Name and Email are required");return}t.users=t.users||[];t.users.push({name,email,dept:$("userDept").value.trim(),role:$("userRole").value.trim(),date:$("userDate").value,status:$("userStatus").value,renewalStatus:"Pending",lastEmailSent:""});["userName","userEmail","userDept","userRole"].forEach(id=>$(id).value="");saveState();renderAll();renderUsersTable();toast("User added")}function removeUser(i){if(confirm("Remove user?")){state.tools[currentUserToolIndex].users.splice(i,1);saveState();renderAll();renderUsersTable()}}
+function csvLine(line){let out=[],cur="",q=false;for(let i=0;i<line.length;i++){let c=line[i];if(c=='"'&&line[i+1]=='"'){cur+='"';i++}else if(c=='"')q=!q;else if(c==","&&!q){out.push(cur.trim());cur=""}else cur+=c}out.push(cur.trim());return out}async function importCsv(){let f=$("csvFile").files[0];if(!f){toast("Choose CSV file");return}let text=await f.text(),lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),start=/name.*email/i.test(lines[0])?1:0,count=0,t=state.tools[currentUserToolIndex];t.users=t.users||[];for(let i=start;i<lines.length;i++){let [name,email,dept,role,date,status]=csvLine(lines[i]);if(name&&email){t.users.push({name,email,dept:dept||"",role:role||"",date:date||new Date().toISOString().slice(0,10),status:status||"Active",renewalStatus:"Pending",lastEmailSent:""});count++}}saveState();renderAll();renderUsersTable();toast(count+" users imported")}function downloadCsvTemplate(){let b=new Blob(["name,email,dept,role,date,status\nNguyen Van A,user@vib.com.vn,IT,Developer,2026-05-11,Active\n"],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="license_users_template.csv";a.click();URL.revokeObjectURL(a.href)}
+function senderEmail(){let v=$("senderMailbox")?$("senderMailbox").value:"quang.phamvan@vib.com.vn";return v==="custom"?(($("customSenderEmail")?.value||"").trim()||"quang.phamvan@vib.com.vn"):v}
+function senderDisplay(){let e=senderEmail();return e}
+function toggleCustomSender(){if($("customSenderWrap"))$("customSenderWrap").style.display=$("senderMailbox")?.value==="custom"?"":"none";renderEmailPreview()}
+function selectedEmailTools(){let checks=[...document.querySelectorAll(".emailToolCheck")],sel=checks.filter(c=>c.checked).map(c=>c.value);return sel.includes("all")||!sel.length?state.tools:state.tools.filter(t=>sel.includes(t.code))}function emailRecipients(){return selectedEmailTools().flatMap(t=>(t.users||[]).map((u,ui)=>({tool:t,toolIndex:state.tools.indexOf(t),user:u,userIndex:ui})).filter(x=>(x.user.renewalStatus||"Pending")==="Pending"))}function renderEmailChecks(){let box=$("emailToolChecks");box.innerHTML=`<label class="check"><input type="checkbox" class="emailToolCheck" value="all" checked> All Software</label>`+state.tools.map(t=>`<label class="check"><input type="checkbox" class="emailToolCheck" value="${esc(t.code)}"> ${esc(t.name)}</label>`).join("");box.querySelectorAll(".emailToolCheck").forEach(chk=>chk.onchange=()=>{let all=box.querySelector('[value="all"]');if(chk.value==="all"&&chk.checked)box.querySelectorAll(".emailToolCheck").forEach(c=>{if(c.value!=="all")c.checked=false});if(chk.value!=="all"&&chk.checked)all.checked=false;if(![...box.querySelectorAll(".emailToolCheck")].some(c=>c.checked))all.checked=true;renderEmail()})}
+function setTemplate(type){currentTemplate=type;let tpl=templates[type];$("emailType").value=type;$("emailSubject").value=tpl.subject;$("emailBody").value=tpl.body;$("tplRenew").classList.toggle("active",type==="renew");$("tplUsage").classList.toggle("active",type==="usage");renderEmailPreview()}function applyTemplate(text,user,tool){let cost=Number(tool.cost||0)/Math.max(1,Number(tool.seats||1)),vars={"{{user_name}}":user.name||"","{{user_email}}":user.email||"","{{tool_name}}":tool.name||"","{{vendor}}":tool.vendor||"","{{renewal_date}}":tool.renewal||"","{{cost}}":money(cost)};let out=String(text||"");Object.keys(vars).forEach(k=>out=out.split(k).join(vars[k]));return out}function sampleEmail(){return emailRecipients()[0]||{tool:state.tools[0],toolIndex:0,user:(state.tools[0]?.users||[])[0]||{name:"Nguyen Van A",email:"user@vib.com.vn"},userIndex:0}}function renderEmailPreview(){let s=sampleEmail();if(!s.tool)return;$("previewType").textContent=templates[currentTemplate].label;if($("emailTemplateKpi"))$("emailTemplateKpi").textContent=templates[currentTemplate].label;if($("emailProviderKpi"))$("emailProviderKpi").textContent=$("emailProvider").value;$("previewSubject").textContent=applyTemplate($("emailSubject").value,s.user,s.tool);$("previewBody").innerHTML=applyTemplate($("emailBody").value,s.user,s.tool).replace(/\n/g,"<br>")}function renderEmail(){if(!$("emailToolChecks").innerHTML)renderEmailChecks();let rec=emailRecipients();let users=allUsers();if($("emailSent"))$("emailSent").textContent=users.filter(x=>x.user.emailSendStatus==="Sent"||x.user.lastEmailSent).length;if($("emailPending"))$("emailPending").textContent=users.filter(x=>(x.user.renewalStatus||"Pending")==="Pending").length;if($("emailConfirmed"))$("emailConfirmed").textContent=users.filter(x=>(x.user.renewalStatus||"Pending")==="Confirmed").length;if($("emailDeclined"))$("emailDeclined").textContent=users.filter(x=>(x.user.renewalStatus||"Pending")==="Declined").length;$("recipientList").innerHTML=rec.length?rec.map(r=>`<div class="row"><div class="user-cell"><div class="avatar">${initials(r.user.name)}</div><div><strong>${esc(r.user.name)}</strong><div class="muted">${esc(r.user.email)} · ${esc(r.tool.name)}</div></div></div><span class="chip ${r.user.emailSendStatus==="Sent"?"active-chip":statusClass(r.user.renewalStatus||"Pending")}">${esc(r.user.emailSendStatus||r.user.renewalStatus||"Pending")}</span></div>`).join(""):`<div class="empty">No pending recipients.</div>`;renderEmailPreview();renderEmailLog()}
+let currentReviewTarget = null;
+let currentReviewToolScope = null;
+
+
+function reviewRecipients(){
+  if(currentReviewToolScope !== null && state.tools[currentReviewToolScope]){
+    const tool = state.tools[currentReviewToolScope];
+    return (tool.users || []).map((u,ui)=>({
+      tool: tool,
+      toolIndex: currentReviewToolScope,
+      user: u,
+      userIndex: ui
+    }));
+  }
+  return typeof emailRecipients === "function" ? emailRecipients() : [];
+}
+
+function renderModalSendList(){
+  const box = $("modalSendList");
+  if(!box) return;
+  const rec = reviewRecipients();
+  box.innerHTML = rec.length ? rec.map(r=>`<div class="row"><div class="user-cell"><div class="avatar">${initials(r.user.name)}</div><div><strong>${esc(r.user.name)}</strong><div class="muted">${esc(r.user.email)} · ${esc(r.tool.name)} · ${esc(r.tool.vendor||"")}</div></div></div><span class="chip ${r.user.emailSendStatus==="Sent"?"active-chip":statusClass(r.user.renewalStatus||"Pending")}">${esc(r.user.emailSendStatus||r.user.renewalStatus||"Pending")}</span></div>`).join("") : `<div class="empty">No pending recipients.</div>`;
+}
+
+function fillReviewEditFields(r){
+  if(!$("reviewEditBox")) return;
+  $("reviewUserName").value = r.user.name || "";
+  $("reviewUserEmail").value = r.user.email || "";
+  $("reviewToolName").value = r.tool.name || "";
+  $("reviewVendor").value = r.tool.vendor || "";
+  $("reviewRenewal").value = r.tool.renewal || "";
+  $("reviewEmailType").value = currentTemplate || "renew";
+
+  if(typeof buildMail === "function"){
+    const mail = buildMail(r.tool, "PREVIEW");
+    $("reviewSubjectEdit").value = mail.subject || "";
+    $("reviewBodyEdit").value = mail.body || "";
+  }else{
+    $("reviewSubjectEdit").value = $("emailSubject").value || "";
+    $("reviewBodyEdit").value = $("emailBody").value || "";
+  }
+}
+
+function toggleReviewEdit(){
+  const box = $("reviewEditBox");
+  if(!box) return;
+  if(currentReviewTarget) fillReviewEditFields(currentReviewTarget);
+  box.classList.add("show");
+}
+
+
+function onReviewEmailTypeChange(){
+  const type = $("reviewEmailType") ? $("reviewEmailType").value : currentTemplate;
+  currentTemplate = type || currentTemplate;
+
+  if(currentReviewTarget && typeof buildMail === "function"){
+    const mail = buildMail(currentReviewTarget.tool, "PREVIEW");
+    if($("reviewSubjectEdit")) $("reviewSubjectEdit").value = mail.subject;
+    if($("reviewBodyEdit")) $("reviewBodyEdit").value = mail.body;
+    return;
+  }
+
+  if(!templates[type]) return;
+  if($("reviewSubjectEdit")) $("reviewSubjectEdit").value = templates[type].subject;
+  if($("reviewBodyEdit")) $("reviewBodyEdit").value = templates[type].body;
+}
+
+function saveReviewEdits(){
+  if(!currentReviewTarget) return;
+  const r = currentReviewTarget;
+  r.user.name = $("reviewUserName").value.trim();
+  r.user.email = $("reviewUserEmail").value.trim();
+  r.tool.name = $("reviewToolName").value.trim();
+  r.tool.vendor = $("reviewVendor").value.trim();
+  r.tool.renewal = $("reviewRenewal").value;
+  currentTemplate = $("reviewEmailType").value; if(typeof setTemplate === "function") setTemplate(currentTemplate);
+  $("emailSubject").value = $("reviewSubjectEdit").value;
+  $("emailBody").value = $("reviewBodyEdit").value;
+  saveState();
+  renderAll();
+  openEmailReview(r.toolIndex, r.userIndex);
+  if($("reviewEditBox")) $("reviewEditBox").classList.remove("show");
+  if(typeof toast === "function") toast("Review edits saved");
+}
+
+function openEmailReview(toolIndex=null,userIndex=null){currentReviewToolScope = toolIndex==null ? null : toolIndex;let r=toolIndex==null?sampleEmail():{tool:state.tools[toolIndex],toolIndex,user:state.tools[toolIndex].users[userIndex]||sampleEmail().user,userIndex};currentReviewTarget=r;$("modalRecipient").textContent=`${r.user.name} <${r.user.email}>`;$("modalTool").textContent=r.tool.name;$("modalType").textContent=templates[currentTemplate].label;$("modalSender").textContent=senderDisplay();if($("modalProvider"))$("modalProvider").textContent=$("emailProvider").value;$("modalSubject").textContent=applyTemplate($("emailSubject").value,r.user,r.tool);$("modalBody").innerHTML=applyTemplate($("emailBody").value,r.user,r.tool).replace(/\n/g,"<br>");fillReviewEditFields(r);renderModalSendList();$("emailModal").classList.add("show")}function closeEmailModal(){$("emailModal").classList.remove("show");if($("reviewEditBox"))$("reviewEditBox").classList.remove("show");currentReviewToolScope=null}function queueEmails(fromModal=false){
+  const recipients = (currentReviewToolScope !== null ? reviewRecipients() : (typeof emailRecipients === "function" ? emailRecipients() : []));
+  const list = recipients.length ? recipients : [];
+  const sentTime = new Date().toLocaleString();
+
+  list.forEach(r=>{
+    if(r.user){
+      r.user.lastEmailSent = sentTime;
+      r.user.emailSendStatus = "Sent";
+      r.user.emailTypeSent = templates[currentTemplate]?.label || currentTemplate;
+    }
+  });
+
+  emailLogs.unshift({
+    time: sentTime,
+    type: templates[currentTemplate].label,
+    count: list.length,
+    sender: senderEmail(),
+    status: "Sent"
+  });
+
+  emailLogs=emailLogs.slice(0,50);
+  localStorage.setItem(LOG_KEY,JSON.stringify(emailLogs));
+  saveState();
+  renderEmailLog();
+  renderEmail();
+  renderModalSendList();
+
+  if(fromModal)closeEmailModal();
+
+  const msg = "Sent " + list.length + " email(s) to the recipient list.";
+  alert(msg);
+  if(typeof toast === "function") toast(msg);
+}function renderEmailLog(){$("emailLog").innerHTML=emailLogs.length?`<div class="table-wrap"><table style="min-width:600px"><thead><tr><th>Time</th><th>Type</th><th>Recipients</th><th>Status</th><th>Sender</th></tr></thead><tbody>${emailLogs.map(l=>`<tr><td>${esc(l.time)}</td><td>${esc(l.type)}</td><td>${l.count}</td><td><span class="chip active-chip">${esc(l.status||"Sent")}</span></td><td>${esc(l.sender||"")}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">No email logs.</div>`}function saveTemplate(){localStorage.setItem("vib_email_template_current",JSON.stringify({type:currentTemplate,subject:$("emailSubject").value,body:$("emailBody").value}));toast("Template saved")}function saveEmailConfig(){state.emailConfig={type:currentTemplate,provider:$("emailProvider").value,sender:senderEmail(),sendDate:$("sendDate").value,sendTime:$("sendTime").value,tools:[...document.querySelectorAll(".emailToolCheck")].filter(c=>c.checked).map(c=>c.value),reminders:[...document.querySelectorAll(".reminder")].filter(c=>c.checked).map(c=>Number(c.value))};saveState();toast("Email config saved")}
+$("emailType").onchange=e=>setTemplate(e.target.value);$("emailProvider").onchange=renderEmailPreview;if($("senderMailbox"))$("senderMailbox").onchange=toggleCustomSender;if($("customSenderEmail"))$("customSenderEmail").oninput=renderEmailPreview;$("emailSubject").oninput=renderEmailPreview;$("emailBody").oninput=renderEmailPreview;
+
+function csvSafeSimple(value){
+  return String(value ?? "")
+    .replace(/,/g, " ")
+    .replace(/\r?\n|\r/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function exportQueueCsv(){
+  const rows = [["RecipientEmail","RecipientName","ToolName","Vendor","RenewalDate","EmailType","Subject","Body","Status"]];
+  const recipients = (currentReviewToolScope !== null ? reviewRecipients() : (typeof emailRecipients === "function" ? emailRecipients() : []));
+  const fallback = typeof sampleEmail === "function" ? sampleEmail() : null;
+  const list = recipients.length ? recipients : (fallback ? [fallback] : []);
+
+  list.forEach(r => {
+    const user = r.user || {};
+    const tool = r.tool || {};
+    const subject = typeof applyTemplate === "function"
+      ? applyTemplate(document.getElementById("emailSubject")?.value || "", user, tool)
+      : (document.getElementById("emailSubject")?.value || "");
+    const body = typeof applyTemplate === "function"
+      ? applyTemplate(document.getElementById("emailBody")?.value || "", user, tool)
+      : (document.getElementById("emailBody")?.value || "");
+    const emailType = (typeof templates !== "undefined" && typeof currentTemplate !== "undefined" && templates[currentTemplate])
+      ? templates[currentTemplate].label
+      : "Renew Confirm";
+
+    rows.push([
+      csvSafeSimple(user.email),
+      csvSafeSimple(user.name),
+      csvSafeSimple(tool.name),
+      csvSafeSimple(tool.vendor),
+      csvSafeSimple(tool.renewal),
+      csvSafeSimple(emailType),
+      csvSafeSimple(subject),
+      csvSafeSimple(body),
+      "Pending"
+    ]);
+  });
+
+  const csv = rows.map(r => r.join(",")).join("\r\n");
+  const blob = new Blob(["\ufeff" + csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "queue.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  if(typeof toast === "function") toast("Exported queue.csv");
+}
+
+function exportJson(){let b=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="vib_license_manager_data.json";a.click();URL.revokeObjectURL(a.href)}function resetDemo(){if(confirm("Reset demo data?")){state={tools:JSON.parse(JSON.stringify(demoTools)),emailConfig:{}};emailLogs=[];localStorage.removeItem(LOG_KEY);saveState();renderEmailChecks();setTemplate("renew");renderAll();toast("Demo reset")}}
+setTemplate("renew");renderEmailChecks();renderAll();
+
+
+// SharePoint realtime integration
+function spGetConfig(){
+  return {
+    siteUrl: (document.getElementById("spSiteUrl")?.value || localStorage.getItem("vib_sp_site_url") || "").replace(/\/$/,""),
+    listName: document.getElementById("spListName")?.value || localStorage.getItem("vib_sp_list_name") || "LicenseConfirmations"
+  };
+}
+function saveSharePointConfig(){
+  const c=spGetConfig();
+  localStorage.setItem("vib_sp_site_url",c.siteUrl);
+  localStorage.setItem("vib_sp_list_name",c.listName);
+  if(typeof toast==="function")toast("SharePoint config saved");
+}
+function loadSharePointConfig(){
+  if(document.getElementById("spSiteUrl"))document.getElementById("spSiteUrl").value=localStorage.getItem("vib_sp_site_url")||"";
+  if(document.getElementById("spListName"))document.getElementById("spListName").value=localStorage.getItem("vib_sp_list_name")||"LicenseConfirmations";
+}
+function spBase(){
+  const c=spGetConfig();
+  if(!c.siteUrl)throw new Error("Missing SharePoint Site URL");
+  return `${c.siteUrl}/_api/web/lists/getbytitle('${c.listName}')/items`;
+}
+async function spDigest(){
+  const c=spGetConfig();
+  const r=await fetch(`${c.siteUrl}/_api/contextinfo`,{method:"POST",headers:{Accept:"application/json;odata=nometadata"},credentials:"include"});
+  if(!r.ok)throw new Error("Cannot get SharePoint digest");
+  const d=await r.json();
+  return d.FormDigestValue;
+}
+function spStatus(action){
+  action=String(action||"").toLowerCase();
+  if(action==="confirm")return"Confirmed";
+  if(action==="decline")return"Declined";
+  return"Pending";
+}
+function spPageUrl(){return location.href.split("?")[0].split("#")[0];}
+function spActionLink(action,user,tool){
+  const p=new URLSearchParams({action,email:user.email||"",name:user.name||"",tool:tool.name||"",vendor:tool.vendor||"",renewal:tool.renewal||""});
+  return `${spPageUrl()}?${p.toString()}`;
+}
+function spConfirmButtons(user,tool){
+  return `<br><br><div style="margin-top:18px"><a href="${spActionLink("confirm",user,tool)}" style="background:#16a34a;color:#fff;padding:10px 14px;text-decoration:none;border-radius:6px;font-weight:bold">CONFIRM</a>&nbsp;&nbsp;<a href="${spActionLink("decline",user,tool)}" style="background:#dc2626;color:#fff;padding:10px 14px;text-decoration:none;border-radius:6px;font-weight:bold">DECLINE</a></div>`;
+}
+async function spFindItem(email,tool){
+  const url=`${spBase()}?$filter=UserEmail eq '${String(email).replace(/'/g,"''")}' and ToolName eq '${String(tool).replace(/'/g,"''")}'&$top=1`;
+  const r=await fetch(url,{headers:{Accept:"application/json;odata=nometadata"},credentials:"include"});
+  if(!r.ok)throw new Error(await r.text());
+  const d=await r.json();
+  return(d.value||[])[0]||null;
+}
+async function spUpsert(payload){
+  const digest=await spDigest();
+  const existing=await spFindItem(payload.UserEmail,payload.ToolName);
+  const body={
+    Title:`${payload.UserEmail} - ${payload.ToolName}`,
+    UserEmail:payload.UserEmail,
+    UserName:payload.UserName||"",
+    ToolName:payload.ToolName||"",
+    Vendor:payload.Vendor||"",
+    RenewalDate:payload.RenewalDate||null,
+    Status:payload.Status||"Pending",
+    Sender:payload.Sender||"",
+    SentDate:payload.SentDate||null,
+    ReplyDate:payload.ReplyDate||null,
+    Comment:payload.Comment||""
+  };
+  if(existing&&existing.Id){
+    const r=await fetch(`${spBase()}(${existing.Id})`,{method:"POST",headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=nometadata","X-RequestDigest":digest,"IF-MATCH":"*","X-HTTP-Method":"MERGE"},credentials:"include",body:JSON.stringify(body)});
+    if(!r.ok)throw new Error(await r.text());
+    return;
+  }
+  const r=await fetch(spBase(),{method:"POST",headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=nometadata","X-RequestDigest":digest},credentials:"include",body:JSON.stringify(body)});
+  if(!r.ok)throw new Error(await r.text());
+}
+async function handleSpAction(){
+  const p=new URLSearchParams(location.search);
+  if(!p.get("action")||!p.get("email")||!p.get("tool"))return;
+  loadSharePointConfig();
+  const status=spStatus(p.get("action"));
+  try{
+    await spUpsert({UserEmail:p.get("email"),UserName:p.get("name")||"",ToolName:p.get("tool"),Vendor:p.get("vendor")||"",RenewalDate:p.get("renewal")||null,Status:status,Sender:"quang.phamvan@vib.com.vn",ReplyDate:new Date().toISOString(),Comment:`User clicked ${status}`});
+    document.body.innerHTML=`<div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#0b5cab">License confirmation recorded</h2><p>Status: <b>${status}</b></p><p>User: ${p.get("email")}</p><p>Tool: ${p.get("tool")}</p><p>You can close this tab.</p></div>`;
+  }catch(e){
+    document.body.innerHTML=`<div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#dc2626">Không cập nhật được SharePoint</h2><p>${String(e.message||e)}</p><p>Kiểm tra Site URL, List Name và quyền truy cập.</p></div>`;
+  }
+}
+async function syncSharePointStatuses(){
+  loadSharePointConfig();
+  const c=spGetConfig();
+  if(!c.siteUrl){if(typeof toast==="function")toast("Enter SharePoint Site URL first");return;}
+  try{
+    const r=await fetch(`${spBase()}?$orderby=Modified desc&$top=500`,{headers:{Accept:"application/json;odata=nometadata"},credentials:"include"});
+    if(!r.ok)throw new Error(await r.text());
+    const d=await r.json();
+    renderSpStatusTable(d.value||[]);
+    applySpStatuses(d.value||[]);
+    if(typeof toast==="function")toast("SharePoint status synced");
+  }catch(e){console.error(e);if(typeof toast==="function")toast("Could not sync SharePoint");}
+}
+function renderSpStatusTable(rows){
+  const box=document.getElementById("spStatusTable");
+  if(!box)return;
+  if(!rows.length){box.innerHTML=`<div class="empty">No SharePoint responses yet.</div>`;return;}
+  box.innerHTML=`<div class="table-wrap"><table style="min-width:800px"><thead><tr><th>User</th><th>Tool</th><th>Status</th><th>Reply Date</th><th>Comment</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${esc(r.UserName||"")}</strong><div class="muted">${esc(r.UserEmail||"")}</div></td><td>${esc(r.ToolName||"")}<div class="muted">${esc(r.Vendor||"")}</div></td><td><span class="chip ${r.Status==="Confirmed"?"active-chip":r.Status==="Declined"?"bad-chip":"warn-chip"}">${esc(r.Status||"Pending")}</span></td><td>${esc(r.ReplyDate||"")}</td><td>${esc(r.Comment||"")}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function applySpStatuses(rows){
+  if(typeof state==="undefined"||!state.tools)return;
+  rows.forEach(r=>state.tools.forEach(t=>{if((t.name||"")===(r.ToolName||""))(t.users||[]).forEach(u=>{if((u.email||"").toLowerCase()===String(r.UserEmail||"").toLowerCase())u.renewalStatus=r.Status||u.renewalStatus||"Pending";});}));
+  if(typeof saveState==="function")saveState();
+  if(typeof renderAll==="function")renderAll();
+}
+const spOriginalApplyTemplate=typeof applyTemplate==="function"?applyTemplate:null;
+if(spOriginalApplyTemplate){
+  applyTemplate=function(text,user,tool){
+    let out=spOriginalApplyTemplate(text,user,tool);
+    if(String(text||"").includes("{{confirm_buttons}}"))out=out.replace("{{confirm_buttons}}",spConfirmButtons(user||{},tool||{}));
+    return out;
+  };
+}
+function ensureSpButtonsInTemplate(){
+  const body=document.getElementById("emailBody");
+  if(body&&!body.value.includes("{{confirm_buttons}}")){
+    body.value=body.value+"\n\n{{confirm_buttons}}";
+    if(typeof renderEmailPreview==="function")renderEmailPreview();
+  }
+}
+
+/* SharePoint UI disabled */
+
+
+// ===== Admin Login + JSONBin Online + User Realtime Confirm =====
+const SIMPLE_ADMIN_SESSION_KEY = "vib_simple_admin_session_v1";
+const SIMPLE_ADMIN_PASSWORD_KEY = "vib_simple_admin_password_v1";
+
+// ===== Hardcoded JSONBin config =====
+// Thay 2 giá trị bên dưới bằng Bin ID và Access Key thật.
+// Sau khi thay xong, mọi máy mở GitHub Pages sẽ tự kết nối JSONBin.
+const HARDCODED_JSONBIN_BIN_ID = "6a059441adc21f119a9b1752";
+const HARDCODED_JSONBIN_ACCESS_KEY = "$2a$10$CbD9sDK0lXuZnVoMtHw21.dtPrQyyuShjGZd9CVFJL1kxv8EXJxJe";
+
+const JSONBIN_CONFIG_KEY = "vib_jsonbin_config_v2";
+let autoRefreshTimer = null;
+let autoRefreshEnabled = true;
+let isOnlineLoading = false;
+
+function getSimpleAdminPassword(){
+  return localStorage.getItem(SIMPLE_ADMIN_PASSWORD_KEY) || "admin123";
+}
+
+function adminLogin(){
+  const pass = prompt("Enter admin password");
+  if(!pass) return;
+  if(pass !== getSimpleAdminPassword()){
+    alert("Incorrect admin password");
+    return;
+  }
+  sessionStorage.setItem(SIMPLE_ADMIN_SESSION_KEY, "1");
+  applyAdminMode();
+  if(typeof toast === "function") toast("Admin mode enabled");
+}
+
+function adminLogout(){
+  sessionStorage.removeItem(SIMPLE_ADMIN_SESSION_KEY);
+  applyAdminMode();
+  if(typeof toast === "function") toast("Admin mode disabled");
+}
+
+function isAdmin(){
+  return sessionStorage.getItem(SIMPLE_ADMIN_SESSION_KEY) === "1";
+}
+
+function applyAdminMode(){
+  document.body.classList.toggle("admin-mode", isAdmin());
+}
+
+function setAdminPassword(){
+  const p1 = prompt("Enter admin password mới");
+  if(!p1) return;
+  const p2 = prompt("Re-enter new admin password");
+  if(p1 !== p2){
+    alert("Passwords do not match");
+    return;
+  }
+  localStorage.setItem(SIMPLE_ADMIN_PASSWORD_KEY, p1);
+  alert("Admin password changed");
+}
+
+function requireAdmin(){
+  if(isAdmin()) return true;
+  alert("Admin only");
+  return false;
+}
+
+function guardAdminFunction(name){
+  const fn = window[name];
+  if(typeof fn !== "function" || fn.__guarded) return;
+  const guarded = function(){
+    if(!requireAdmin()) return;
+    return fn.apply(this, arguments);
+  };
+  guarded.__guarded = true;
+  window[name] = guarded;
+}
+
+[
+  "openToolModal","saveTool","deleteTool","addUser","removeUser","importCsv",
+  "queueEmails","saveEmailConfig","saveTemplate",
+  "exportJson","exportQueueCsv"
+].forEach(guardAdminFunction);
+
+
+function getOnlineConfig(){
+  let raw = localStorage.getItem(JSONBIN_CONFIG_KEY);
+  let cfg = raw ? JSON.parse(raw) : {};
+
+  const hardcodedBinId =
+    typeof HARDCODED_JSONBIN_BIN_ID !== "undefined"
+      ? HARDCODED_JSONBIN_BIN_ID
+      : "";
+
+  const hardcodedAccessKey =
+    typeof HARDCODED_JSONBIN_ACCESS_KEY !== "undefined"
+      ? HARDCODED_JSONBIN_ACCESS_KEY
+      : "";
+
+  return {
+    binId: cfg.binId || hardcodedBinId || "",
+    accessKey: cfg.accessKey || hardcodedAccessKey || ""
+  };
+}
+
+
+function configureOnlineData(){
+  const current = getOnlineConfig();
+  const binId = prompt("Nhập JSONBin Bin ID", current.binId || "");
+  if(!binId) return;
+  const accessKey = prompt("Nhập JSONBin Access Key", current.accessKey || "");
+  if(!accessKey) return;
+
+  localStorage.setItem(JSONBIN_CONFIG_KEY, JSON.stringify({
+    binId: binId.trim(),
+    accessKey: accessKey.trim()
+  }));
+
+  if(typeof toast === "function") toast("Online config saved");
+  startAutoRefresh();
+}
+
+function getUrlConfig(){
+  const p = new URLSearchParams(location.search);
+  return {
+    binId: p.get("b") || "",
+    accessKey: p.get("k") || ""
+  };
+}
+
+function jsonBinConfig(allowUrl){
+  const urlCfg = allowUrl ? getUrlConfig() : {binId:"", accessKey:""};
+  const localCfg = getOnlineConfig();
+  const binId = urlCfg.binId || localCfg.binId;
+  const accessKey = urlCfg.accessKey || localCfg.accessKey;
+
+  if(!binId || !accessKey){
+    return null;
+  }
+
+  return {
+    url: "https://api.jsonbin.io/v3/b/" + binId,
+    binId,
+    accessKey
+  };
+}
+
+function jsonBinConfigOrPrompt(){
+  let cfg = jsonBinConfig(false);
+  if(!cfg){
+    configureOnlineData();
+    cfg = jsonBinConfig(false);
+  }
+  if(!cfg) throw new Error("Missing JSONBin config");
+  return cfg;
+}
+
+async function fetchOnlineRecord(allowUrl){
+  const cfg = allowUrl ? jsonBinConfig(true) : jsonBinConfigOrPrompt();
+  if(!cfg) throw new Error("Missing JSONBin config");
+
+  const res = await fetch(cfg.url + "/latest", {
+    method: "GET",
+    headers: {"X-Access-Key": cfg.accessKey}
+  });
+
+  if(!res.ok) throw new Error(await res.text());
+  const json = await res.json();
+  return json.record || {};
+}
+
+async function putOnlineRecord(record, allowUrl){
+  const cfg = allowUrl ? jsonBinConfig(true) : jsonBinConfigOrPrompt();
+  if(!cfg) throw new Error("Missing JSONBin config");
+
+  const res = await fetch(cfg.url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Access-Key": cfg.accessKey
+    },
+    body: JSON.stringify(record)
+  });
+
+  if(!res.ok) throw new Error(await res.text());
+}
+
+function currentOnlinePayload(){
+  return {
+    tools: state.tools || [],
+    emailConfig: state.emailConfig || {},
+    emailLogs: emailLogs || [],
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function applyOnlinePayload(record){
+  state = {
+    tools: record.tools || [],
+    emailConfig: record.emailConfig || {}
+  };
+  emailLogs = record.emailLogs || record.logs || [];
+  localStorage.setItem(LOG_KEY, JSON.stringify(emailLogs));
+  saveState();
+  if(typeof renderAll === "function") renderAll();
+  applyAdminMode();
+}
+
+async function loadOnlineData(silent){
+  if(isOnlineLoading) return;
+  try{
+    isOnlineLoading = true;
+    const record = await fetchOnlineRecord(false);
+    applyOnlinePayload(record);
+    if(!silent && typeof toast === "function") toast("Loaded online data");
+  }catch(e){
+    console.error(e);
+    if(!silent){
+      if(typeof toast === "function") toast("Load online failed");
+      alert("Load Online lỗi: " + (e.message || e));
+    }
+  }finally{
+    isOnlineLoading = false;
+  }
+}
+
+async function saveOnlineData(){
+  try{
+    await putOnlineRecord(currentOnlinePayload(), false);
+    saveState();
+    if(typeof toast === "function") toast("Saved online data");
+  }catch(e){
+    console.error(e);
+    if(typeof toast === "function") toast("Save online failed");
+    alert("Save Online lỗi: " + (e.message || e));
+  }
+}
+
+function isEditingNow(){
+  return !!document.querySelector(".modal.show");
+}
+
+function startAutoRefresh(){
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(function(){
+    if(!autoRefreshEnabled) return;
+    if(isEditingNow()) return;
+    if(new URLSearchParams(location.search).get("action")) return;
+    if(!jsonBinConfig(false)) return;
+    loadOnlineData(true);
+  }, 10000);
+}
+
+function pageBaseUrl(){
+  return location.href.split("?")[0].split("#")[0];
+}
+
+function buildUserActionLink(action, user, tool){
+  const cfg = getOnlineConfig();
+  const p = new URLSearchParams({
+    action: action,
+    email: user.email || "",
+    name: user.name || "",
+    tool: tool.name || "",
+    vendor: tool.vendor || "",
+    renewal: tool.renewal || "",
+    b: cfg.binId || "",
+    k: cfg.accessKey || ""
+  });
+  return pageBaseUrl() + "?" + p.toString();
+}
+
+function confirmButtonsHtml(user, tool){
+  const confirmUrl = buildUserActionLink("confirm", user, tool);
+  const declineUrl = buildUserActionLink("decline", user, tool);
+
+  return `
+<br><br>
+<div style="margin-top:18px">
+  <a href="${confirmUrl}" style="background:#16a34a;color:#fff;padding:10px 14px;text-decoration:none;border-radius:6px;font-weight:bold">CONFIRM</a>
+  &nbsp;&nbsp;
+  <a href="${declineUrl}" style="background:#dc2626;color:#fff;padding:10px 14px;text-decoration:none;border-radius:6px;font-weight:bold">DECLINE</a>
+</div>
+<br>
+Confirm link: ${confirmUrl}
+<br>
+Decline link: ${declineUrl}
+`;
+}
+
+function ensureConfirmButtonsInTemplate(){
+  const body = document.getElementById("emailBody");
+  if(body && !body.value.includes("{{confirm_buttons}}")){
+    body.value = body.value + "\n\n{{confirm_buttons}}";
+  }
+}
+
+const originalApplyTemplateForOnline = typeof applyTemplate === "function" ? applyTemplate : null;
+if(originalApplyTemplateForOnline){
+  applyTemplate = function(text, user, tool){
+    let out = originalApplyTemplateForOnline(text, user, tool);
+    if(String(out || "").indexOf("{{confirm_buttons}}") > -1){
+      out = out.split("{{confirm_buttons}}").join(confirmButtonsHtml(user || {}, tool || {}));
+    }
+    return out;
+  };
+}
+
+async function handleUserAction(){
+  const p = new URLSearchParams(location.search);
+  const action = p.get("action");
+  const email = p.get("email");
+  const toolName = p.get("tool");
+
+  if(!action || !email || !toolName) return false;
+
+  const status = action === "confirm" ? "Confirmed" : action === "decline" ? "Declined" : "Pending";
+
+  document.body.innerHTML = `
+    <div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
+      <h2 style="color:#0b5cab">Recording response...</h2>
+      <p>Please wait.</p>
+    </div>
+  `;
+
+  try{
+    const record = await fetchOnlineRecord(true);
+    const tools = record.tools || [];
+    let found = false;
+
+    tools.forEach(function(t){
+      if(String(t.name || "").toLowerCase() === String(toolName || "").toLowerCase()){
+        (t.users || []).forEach(function(u){
+          if(String(u.email || "").toLowerCase() === String(email || "").toLowerCase()){
+            u.renewalStatus = status;
+            u.replyDate = new Date().toISOString();
+            found = true;
+          }
+        });
+      }
+    });
+
+    const emailLogsNew = record.emailLogs || record.logs || [];
+    emailLogsNew.unshift({
+      time: new Date().toLocaleString(),
+      type: "User Confirmation",
+      count: 1,
+      provider: "GitHub Pages + JSONBin",
+      sender: email,
+      status: status,
+      tool: toolName
+    });
+
+    const newRecord = {
+      tools: tools,
+      emailConfig: record.emailConfig || {},
+      emailLogs: emailLogsNew.slice(0, 100),
+      updatedAt: new Date().toISOString()
+    };
+
+    await putOnlineRecord(newRecord, true);
+
+    document.body.innerHTML = `
+      <div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
+        <h2 style="color:#0b5cab">Response recorded</h2>
+        <p>Status: <b>${status}</b></p>
+        <p>User: ${email}</p>
+        <p>Tool: ${toolName}</p>
+        ${found ? "<p>You can close this tab.</p>" : "<p style='color:#92400e'>Đã lưu log, nhưng không tìm thấy user/tool trùng khớp trong data.</p>"}
+      </div>
+    `;
+  }catch(e){
+    console.error(e);
+    document.body.innerHTML = `
+      <div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
+        <h2 style="color:#dc2626">Could not record response</h2>
+        <p>${String(e.message || e)}</p>
+        <p>Please contact admin to check the confirmation link.</p>
+      </div>
+    `;
+  }
+
+  return true;
+}
+
+setTimeout(function(){
+  applyAdminMode();
+  ensureConfirmButtonsInTemplate();
+  handleUserAction().then(function(isAction){
+    if(!isAction){
+      startAutoRefresh();
+      if(jsonBinConfig(false)){
+        loadOnlineData(true);
+      }
+    }
+  });
+}, 200);
+
+
+// AUTO_LOAD_HARDCODED_JSONBIN
+setTimeout(function(){
+  try{
+    const cfg = typeof getOnlineConfig === "function" ? getOnlineConfig() : null;
+    if(cfg && cfg.binId && cfg.accessKey && typeof loadOnlineData === "function"){
+      loadOnlineData(true);
+    }
+  }catch(e){ console.error(e); }
+}, 800);
+
+
+
+
+
+// ===== Stable Auto Save Online after local changes =====
+// Fix: khi vừa thêm/sửa/xóa, không cho auto-refresh load dữ liệu cũ đè lên thay đổi local.
+let autoSaveOnlineTimer = null;
+let autoSaveOnlineBusy = false;
+let localDirtyUntil = 0;
+let applyingOnlinePayload = false;
+
+function markLocalDirty(){
+  localDirtyUntil = Date.now() + 5000;
+  if(typeof autoRefreshEnabled !== "undefined") autoRefreshEnabled = false;
+}
+
+function clearLocalDirtySoon(){
+  localDirtyUntil = Date.now() + 1200;
+  setTimeout(function(){
+    if(Date.now() >= localDirtyUntil && typeof autoRefreshEnabled !== "undefined"){
+      autoRefreshEnabled = true;
+    }
+  }, 1300);
+}
+
+async function autoSaveOnlineData(reason){
+  try{
+    if(typeof isAdmin === "function" && !isAdmin()) return;
+    if(typeof jsonBinConfig !== "function" || !jsonBinConfig(false)) return;
+    if(typeof isOnlineLoading !== "undefined" && isOnlineLoading) return;
+    if(autoSaveOnlineBusy) return;
+
+    autoSaveOnlineBusy = true;
+    markLocalDirty();
+
+    await putOnlineRecord(currentOnlinePayload(), false);
+
+    clearLocalDirtySoon();
+    if(typeof toast === "function") toast("Auto saved online");
+  }catch(e){
+    console.error(e);
+    clearLocalDirtySoon();
+    if(typeof toast === "function") toast("Auto save online failed");
+  }finally{
+    autoSaveOnlineBusy = false;
+  }
+}
+
+function scheduleAutoSaveOnline(reason){
+  if(applyingOnlinePayload) return;
+  markLocalDirty();
+
+  if(autoSaveOnlineTimer) clearTimeout(autoSaveOnlineTimer);
+  autoSaveOnlineTimer = setTimeout(function(){
+    autoSaveOnlineData(reason);
+  }, 500);
+}
+
+// Wrap saveState: mọi thay đổi local như thêm/sửa/xóa tool, user đều tự save online.
+if(typeof saveState === "function" && !saveState.__stableAutoOnlineWrapped){
+  const originalSaveStateLocalOnly = saveState;
+  saveState = function(){
+    originalSaveStateLocalOnly.apply(this, arguments);
+    scheduleAutoSaveOnline("saveState");
+  };
+  saveState.__stableAutoOnlineWrapped = true;
+}
+
+// Wrap applyOnlinePayload để load online không tự kích hoạt auto-save ngược lại.
+if(typeof applyOnlinePayload === "function" && !applyOnlinePayload.__stableAutoOnlineWrapped){
+  const originalApplyOnlinePayload = applyOnlinePayload;
+  applyOnlinePayload = function(record){
+    applyingOnlinePayload = true;
+    try{
+      return originalApplyOnlinePayload.apply(this, arguments);
+    }finally{
+      applyingOnlinePayload = false;
+    }
+  };
+  applyOnlinePayload.__stableAutoOnlineWrapped = true;
+}
+
+// Wrap loadOnlineData: nếu vừa chỉnh local, không load online đè mất dữ liệu mới.
+if(typeof loadOnlineData === "function" && !loadOnlineData.__stableAutoOnlineWrapped){
+  const originalLoadOnlineData = loadOnlineData;
+  loadOnlineData = async function(silent){
+    if(Date.now() < localDirtyUntil || autoSaveOnlineBusy){
+      if(!silent && typeof toast === "function") toast("Saving changes, online reload paused");
+      return;
+    }
+    return originalLoadOnlineData.apply(this, arguments);
+  };
+  loadOnlineData.__stableAutoOnlineWrapped = true;
+}
+
+// Send email cập nhật emailLogs riêng nên cũng cần autosave.
+if(typeof queueEmails === "function" && !queueEmails.__stableAutoOnlineWrapped){
+  const originalQueueEmails = queueEmails;
+  queueEmails = function(){
+    markLocalDirty();
+    const result = originalQueueEmails.apply(this, arguments);
+    scheduleAutoSaveOnline("queueEmails");
+    return result;
+  };
+  queueEmails.__stableAutoOnlineWrapped = true;
+}
+
+// Save Online thủ công thì cũng giải phóng dirty lock sau khi lưu.
+if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWrapped){
+  const originalSaveOnlineData = saveOnlineData;
+  saveOnlineData = async function(){
+    markLocalDirty();
+    const result = await originalSaveOnlineData.apply(this, arguments);
+    clearLocalDirtySoon();
+    return result;
+  };
+  saveOnlineData.__stableAutoOnlineWrapped = true;
+}
+
+
+</script>
+<script>
+// ===== OUTLOOK BCC MAIL + CONFIRM FORM WITH SUCCESS PAGE =====
+(function(){
+
+  const PUBLIC_URL = "https://qpcn11111.github.io/license-manager-online/";
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+
+  function text(v){
+    return String(v == null ? "" : v);
+  }
+
+  function buildConfirmUrl(action, tool){
+    return PUBLIC_URL + "?action=" + encodeURIComponent(action) + "&tool=" + encodeURIComponent(text(tool && tool.name));
+  }
+
+  function buildMail(tool){
+    const name = text(tool && tool.name);
+    const vendor = text(tool && tool.vendor);
+    const renewal = text(tool && tool.renewal);
+
+    return {
+      subject: "[VIB] License Confirmation - " + name,
+      body: [
+        "Dear User,",
+        "",
+        "Vui lòng xác nhận đã nhận được phần mềm dưới đây.",
+        "",
+        "License Information:",
+        "- Software: " + name,
+        "- Vendor: " + vendor,
+        "- Renewal Date: " + renewal,
+        "",
+        "If you no longer need this license, please decline so IT can reclaim it.",
+        "",
+        "Please choose one option:",
+        "",
+        "CONFIRM:",
+        buildConfirmUrl("confirm", tool),
+        "",
+        "DECLINE:",
+        buildConfirmUrl("decline", tool),
+        "",
+        "Regards,",
+        "IT Software Asset Management"
+      ].join("\n")
+    };
+  }
+
+  function getReviewRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u, ui){
+        return { tool: tool, toolIndex: currentReviewToolScope, user: u, userIndex: ui };
+      });
+    }
+
+    if(typeof reviewRecipients === "function"){
+      try{
+        const r = reviewRecipients();
+        if(r && r.length) return r;
+      }catch(e){}
+    }
+
+    if(typeof emailRecipients === "function"){
+      try{
+        return emailRecipients() || [];
+      }catch(e){}
+    }
+
+    return [];
+  }
+
+  window.queueEmails = function(fromModal){
+    const recipients = getReviewRecipients();
+
+    if(!recipients.length){
+      alert("No recipients found.");
+      return;
+    }
+
+    const tool = recipients[0].tool || {};
+    const mail = buildMail(tool);
+    const bcc = recipients
+      .map(function(x){ return x && x.user ? x.user.email : ""; })
+      .filter(Boolean)
+      .join(";");
+
+    const url =
+      "mailto:" + encodeURIComponent(OUTLOOK_TO) +
+      "?bcc=" + encodeURIComponent(bcc) +
+      "&subject=" + encodeURIComponent(mail.subject) +
+      "&body=" + encodeURIComponent(mail.body);
+
+    window.location.href = url;
+
+    const sentTime = new Date().toLocaleString();
+
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+      }
+    });
+
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: sentTime,
+        type: "License Confirmation",
+        count: recipients.length,
+        sender: OUTLOOK_TO,
+        status: "Outlook Draft"
+      });
+      emailLogs = emailLogs.slice(0, 50);
+      try{ localStorage.setItem(LOG_KEY, JSON.stringify(emailLogs)); }catch(e){}
+    }
+
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+
+    alert("Opened Outlook draft for " + recipients.length + " recipient(s).");
+  };
+
+  window.openEmailReview = (function(original){
+    return function(toolIndex, userIndex){
+      if(typeof original === "function"){
+        original.apply(this, arguments);
+      }
+
+      setTimeout(function(){
+        let tool = null;
+
+        if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]){
+          tool = state.tools[toolIndex];
+        }else{
+          const recipients = getReviewRecipients();
+          if(recipients.length) tool = recipients[0].tool;
+        }
+
+        if(!tool) return;
+
+        const mail = buildMail(tool);
+
+        const subjectEl = document.getElementById("modalSubject");
+        const bodyEl = document.getElementById("modalBody");
+        const emailSubject = document.getElementById("emailSubject");
+        const emailBody = document.getElementById("emailBody");
+        const recipientEl = document.getElementById("modalRecipient");
+
+        if(subjectEl) subjectEl.textContent = mail.subject;
+        if(bodyEl) bodyEl.innerHTML = mail.body.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+        if(emailSubject) emailSubject.value = mail.subject;
+        if(emailBody) emailBody.value = mail.body;
+        if(recipientEl) recipientEl.textContent = "BCC recipients";
+      }, 50);
+    };
+  })(window.openEmailReview);
+
+  function renderActionPage(){
+    const params = new URLSearchParams(location.search);
+    const action = params.get("action");
+    const tool = params.get("tool");
+
+    if(!action || !tool) return false;
+
+    const status = action === "confirm" ? "Confirmed" : "Declined";
+
+    document.body.innerHTML = [
+      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+      '<h2 style="margin-top:0;color:#0b5cab">License Confirmation</h2>',
+      '<p><b>Software:</b> ' + escapeHtml(tool) + '</p>',
+      '<p><b>Response:</b> ' + escapeHtml(status) + '</p>',
+      '<p>Please enter your VIB email to record your response.</p>',
+      '<input id="confirmEmailInput" type="email" placeholder="your.name@vib.com.vn" style="width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:10px;font-size:15px;box-sizing:border-box">',
+      '<button id="confirmSubmitBtn" style="margin-top:14px;background:#0b5cab;color:#fff;border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer">Submit</button>',
+      '<div id="confirmMsg" style="margin-top:14px;color:#667085"></div>',
+      '</div>'
+    ].join("");
+
+    setTimeout(function(){
+      const btn = document.getElementById("confirmSubmitBtn");
+      if(btn) btn.onclick = function(){ submitResponse(action, tool, status); };
+
+      const input = document.getElementById("confirmEmailInput");
+      if(input){
+        input.addEventListener("keydown", function(e){
+          if(e.key === "Enter") submitResponse(action, tool, status);
+        });
+      }
+    }, 50);
+
+    return true;
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(m){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
+    });
+  }
+
+  async function submitResponse(action, toolName, status){
+    const input = document.getElementById("confirmEmailInput");
+    const msg = document.getElementById("confirmMsg");
+    const email = (input && input.value ? input.value : "").trim().toLowerCase();
+
+    if(!email || email.indexOf("@") === -1){
+      msg.style.color = "#dc2626";
+      msg.textContent = "Please enter a valid email.";
+      return;
+    }
+
+    msg.style.color = "#667085";
+    msg.textContent = "Recording your response...";
+
+    try{
+      const record = await fetchOnlineRecord(true);
+      const tools = record.tools || [];
+      let found = false;
+      let displayName = "";
+      let already = false;
+      let oldStatus = "";
+
+      tools.forEach(function(t){
+        if(String(t.name || "").toLowerCase() === String(toolName || "").toLowerCase()){
+          (t.users || []).forEach(function(u){
+            if(String(u.email || "").toLowerCase() === email){
+              displayName = u.name || "";
+              oldStatus = u.renewalStatus || "";
+              if(u.replyDate && oldStatus && oldStatus !== "Pending"){
+                already = true;
+              }else{
+                u.renewalStatus = status;
+                u.replyDate = new Date().toISOString();
+              }
+              found = true;
+            }
+          });
+        }
+      });
+
+      if(!found){
+        msg.style.color = "#dc2626";
+        msg.textContent = "Email not found for this software.";
+        return;
+      }
+
+      if(!already){
+        const logs = record.emailLogs || record.logs || [];
+        logs.unshift({
+          time: new Date().toLocaleString(),
+          type: "User Confirmation",
+          count: 1,
+          sender: email,
+          status: status,
+          tool: toolName
+        });
+
+        await putOnlineRecord({
+          tools: tools,
+          emailConfig: record.emailConfig || {},
+          emailLogs: logs.slice(0, 100),
+          updatedAt: new Date().toISOString()
+        }, true);
+      }
+
+      history.replaceState({}, "", PUBLIC_URL + "?result=success");
+
+      document.body.innerHTML = [
+        '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+        '<h2 style="margin-top:0;color:#0b5cab">Response Recorded Successfully</h2>',
+        '<p><b>Status:</b> ' + escapeHtml(already ? oldStatus : status) + '</p>',
+        '<p><b>User:</b> ' + escapeHtml(displayName || email) + '</p>',
+        '<p><b>Email:</b> ' + escapeHtml(email) + '</p>',
+        '<p><b>Software:</b> ' + escapeHtml(toolName) + '</p>',
+        already ? '<p style="color:#92400e">You already responded before. No duplicate update was made.</p>' : '<p>You can close this tab.</p>',
+        '</div>'
+      ].join("");
+
+    }catch(e){
+      console.error(e);
+      msg.style.color = "#dc2626";
+      msg.textContent = "Update failed: " + String(e.message || e);
+    }
+  }
+
+  window.addEventListener("load", function(){
+    renderActionPage();
+  });
+
+})();
+</script>
+
+
+<script>
+// ===== SAFE FINAL OVERRIDES =====
+(function(){
+  function safeDate(){
+    return new Date().toISOString().slice(0,10);
+  }
+
+  window.renderUsersTable = function(){
+    const t = state.tools[currentUserToolIndex];
+    const rows = (t.users || []).map(function(u, ui){
+      return `<tr>
+        <td>
+          <div class="user-cell">
+            <div class="avatar">${initials(u.name)}</div>
+            <div><strong>${esc(u.name || "")}</strong><div class="muted">${esc(u.email || "")}</div></div>
+          </div>
+        </td>
+        <td>${esc(u.dept || "")}<div class="muted">${esc(u.role || "")}</div></td>
+        <td>${esc(u.date || "")}</td>
+        <td>
+          <button class="btn-secondary admin-only" onclick="openEditUserModal(${currentUserToolIndex},${ui})">Edit</button>
+          <button class="btn-orange admin-only" onclick="openEmailReview(${currentUserToolIndex},${ui})">Send Mail</button>
+          <button class="btn-danger admin-only" onclick="removeUser(${ui})">Delete</button>
+        </td>
+      </tr>`;
+    }).join("");
+
+    $("usersTable").innerHTML = rows
+      ? `<div class="table-wrap"><table><thead><tr><th>User</th><th>Department / Role</th><th>Added Date</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<div class="empty">No users.</div>`;
+  };
+
+  window.addUser = function(){
+    const t = state.tools[currentUserToolIndex];
+    const name = $("userName").value.trim();
+    const email = $("userEmail").value.trim();
+
+    if(!name || !email){
+      toast("Name and Email are required");
+      return;
+    }
+
+    t.users = t.users || [];
+    t.users.push({
+      name: name,
+      email: email,
+      dept: $("userDept").value.trim(),
+      role: $("userRole").value.trim(),
+      date: $("userDate").value || safeDate(),
+      status: "Active",
+      renewalStatus: "",
+      lastEmailSent: ""
+    });
+
+    ["userName","userEmail","userDept","userRole"].forEach(function(id){ $(id).value = ""; });
+    saveState();
+    renderAll();
+    renderUsersTable();
+    toast("User added");
+  };
+
+  window.removeAllUsers = function(){
+    if(currentUserToolIndex == null) return;
+    const t = state.tools[currentUserToolIndex];
+    if(!t || !Array.isArray(t.users)) return;
+    if(!confirm("Delete all users for this software?")) return;
+    t.users = [];
+    saveState();
+    renderAll();
+    renderUsersTable();
+    toast("All users deleted");
+  };
+
+  const oldOpenUsersModal = window.openUsersModal;
+  window.openUsersModal = function(i){
+    oldOpenUsersModal(i);
+    setTimeout(function(){
+      const card = document.querySelector("#usersTable")?.closest(".card");
+      if(card && !card.querySelector(".delete-all-users-btn")){
+        const head = card.querySelector(".head");
+        if(head){
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          actions.innerHTML = '<button class="btn-danger admin-only delete-all-users-btn" onclick="removeAllUsers()">Delete All</button>';
+          head.appendChild(actions);
+        }
+      }
+      renderUsersTable();
+    }, 50);
+  };
+
+  let editingUserToolIndex = null;
+  let editingUserIndex = null;
+
+  window.openEditUserModal = function(toolIndex, userIndex){
+    editingUserToolIndex = toolIndex;
+    editingUserIndex = userIndex;
+    const user = state.tools[toolIndex].users[userIndex];
+    $("editUserName").value = user.name || "";
+    $("editUserEmail").value = user.email || "";
+    $("editUserDept").value = user.dept || "";
+    $("editUserRole").value = user.role || "";
+    $("editUserDate").value = user.date || "";
+    $("editUserModal").classList.add("show");
+  };
+
+  window.closeEditUserModal = function(){
+    $("editUserModal").classList.remove("show");
+    editingUserToolIndex = null;
+    editingUserIndex = null;
+  };
+
+  window.saveEditUser = function(){
+    if(editingUserToolIndex === null || editingUserIndex === null) return;
+    const user = state.tools[editingUserToolIndex].users[editingUserIndex];
+
+    const name = $("editUserName").value.trim();
+    const email = $("editUserEmail").value.trim();
+    if(!name || !email){
+      alert("Name and Email are required");
+      return;
+    }
+
+    user.name = name;
+    user.email = email;
+    user.dept = $("editUserDept").value.trim();
+    user.role = $("editUserRole").value.trim();
+    user.date = $("editUserDate").value || safeDate();
+
+    saveState();
+    renderAll();
+    renderUsersTable();
+    closeEditUserModal();
+    toast("User updated");
+  };
+
+  function parseCsvLine(line){
+    const out = [];
+    let cur = "";
+    let quote = false;
+    for(let i=0;i<line.length;i++){
+      const c = line[i];
+      if(c === '"' && line[i+1] === '"'){ cur += '"'; i++; }
+      else if(c === '"'){ quote = !quote; }
+      else if(c === "," && !quote){ out.push(cur.trim()); cur = ""; }
+      else cur += c;
+    }
+    out.push(cur.trim());
+    return out;
+  }
+
+  function findHeader(headers, names){
+    for(const n of names){
+      const idx = headers.indexOf(String(n).toLowerCase());
+      if(idx >= 0) return idx;
+    }
+    return -1;
+  }
+
+  window.importCsv = async function(){
+    const f = $("csvFile");
+    if(!f || !f.files || !f.files[0]){
+      alert("Please select CSV file");
+      return;
+    }
+
+    const text = await f.files[0].text();
+    const lines = text.split(/\r?\n/).filter(x => x.trim());
+    if(lines.length < 2){
+      alert("CSV empty");
+      return;
+    }
+
+    const headers = parseCsvLine(lines[0]).map(x => x.trim().toLowerCase());
+    const emailIdx = findHeader(headers, ["email"]);
+    const usernameIdx = findHeader(headers, ["user name","username","name"]);
+    const firstIdx = findHeader(headers, ["first_name","first name","firstname"]);
+    const lastIdx = findHeader(headers, ["last_name","last name","lastname"]);
+    const roleIdx = findHeader(headers, ["role"]);
+    const offeringIdx = findHeader(headers, ["offering_name","offering name"]);
+    const productIdx = findHeader(headers, ["product_name","product name"]);
+
+    if(emailIdx < 0){
+      alert("CSV must contain Email column");
+      return;
+    }
+
+    const isAutodeskCsv = offeringIdx >= 0 && productIdx >= 0;
+    const t = state.tools[currentUserToolIndex];
+    t.users = t.users || [];
+
+    const existing = new Set(t.users.map(u => String(u.email || "").toLowerCase()));
+    let count = 0, skipped = 0;
+
+    for(let i=1;i<lines.length;i++){
+      const row = parseCsvLine(lines[i]);
+
+      if(isAutodeskCsv){
+        const offering = (row[offeringIdx] || "").trim();
+        const product = (row[productIdx] || "").trim();
+        if(offering !== "AutoCAD LT" || product !== "AutoCAD LT"){
+          skipped++;
+          continue;
+        }
+      }
+
+      const email = (row[emailIdx] || "").trim();
+      if(!email){ skipped++; continue; }
+
+      const key = email.toLowerCase();
+      if(existing.has(key)){ skipped++; continue; }
+
+      let name = usernameIdx >= 0 ? (row[usernameIdx] || "").trim() : "";
+      if(!name){
+        const first = firstIdx >= 0 ? (row[firstIdx] || "").trim() : "";
+        const last = lastIdx >= 0 ? (row[lastIdx] || "").trim() : "";
+        name = [first,last].filter(Boolean).join(" ").trim();
+      }
+      if(!name) name = email.split("@")[0];
+
+      t.users.push({
+        name: name,
+        email: email,
+        dept: "",
+        role: roleIdx >= 0 ? (row[roleIdx] || "").trim() : "",
+        date: safeDate(),
+        status: "Active",
+        renewalStatus: "",
+        lastEmailSent: ""
+      });
+      existing.add(key);
+      count++;
+    }
+
+    saveState();
+    renderAll();
+    renderUsersTable();
+    alert("Imported " + count + " users" + (isAutodeskCsv ? " for AutoCAD LT" : "") + ". Skipped " + skipped + " rows.");
+  };
+})();
+</script>
+
+
+<script>
+// ===== USER + CSV OVERRIDES FROM UPLOADED BASE =====
+(function(){
+  function today(){
+    return new Date().toISOString().slice(0,10);
+  }
+
+  window.renderUsersTable = function(){
+    const t = state.tools[currentUserToolIndex];
+    const rows = (t.users || []).map(function(u, ui){
+      return `<tr>
+        <td>
+          <div class="user-cell">
+            <div class="avatar">${initials(u.name)}</div>
+            <div><strong>${esc(u.name || "")}</strong><div class="muted">${esc(u.email || "")}</div></div>
+          </div>
+        </td>
+        <td>${esc(u.dept || "")}<div class="muted">${esc(u.role || "")}</div></td>
+        <td>${esc(u.date || "")}</td>
+        <td>
+          <button class="btn-secondary admin-only" onclick="openEditUserModal(${currentUserToolIndex},${ui})">Edit</button>
+          <button class="btn-orange admin-only" onclick="openEmailReview(${currentUserToolIndex},${ui})">Send Mail</button>
+          <button class="btn-danger admin-only" onclick="removeUser(${ui})">Delete</button>
+        </td>
+      </tr>`;
+    }).join("");
+
+    $("usersTable").innerHTML = rows
+      ? `<div class="table-wrap"><table><thead><tr><th>User</th><th>Department / Role</th><th>Added Date</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<div class="empty">No users.</div>`;
+  };
+
+  window.addUser = function(){
+    const t = state.tools[currentUserToolIndex];
+    const name = $("userName").value.trim();
+    const email = $("userEmail").value.trim();
+
+    if(!name || !email){
+      toast("Name and Email are required");
+      return;
+    }
+
+    t.users = t.users || [];
+    t.users.push({
+      name: name,
+      email: email,
+      dept: $("userDept").value.trim(),
+      role: $("userRole").value.trim(),
+      date: $("userDate").value || today(),
+      status: "Active",
+      renewalStatus: "",
+      lastEmailSent: ""
+    });
+
+    ["userName","userEmail","userDept","userRole"].forEach(function(id){ $(id).value = ""; });
+    saveState();
+    renderAll();
+    renderUsersTable();
+    toast("User added");
+  };
+
+  window.removeAllUsers = function(){
+    if(currentUserToolIndex == null) return;
+    const t = state.tools[currentUserToolIndex];
+    if(!t || !Array.isArray(t.users)) return;
+
+    if(!confirm("Delete all users for this software?")) return;
+
+    t.users = [];
+    saveState();
+    renderAll();
+    renderUsersTable();
+    toast("All users deleted");
+  };
+
+  const oldOpenUsersModal = window.openUsersModal;
+  window.openUsersModal = function(i){
+    oldOpenUsersModal(i);
+
+    setTimeout(function(){
+      const card = document.querySelector("#usersTable")?.closest(".card");
+      if(card && !card.querySelector(".delete-all-users-btn")){
+        const head = card.querySelector(".head");
+        if(head){
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          actions.innerHTML = '<button class="btn-danger admin-only delete-all-users-btn" onclick="removeAllUsers()">Delete All</button>';
+          head.appendChild(actions);
+        }
+      }
+      renderUsersTable();
+    }, 50);
+  };
+
+  let editingTool = null;
+  let editingUser = null;
+
+  window.openEditUserModal = function(toolIndex, userIndex){
+    editingTool = toolIndex;
+    editingUser = userIndex;
+
+    const user = state.tools[toolIndex].users[userIndex];
+
+    $("editUserName").value = user.name || "";
+    $("editUserEmail").value = user.email || "";
+    $("editUserDept").value = user.dept || "";
+    $("editUserRole").value = user.role || "";
+    $("editUserDate").value = user.date || "";
+
+    $("editUserModal").classList.add("show");
+  };
+
+  window.closeEditUserModal = function(){
+    $("editUserModal").classList.remove("show");
+    editingTool = null;
+    editingUser = null;
+  };
+
+  window.saveEditUser = function(){
+    if(editingTool === null || editingUser === null) return;
+
+    const user = state.tools[editingTool].users[editingUser];
+    const name = $("editUserName").value.trim();
+    const email = $("editUserEmail").value.trim();
+
+    if(!name || !email){
+      alert("Name and Email are required");
+      return;
+    }
+
+    user.name = name;
+    user.email = email;
+    user.dept = $("editUserDept").value.trim();
+    user.role = $("editUserRole").value.trim();
+    user.date = $("editUserDate").value || today();
+
+    saveState();
+    renderAll();
+    renderUsersTable();
+    closeEditUserModal();
+    toast("User updated");
+  };
+
+  function parseCsvLine(line){
+    const out = [];
+    let cur = "";
+    let quote = false;
+
+    for(let i=0;i<line.length;i++){
+      const c = line[i];
+      if(c === '"' && line[i+1] === '"'){
+        cur += '"';
+        i++;
+      }else if(c === '"'){
+        quote = !quote;
+      }else if(c === "," && !quote){
+        out.push(cur.trim());
+        cur = "";
+      }else{
+        cur += c;
+      }
+    }
+
+    out.push(cur.trim());
+    return out;
+  }
+
+  function findHeader(headers, names){
+    for(const n of names){
+      const idx = headers.indexOf(String(n).toLowerCase());
+      if(idx >= 0) return idx;
+    }
+    return -1;
+  }
+
+  window.importCsv = async function(){
+    const f = $("csvFile");
+    if(!f || !f.files || !f.files[0]){
+      alert("Please select CSV file");
+      return;
+    }
+
+    const text = await f.files[0].text();
+    const lines = text.split(/\r?\n/).filter(x => x.trim());
+
+    if(lines.length < 2){
+      alert("CSV empty");
+      return;
+    }
+
+    const headers = parseCsvLine(lines[0]).map(x => x.trim().toLowerCase());
+
+    const emailIdx = findHeader(headers, ["email"]);
+    const usernameIdx = findHeader(headers, ["user name", "username", "name"]);
+    const firstIdx = findHeader(headers, ["first_name", "first name", "firstname"]);
+    const lastIdx = findHeader(headers, ["last_name", "last name", "lastname"]);
+    const roleIdx = findHeader(headers, ["role"]);
+    const offeringIdx = findHeader(headers, ["offering_name", "offering name"]);
+    const productIdx = findHeader(headers, ["product_name", "product name"]);
+
+    if(emailIdx < 0){
+      alert("CSV must contain Email column");
+      return;
+    }
+
+    const isAutodeskCsv = offeringIdx >= 0 && productIdx >= 0;
+    const t = state.tools[currentUserToolIndex];
+    t.users = t.users || [];
+
+    const existing = new Set(t.users.map(u => String(u.email || "").toLowerCase()));
+    let count = 0;
+    let skipped = 0;
+
+    for(let i=1;i<lines.length;i++){
+      const row = parseCsvLine(lines[i]);
+
+      if(isAutodeskCsv){
+        const offering = (row[offeringIdx] || "").trim();
+        const product = (row[productIdx] || "").trim();
+
+        if(offering !== "AutoCAD LT" || product !== "AutoCAD LT"){
+          skipped++;
+          continue;
+        }
+      }
+
+      const email = (row[emailIdx] || "").trim();
+      if(!email){
+        skipped++;
+        continue;
+      }
+
+      const key = email.toLowerCase();
+      if(existing.has(key)){
+        skipped++;
+        continue;
+      }
+
+      let name = usernameIdx >= 0 ? (row[usernameIdx] || "").trim() : "";
+
+      if(!name){
+        const first = firstIdx >= 0 ? (row[firstIdx] || "").trim() : "";
+        const last = lastIdx >= 0 ? (row[lastIdx] || "").trim() : "";
+        name = [first, last].filter(Boolean).join(" ").trim();
+      }
+
+      if(!name){
+        name = email.split("@")[0];
+      }
+
+      t.users.push({
+        name: name,
+        email: email,
+        dept: "",
+        role: roleIdx >= 0 ? (row[roleIdx] || "").trim() : "",
+        date: today(),
+        status: "Active",
+        renewalStatus: "",
+        lastEmailSent: ""
+      });
+
+      existing.add(key);
+      count++;
+    }
+
+    saveState();
+    renderAll();
+    renderUsersTable();
+
+    alert("Imported " + count + " users" + (isAutodeskCsv ? " for AutoCAD LT" : "") + ". Skipped " + skipped + " rows.");
+  };
+})();
+</script>
+
+
+<script>
+// ===== EMAIL CAMPAIGN VIEW RESTORE =====
+(function(){
+  const PUBLIC_URL = location.href.split("?")[0].split("#")[0];
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+
+  function safe(v){ return String(v == null ? "" : v); }
+  function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function logs(){ return (typeof emailLogs !== "undefined" && Array.isArray(emailLogs)) ? emailLogs : []; }
+
+  function chip(status){
+    if(status === "Confirmed") return "active-chip";
+    if(status === "Declined") return "bad-chip";
+    if(status === "Outlook Draft" || status === "Sent" || status === "Sent via Outlook") return "info-chip";
+    if(status === "Not Sent") return "bad-chip";
+    return "warn-chip";
+  }
+
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u,ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){
+      try{ const r = reviewRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    if(typeof emailRecipients === "function"){
+      try{ const r = emailRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    return [];
+  }
+
+  function buildActionUrl(action, tool, campaignId){
+    return PUBLIC_URL + "?action=" + encodeURIComponent(action) +
+      "&tool=" + encodeURIComponent(safe(tool && tool.name)) +
+      "&cid=" + encodeURIComponent(campaignId);
+  }
+
+  function buildMail(tool, campaignId){
+    const name = safe(tool && tool.name);
+    const vendor = safe(tool && tool.vendor);
+    const renewal = safe(tool && tool.renewal);
+    const type = (document.getElementById("reviewEmailType") && document.getElementById("reviewEmailType").value)
+      || (typeof currentTemplate !== "undefined" ? currentTemplate : "renew")
+      || "renew";
+
+    if(type === "usage"){
+      return {
+        subject: "[VIB] Xác nhận đã nhận phần mềm - " + name,
+        body: [
+          "Kính gửi Anh/Chị,",
+          "",
+          "Vui lòng xác nhận đã nhận được phần mềm dưới đây.",
+          "",
+          "Thông tin phần mềm:",
+          "- Phần mềm: " + name,
+          "- Nhà cung cấp: " + vendor,
+          "",
+          "Nếu Anh/Chị chưa nhận được hoặc không còn nhu cầu sử dụng, vui lòng chọn TỪ CHỐI để IT ghi nhận và xử lý.",
+          "",
+          "XÁC NHẬN:",
+          buildActionUrl("confirm", tool, campaignId),
+          "",
+          "TỪ CHỐI:",
+          buildActionUrl("decline", tool, campaignId),
+          "",
+          "Trân trọng,",
+          "IT Software Asset Management"
+        ].join("\n")
+      };
+    }
+
+    return {
+      subject: "[VIB] Xác nhận gia hạn license - " + name,
+      body: [
+        "Kính gửi Anh/Chị,",
+        "",
+        "Vui lòng xác nhận nhu cầu tiếp tục sử dụng phần mềm dưới đây.",
+        "",
+        "Thông tin license:",
+        "- Phần mềm: " + name,
+        "- Nhà cung cấp: " + vendor,
+        "- Ngày gia hạn: " + renewal,
+        "",
+        "Nếu không còn nhu cầu sử dụng, vui lòng chọn TỪ CHỐI để IT thu hồi license.",
+        "",
+        "XÁC NHẬN:",
+        buildActionUrl("confirm", tool, campaignId),
+        "",
+        "TỪ CHỐI:",
+        buildActionUrl("decline", tool, campaignId),
+        "",
+        "Trân trọng,",
+        "IT Software Asset Management"
+      ].join("\n")
+    };
+  }
+
+  function logSend(recipients, campaignId, sentTime){
+    const tool = recipients[0] && recipients[0].tool ? recipients[0].tool : {};
+    const emails = recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean);
+
+    emailLogs.unshift({
+      time: sentTime,
+      type: "Mail Sent",
+      tool: safe(tool.name),
+      vendor: safe(tool.vendor),
+      campaignId: campaignId,
+      count: recipients.length,
+      recipients: emails,
+      sender: OUTLOOK_TO,
+      status: "Outlook Draft"
+    });
+
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.lastCampaignId = campaignId;
+        r.user.sentHistory = r.user.sentHistory || [];
+        r.user.sentHistory.push({campaignId:campaignId,time:sentTime,status:"Outlook Draft",tool:safe(tool.name)});
+      }
+    });
+
+    emailLogs = emailLogs.slice(0, 500);
+    try{ localStorage.setItem(LOG_KEY, JSON.stringify(emailLogs)); }catch(e){}
+    if(typeof saveState === "function") saveState();
+
+    try{
+      if(typeof putOnlineRecord === "function" && typeof currentOnlinePayload === "function" && typeof jsonBinConfig === "function" && jsonBinConfig(false)){
+        putOnlineRecord(currentOnlinePayload(), false).catch(function(e){ console.error(e); });
+      }
+    }catch(e){ console.error(e); }
+  }
+
+  window.queueEmails = function(fromModal){
+    const recipients = getRecipients();
+    if(!recipients.length){
+      alert("No recipients found.");
+      return;
+    }
+
+    const campaignId = makeCampaignId();
+    const sentTime = new Date().toLocaleString();
+
+    logSend(recipients, campaignId, sentTime);
+
+    const tool = recipients[0].tool || {};
+    const mail = buildMail(tool, campaignId);
+    const bcc = recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean).join(";");
+
+    window.location.href =
+      "mailto:" + encodeURIComponent(OUTLOOK_TO) +
+      "?bcc=" + encodeURIComponent(bcc) +
+      "&subject=" + encodeURIComponent(mail.subject) +
+      "&body=" + encodeURIComponent(mail.body);
+
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+
+    alert("Logged campaign " + campaignId + " for " + recipients.length + " recipient(s).");
+  };
+
+  window.openEmailReview = (function(original){
+    return function(toolIndex, userIndex){
+      if(typeof original === "function") original.apply(this, arguments);
+
+      setTimeout(function(){
+        let tool = null;
+        if(toolIndex != null && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+        else {
+          const r = getRecipients();
+          if(r.length) tool = r[0].tool;
+        }
+        if(!tool) return;
+
+        const mail = buildMail(tool, "PREVIEW");
+        if(document.getElementById("modalSubject")) document.getElementById("modalSubject").textContent = mail.subject;
+        if(document.getElementById("modalBody")) document.getElementById("modalBody").innerHTML = esc(mail.body).replace(/\n/g,"<br>");
+        if(document.getElementById("emailSubject")) document.getElementById("emailSubject").value = mail.subject;
+        if(document.getElementById("emailBody")) document.getElementById("emailBody").value = mail.body;
+        if(document.getElementById("modalRecipient")) document.getElementById("modalRecipient").textContent = "BCC recipients";
+      }, 50);
+    };
+  })(window.openEmailReview);
+
+  function sentCampaigns(){ return logs().filter(function(l){ return l.type === "Mail Sent"; }); }
+  function responseLogs(){ return logs().filter(function(l){ return l.type === "User Response" || l.type === "Duplicate Response" || l.type === "User Confirmation"; }); }
+  function responsesForCampaign(cid){ return responseLogs().filter(function(l){ return safe(l.campaignId) === safe(cid); }); }
+
+  function userByEmail(email){
+    let found = null;
+    (state.tools || []).forEach(function(t){
+      (t.users || []).forEach(function(u){
+        if(safe(u.email).toLowerCase() === safe(email).toLowerCase()) found = u;
+      });
+    });
+    return found;
+  }
+
+  function userCampaignResponse(email, cid){
+    const u = userByEmail(email);
+    if(!u) return null;
+    let found = null;
+    (u.responseHistory || []).forEach(function(r){ if(safe(r.campaignId) === safe(cid)) found = r; });
+    return found;
+  }
+
+  function renderKpis(){
+    const sent = sentCampaigns().reduce(function(sum,l){ return sum + Number(l.count || 0); }, 0);
+    const confirmed = responseLogs().filter(function(l){ return l.status === "Confirmed"; }).length;
+    const declined = responseLogs().filter(function(l){ return l.status === "Declined"; }).length;
+    const pending = Math.max(0, sent - confirmed - declined);
+
+    if(document.getElementById("emailSent")) document.getElementById("emailSent").textContent = sent;
+    if(document.getElementById("emailPending")) document.getElementById("emailPending").textContent = pending;
+    if(document.getElementById("emailConfirmed")) document.getElementById("emailConfirmed").textContent = confirmed;
+    if(document.getElementById("emailDeclined")) document.getElementById("emailDeclined").textContent = declined;
+  }
+
+  function renderCampaigns(){
+    const box = document.getElementById("emailCampaignRows");
+    if(!box) return;
+
+    const rows = sentCampaigns();
+    if(!rows.length){
+      box.innerHTML = '<div class="empty">No sent mail records yet.</div>';
+      return;
+    }
+
+    box.innerHTML = rows.map(function(c){
+      const recipients = Array.isArray(c.recipients) ? c.recipients : [];
+      const resps = responsesForCampaign(c.campaignId);
+      const confirmed = resps.filter(function(r){ return r.status === "Confirmed"; }).length;
+      const declined = resps.filter(function(r){ return r.status === "Declined"; }).length;
+      const pending = Math.max(0, Number(c.count || recipients.length || 0) - confirmed - declined);
+
+      const detailRows = recipients.length ? recipients.map(function(email){
+        const u = userByEmail(email) || {name:"",email:email};
+        const r = userCampaignResponse(email, c.campaignId);
+        const status = r ? r.status : "Pending";
+        const time = r ? (r.time || "-") : "-";
+        return `
+          <tr>
+            <td><div class="user-cell"><div class="avatar">${initials(u.name || email)}</div><div><strong>${esc(u.name || email)}</strong><div class="muted">${esc(email)}</div></div></div></td>
+            <td><span class="chip info-chip">${esc(c.status || "Outlook Draft")}</span></td>
+            <td><span class="chip ${chip(status)}">${esc(status)}</span></td>
+            <td>${esc(c.time || "-")}</td>
+            <td>${esc(time)}</td>
+            <td>${esc(c.campaignId || "-")}</td>
+          </tr>
+        `;
+      }).join("") : `<tr><td colspan="6" class="muted">No recipient list stored for this campaign.</td></tr>`;
+
+      return `
+        <div class="email-campaign-card">
+          <div class="email-campaign-head">
+            <div>
+              <h3>${esc(c.tool || "Unknown Software")}</h3>
+              <div class="muted">${esc(c.time || "")} · ${esc(c.campaignId || "")}</div>
+            </div>
+            <div class="email-campaign-actions">
+              <span class="chip info-chip">Sent ${esc(c.count || recipients.length || 0)}</span>
+              <span class="chip warn-chip">Pending ${pending}</span>
+              <span class="chip active-chip">Confirmed ${confirmed}</span>
+              <span class="chip bad-chip">Declined ${declined}</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="email-campaign-table">
+              <thead><tr><th>User</th><th>Mail Status</th><th>Response</th><th>Sent Time</th><th>Response Time</th><th>Campaign</th></tr></thead>
+              <tbody>${detailRows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderLog(){
+    const box = document.getElementById("emailLog");
+    if(!box) return;
+    const list = logs();
+
+    if(!list.length){
+      box.innerHTML = '<div class="empty">No email activity logs.</div>';
+      return;
+    }
+
+    box.innerHTML = `
+      <div class="table-wrap">
+        <table class="email-log-table-v6">
+          <thead><tr><th>Time</th><th>Type</th><th>Software</th><th>Campaign</th><th>User / Sender</th><th>Status</th><th>Count</th></tr></thead>
+          <tbody>${list.map(function(l){
+            return `<tr>
+              <td>${esc(l.time || "")}</td>
+              <td>${esc(l.type || "")}</td>
+              <td>${esc(l.tool || "")}</td>
+              <td>${esc(l.campaignId || "")}</td>
+              <td>${esc(l.sender || "")}</td>
+              <td><span class="chip ${chip(l.status || "")}">${esc(l.status || "")}</span></td>
+              <td>${esc(l.count || "")}</td>
+            </tr>`;
+          }).join("")}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  window.renderEmail = function(){
+    try{
+      renderKpis();
+      renderCampaigns();
+      renderLog();
+    }catch(e){ console.error(e); }
+  };
+
+  window.renderEmailLog = renderLog;
+
+  const previousSetTab = window.setTab;
+  window.setTab = function(tab){
+    if(typeof previousSetTab === "function") previousSetTab.apply(this, arguments);
+    if(tab === "email") setTimeout(renderEmail, 100);
+  };
+
+  window.addEventListener("load", function(){ setTimeout(renderEmail, 900); });
+})();
+</script>
+
+
+<script>
+// ===== CLEAR EMAIL LOG =====
+(function(){
+  window.clearEmailLogs = function(){
+    if(!confirm("Clear all email logs and campaign history?")){
+      return;
+    }
+
+    try{
+      emailLogs = [];
+      localStorage.setItem(LOG_KEY, JSON.stringify([]));
+    }catch(e){
+      console.error(e);
+    }
+
+    try{
+      (state.tools || []).forEach(function(t){
+        (t.users || []).forEach(function(u){
+          u.sentHistory = [];
+          u.responseHistory = [];
+          u.lastCampaignId = "";
+          u.lastEmailSent = "";
+          u.emailSendStatus = "";
+        });
+      });
+
+      if(typeof saveState === "function"){
+        saveState();
+      }
+    }catch(e){
+      console.error(e);
+    }
+
+    if(typeof renderEmail === "function"){
+      renderEmail();
+    }
+
+    alert("Email logs cleared.");
+  };
+})();
+</script>
+
+
+<script>
+// ===== FORCE USAGE TEMPLATE VN =====
+(function(){
+  const oldBuildMail = window.buildMail;
+
+  window.buildMail = function(tool, campaignId){
+    const name = String(tool && tool.name || "");
+    const vendor = String(tool && tool.vendor || "");
+    const renewal = String(tool && tool.renewal || "");
+
+    const type =
+      (document.getElementById("reviewEmailType") && document.getElementById("reviewEmailType").value)
+      || window.currentTemplate
+      || "renew";
+
+    if(type === "usage"){
+      return {
+        subject: "[VIB] Xác nhận đã nhận phần mềm - " + name,
+        body: [
+          "Kính gửi Anh/Chị,",
+          "",
+          "Vui lòng xác nhận đã nhận được phần mềm dưới đây.",
+          "",
+          "Thông tin phần mềm:",
+          "- Phần mềm: " + name,
+          "- Nhà cung cấp: " + vendor,
+          "",
+          "XÁC NHẬN:",
+          location.href.split("?")[0] + "?action=confirm&tool=" + encodeURIComponent(name) + "&cid=" + encodeURIComponent(campaignId),
+          "",
+          "TỪ CHỐI:",
+          location.href.split("?")[0] + "?action=decline&tool=" + encodeURIComponent(name) + "&cid=" + encodeURIComponent(campaignId),
+          "",
+          "Trân trọng,",
+          "IT Software Asset Management"
+        ].join("\\n")
+      };
+    }
+
+    return {
+      subject: "[VIB] Xác nhận gia hạn license - " + name,
+      body: [
+        "Kính gửi Anh/Chị,",
+        "",
+        "Vui lòng xác nhận nhu cầu tiếp tục sử dụng phần mềm dưới đây.",
+        "",
+        "Thông tin license:",
+        "- Phần mềm: " + name,
+        "- Nhà cung cấp: " + vendor,
+        "- Ngày gia hạn: " + renewal,
+        "",
+        "XÁC NHẬN:",
+        location.href.split("?")[0] + "?action=confirm&tool=" + encodeURIComponent(name) + "&cid=" + encodeURIComponent(campaignId),
+        "",
+        "TỪ CHỐI:",
+        location.href.split("?")[0] + "?action=decline&tool=" + encodeURIComponent(name) + "&cid=" + encodeURIComponent(campaignId),
+        "",
+        "Trân trọng,",
+        "IT Software Asset Management"
+      ].join("\\n")
+    };
+  };
+})();
+</script>
+
+</body></html>
