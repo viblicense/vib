@@ -2,7 +2,7 @@ name: License Expiry Alert
 
 on:
   schedule:
-    - cron: "0 1 * * *"
+    - cron: "0 1 * * *" # 08:00 Vietnam time
   workflow_dispatch:
 
 jobs:
@@ -11,9 +11,9 @@ jobs:
 
     steps:
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install nodemailer
         run: npm install nodemailer
@@ -38,24 +38,41 @@ jobs:
               }
             );
 
+            if (!response.ok) {
+              throw new Error("JSONBin error: " + await response.text());
+            }
+
             const data = await response.json();
             const tools = data.record.tools || [];
 
             const today = new Date();
+
+            // Test mode: true = gửi tất cả license để test mail
+            // Sau khi test OK, đổi thành false
+            const TEST_SEND_ALL = true;
+
             const alertDays = [60, 30, 15, 7, 3, 1];
 
-            const expiring = tools.map(tool => {
+            const licenses = tools.map(tool => {
               const renewal = new Date(tool.renewal);
-              const daysLeft = Math.ceil((renewal - today) / (1000 * 60 * 60 * 24));
+              const daysLeft = Math.ceil(
+                (renewal - today) / (1000 * 60 * 60 * 24)
+              );
 
               return {
                 name: tool.name || "",
                 vendor: tool.vendor || "",
                 renewal: tool.renewal || "",
                 daysLeft,
-                users: (tool.users || []).length
+                users: (tool.users || []).length,
+                seats: tool.seats || 0,
+                cost: tool.cost || 0
               };
-            }).filter(t => alertDays.includes(t.daysLeft));
+            });
+
+            const expiring = TEST_SEND_ALL
+              ? licenses
+              : licenses.filter(t => alertDays.includes(t.daysLeft));
 
             if (!expiring.length) {
               console.log("No expiring licenses");
@@ -69,6 +86,8 @@ jobs:
                 `Renewal: ${t.renewal}`,
                 `Days Left: ${t.daysLeft}`,
                 `Users: ${t.users}`,
+                `Seats: ${t.seats}`,
+                `Cost: ${t.cost}`,
                 "-----------------------------------"
               ].join("\n");
             }).join("\n\n");
