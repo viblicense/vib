@@ -131,6 +131,95 @@ body.admin-mode .admin-banner{display:block}
   font-weight:700;
 }
 
+
+
+/* Hide only left letter icon */
+.tool-card .icon{
+  display:none!important;
+}
+
+.tool-card .tool-top{align-items:flex-start;}
+.tool-card .tool-name{margin-top:0;}
+
+
+/* FORCE SHOW STATUS CHIP */
+.tool-card .tool-top > .chip,
+.tool-card .chip{
+  display:inline-flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+
+
+
+
+
+
+
+
+/* ===== FINAL CARD LAYOUT FIX ===== */
+
+.tool-card{
+  min-width:0;
+  overflow:hidden;
+}
+
+.tool-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-width:0;
+}
+
+.tool-top > div{
+  flex:1;
+  min-width:0;
+}
+
+.tool-name{
+  font-size:15px;
+  font-weight:600;
+  line-height:1.3;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.chip{
+  flex-shrink:0;
+  white-space:nowrap;
+}
+
+.actions{
+  display:flex;
+  flex-wrap:nowrap !important;
+  gap:6px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding-bottom:2px;
+  scrollbar-width:thin;
+}
+
+.actions button{
+  flex:0 0 auto;
+  white-space:nowrap;
+  font-size:12px;
+  padding:7px 10px;
+}
+
+.move-btn{
+  min-width:32px;
+  padding:7px 8px !important;
+}
+
+/* Prevent dashboard grid stretch issues */
+.grid,
+.tools-grid,
+.dashboard-grid{
+  align-items:start;
+}
+
 </style>
 </head>
 <body>
@@ -345,7 +434,43 @@ function getSortedToolsForDashboard(tools){
 function renderDashboard(){let users=allUsers(),cost=state.tools.reduce((s,t)=>s+Number(t.cost||0),0),seats=state.tools.reduce((s,t)=>s+Number(t.seats||0),0);$("kpiTools").textContent=state.tools.length;$("kpiSeats").textContent=seats;$("kpiUsers").textContent=users.length;$("kpiCost").textContent=money(cost);let rows=state.tools.map(t=>{let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length;return `<tr><td><strong>${esc(t.name)}</strong></td><td>${esc(t.vendor)}</td><td>${costLabel(t)}</td><td><div class="dash-usage-mini"><div class="dash-usage-track"><div class="dash-usage-fill" style="width:${Math.min(100, t.seats ? Math.round(used/t.seats*100) : 0)}%"></div><span class="dash-usage-num">${used}/${t.seats}</span></div></div></td><td><span class="chip ${daysLeft(t.renewal)<=7?'bad-chip':daysLeft(t.renewal)<=30?'warn-chip':'active-chip'}">${daysLeft(t.renewal)} days</span></td><td>${formatDateVN(t.renewal)}</td></tr>`}).join("");$("costTable").innerHTML=`
 
 <div class="table-wrap"><table><thead><tr><th>Software</th><th>Vendor</th><th>Cost</th><th onclick="sortDashboardBy('usage')" style="cursor:pointer">Usage ↕</th><th>Days Left</th><th onclick="sortDashboardBy('renewal')" style="cursor:pointer">Renewal ↕</th></tr></thead><tbody>${rows}</tbody></table></div>`}
-function toolCard(t,i){let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length,p=t.seats?Math.round(used/t.seats*100):0;return `<div class="tool-card"><div class="tool-top"><div><div class="icon">${esc(t.type[0]||"T")}</div><div class="tool-name">${esc(t.name)}</div></div><span class="chip ${used<t.seats?"active-chip":"warn-chip"}">${used<t.seats?"Available":"Full"}</span></div><div><div class="bar"><div style="width:${Math.min(100,p)}%"></div></div><div class="muted" style="display:flex;justify-content:space-between;margin-top:7px"><span>${used}/${t.seats} users</span><span>${p}%</span></div></div><div class="meta"><div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div><div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div><div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div></div><div class="actions"><button class="btn-secondary" onclick="openUsersModal(${i})">Users</button><button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button><button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button><button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},-1)">↑</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},1)">↓</button></div></div>`}
+function toolCard(t,i){
+  let used=(t.users||[]).length,
+      pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length,
+      p=t.seats?Math.round(used/t.seats*100):0;
+
+  return `<div class="tool-card">
+    <div class="tool-top">
+      <div>
+        <div class="tool-name">${esc(t.name)}</div>
+      </div>
+      <span class="chip ${used<t.seats?"active-chip":"warn-chip"}">${used<t.seats?"Available":"Full"}</span>
+    </div>
+
+    <div>
+      <div class="bar"><div style="width:${Math.min(100,p)}%"></div></div>
+      <div class="muted" style="display:flex;justify-content:space-between;margin-top:7px">
+        <span>${used}/${t.seats} users</span>
+        <span>${p}%</span>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div>
+      <div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div>
+      <div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" onclick="openUsersModal(${i})">Users</button>
+      <button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button>
+      <button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button>
+      <button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button>
+      <button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},-1)">↑</button>
+      <button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},1)">↓</button>
+    </div>
+  </div>`;
+}
 function renderLicenseTools(){renderVendorFilter("licenseVendor",state.tools.filter(t=>!isAppTool(t)));let q=$("licenseSearch").value.toLowerCase().trim(),vendor=$("licenseVendor").value;let list=state.tools.map((t,i)=>({t,i})).filter(x=>!isAppTool(x.t)).filter(x=>(vendor==="all"||x.t.vendor===vendor)&&JSON.stringify(x.t).toLowerCase().includes(q));$("licenseGrid").innerHTML=list.map(x=>toolCard(x.t,x.i)).join("")||`<div class="empty">No license tools.</div>`}
 function renderAppTools(){renderVendorFilter("appVendor",state.tools.filter(t=>isAppTool(t)||t.type==="Other"));let q=$("appSearch").value.toLowerCase().trim(),cycle=$("appCycle").value,vendor=$("appVendor").value;let list=state.tools.map((t,i)=>({t,i})).filter(x=>isAppTool(x.t)||x.t.type==="Other").filter(x=>(cycle==="all"||x.t.billingCycle===cycle)&&(vendor==="all"||x.t.vendor===vendor)&&JSON.stringify(x.t).toLowerCase().includes(q));let group=(name,items)=>items.length?`<div class="card" style="box-shadow:none"><div class="head"><div><h2>${name}</h2><p>${items.length} tools</p></div></div><div class="tool-grid">${items.map(x=>toolCard(x.t,x.i)).join("")}</div></div>`:"";$("appGroups").innerHTML=(cycle==="monthly"?group("Monthly Tools",list.filter(x=>x.t.billingCycle==="monthly")):cycle==="yearly"?group("Yearly Tools",list.filter(x=>x.t.billingCycle==="yearly")):group("Monthly Tools",list.filter(x=>x.t.billingCycle==="monthly"))+group("Yearly Tools",list.filter(x=>x.t.billingCycle==="yearly")))||`<div class="empty">No application tools.</div>`}
 ["licenseSearch","licenseVendor"].forEach(id=>$(id).oninput=$(id).onchange=renderLicenseTools);["appSearch","appCycle","appVendor"].forEach(id=>$(id).oninput=$(id).onchange=renderAppTools);
