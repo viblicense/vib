@@ -261,6 +261,448 @@ body.login-locked > #toast{
 .login-error{min-height:18px;margin-top:12px;color:#dc2626;font-size:13px;font-weight:800}
 .login-help{margin-top:12px;color:#667085;font-size:12px;text-align:center}
 
+
+.dashboard-toolbar input,
+  .dashboard-toolbar select{max-width:none;width:100%}
+  .dashboard-toolbar-left{width:100%}
+}
+
+
+/* ===== PREMIUM DASHBOARD VIEW ===== */
+.dashboard-panel{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:12px;
+  margin:16px 0 18px;
+}
+.dashboard-summary-card{
+  border:1px solid rgba(223,231,243,.95);
+  border-radius:20px;
+  background:linear-gradient(180deg,#ffffff,#fbfdff);
+  padding:16px;
+  box-shadow:0 10px 24px rgba(15,23,42,.06);
+  min-height:108px;
+}
+.dashboard-summary-card h3{
+  margin:0;
+  font-size:12px;
+  color:#667085;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.dashboard-summary-card .big{
+  margin-top:10px;
+  font-size:26px;
+  font-weight:950;
+  color:#0b5cab;
+  line-height:1;
+}
+.dashboard-summary-card .sub{
+  margin-top:8px;
+  color:#667085;
+  font-size:12px;
+  font-weight:700;
+}
+.dashboard-summary-card.risk .big{color:#b42318}
+.dashboard-summary-card.warn .big{color:#b45309}
+.dashboard-summary-card.good .big{color:#166534}
+.dashboard-toolbar{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 8px 20px rgba(15,23,42,.04);
+  margin-bottom:14px;
+}
+.dashboard-toolbar-left{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  flex:1;
+}
+.dashboard-toolbar input{
+  max-width:360px;
+  min-width:260px;
+  padding-left:40px;
+  background:
+    linear-gradient(#fff,#fff) padding-box,
+    linear-gradient(135deg,#dbeafe,#fed7aa) border-box;
+  border:1px solid transparent;
+}
+.dashboard-search-wrap{
+  position:relative;
+}
+.dashboard-search-wrap:before{
+  content:"⌕";
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#f37021;
+  font-weight:900;
+  z-index:1;
+}
+.dashboard-toolbar select{
+  max-width:210px;
+  min-width:180px;
+}
+.dashboard-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  background:#eef4ff;
+  color:var(--blue);
+  white-space:nowrap;
+}
+.dashboard-table{
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:#fff;
+  overflow:auto;
+  box-shadow:0 10px 24px rgba(15,23,42,.05);
+}
+.dashboard-table table{
+  min-width:1050px;
+}
+.dashboard-table th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  white-space:nowrap;
+  font-weight:950;
+  background:#f8fafc;
+  border-bottom:1px solid #e5e7eb;
+}
+.dashboard-table td{
+  vertical-align:middle;
+}
+.dashboard-table tbody tr:hover{
+  background:#fff7ed;
+}
+.software-cell strong{
+  display:block;
+  font-size:13px;
+  color:#111827;
+}
+.software-cell .muted{
+  margin-top:4px;
+}
+.type-license{
+  background:#eef4ff;
+  color:#0b5cab;
+}
+.type-app{
+  background:#fff7ed;
+  color:#c2410c;
+}
+.dashboard-empty{
+  padding:24px;
+  text-align:center;
+  color:var(--muted);
+  border:1px dashed var(--border);
+  border-radius:18px;
+  background:#fbfdff;
+}
+@media(max-width:1200px){
+  .dashboard-panel{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .dashboard-panel{grid-template-columns:1fr}
+  .dashboard-toolbar input,
+  .dashboard-toolbar select{max-width:none;width:100%}
+  .dashboard-toolbar-left{width:100%}
+  .dashboard-search-wrap{width:100%}
+}
+
+
+/* ===== COMPACT COST OVERVIEW ===== */
+#tab-dashboard .card{
+  padding:16px;
+}
+#tab-dashboard .head{
+  margin-bottom:10px;
+}
+#tab-dashboard .head h2{
+  font-size:17px;
+  letter-spacing:-.01em;
+}
+.dashboard-panel{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+  margin:10px 0 12px;
+}
+.dashboard-summary-card{
+  min-height:86px;
+  padding:13px 14px;
+  border-radius:18px;
+}
+.dashboard-summary-card h3{
+  font-size:11px;
+}
+.dashboard-summary-card .big{
+  font-size:23px;
+  margin-top:8px;
+}
+.dashboard-summary-card .sub{
+  font-size:11px;
+  margin-top:7px;
+}
+.dashboard-toolbar{
+  padding:10px 12px;
+  border-radius:16px;
+  margin-bottom:10px;
+  box-shadow:none;
+}
+.dashboard-toolbar input,
+.dashboard-toolbar select{
+  height:38px;
+  border-radius:12px;
+  font-size:13px;
+}
+.dashboard-search-wrap:before{
+  left:13px;
+}
+.dashboard-table{
+  border-radius:16px;
+  box-shadow:none;
+}
+.dashboard-table table{
+  min-width:980px;
+}
+.dashboard-table th{
+  padding:10px 12px;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.035em;
+}
+.dashboard-table td{
+  padding:10px 12px;
+  font-size:12.5px;
+}
+.software-cell strong{
+  font-size:13px;
+  max-width:280px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.dashboard-pill{
+  padding:5px 9px;
+  font-size:11px;
+}
+.dashboard-table .chip{
+  padding:5px 8px;
+  font-size:11px;
+}
+.dashboard-table .dash-usage-mini{
+  min-width:128px;
+}
+.dashboard-table .dash-usage-track{
+  height:20px;
+}
+.dashboard-table .dash-usage-num{
+  font-size:11px;
+}
+.dashboard-table tbody tr:nth-child(even){
+  background:#fcfdff;
+}
+.dashboard-table tbody tr:hover{
+  background:#fff7ed;
+}
+@media(max-width:1200px){
+  .dashboard-panel{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .dashboard-panel{grid-template-columns:1fr}
+}
+
+
+
+/* ===== CLEAN DASHBOARD OVERVIEW ===== */
+#tab-dashboard .card{
+  background:#fff;
+  border-radius:20px;
+  padding:16px;
+}
+#tab-dashboard .card > .head{
+  display:flex!important;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 0 12px;
+  margin-bottom:12px;
+  border-bottom:1px solid #edf2f7;
+}
+#tab-dashboard .card > .head h2{
+  font-size:18px;
+  font-weight:950;
+  color:#0f172a;
+  letter-spacing:-.02em;
+}
+#tab-dashboard .card > .head h2:after{
+  content:"";
+}
+.dashboard-panel{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  margin:0 0 12px!important;
+}
+.dashboard-summary-card{
+  min-height:78px;
+  padding:12px 13px;
+  border-radius:16px;
+  border:1px solid #e5edf7;
+  background:#fbfdff;
+  box-shadow:none!important;
+}
+.dashboard-summary-card h3{
+  margin:0;
+  font-size:11px;
+  color:#64748b;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.dashboard-summary-card .big{
+  margin-top:7px;
+  font-size:22px;
+  font-weight:950;
+  color:#0b5cab;
+  line-height:1;
+}
+.dashboard-summary-card .sub{
+  margin-top:6px;
+  font-size:11px;
+  color:#64748b;
+  font-weight:700;
+}
+.dashboard-summary-card.risk .big{color:#b42318}
+.dashboard-summary-card.warn .big{color:#b45309}
+.dashboard-summary-card.good .big{color:#166534}
+.dashboard-toolbar{
+  padding:10px;
+  border-radius:16px;
+  background:#f8fafc;
+  border:1px solid #e5edf7;
+  box-shadow:none;
+  margin-bottom:10px;
+}
+.dashboard-toolbar-left{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+  flex:1;
+}
+.dashboard-search-wrap{
+  position:relative;
+}
+.dashboard-search-wrap:before{
+  content:"";
+}
+.dashboard-toolbar input{
+  max-width:340px;
+  min-width:260px;
+  height:38px;
+  border-radius:12px;
+  padding-left:12px;
+  background:#fff;
+  border:1px solid #dfe7f3;
+  font-size:13px;
+}
+.dashboard-toolbar select{
+  max-width:190px;
+  min-width:160px;
+  height:38px;
+  border-radius:12px;
+  background:#fff;
+  font-size:13px;
+}
+.dashboard-pill{
+  padding:5px 9px;
+  font-size:11px;
+  border-radius:999px;
+  background:#eef4ff;
+  color:#0b5cab;
+  font-weight:900;
+  white-space:nowrap;
+}
+.dashboard-table{
+  border:1px solid #e5edf7;
+  border-radius:16px;
+  overflow:auto;
+  box-shadow:none;
+}
+.dashboard-table th{
+  padding:10px 12px;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  color:#475467;
+  background:#f8fafc;
+}
+.dashboard-table td{
+  padding:10px 12px;
+  font-size:12.5px;
+}
+.dashboard-table tbody tr:hover{
+  background:#fff7ed;
+}
+.software-cell strong{
+  max-width:280px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:13px;
+}
+.type-license{background:#eef4ff;color:#0b5cab}
+.type-app{background:#fff7ed;color:#c2410c}
+@media(max-width:1200px){
+  .dashboard-panel{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .dashboard-panel{grid-template-columns:1fr}
+  .dashboard-toolbar input,
+  .dashboard-toolbar select{max-width:none;width:100%}
+  .dashboard-search-wrap{width:100%}
+}
+
+
+/* ===== FILTER SELECT FIX ===== */
+.dashboard-toolbar select{
+  min-width:190px!important;
+  padding:0 38px 0 12px!important;
+  appearance:auto;
+  overflow:visible;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  background-color:#fff;
+}
+
+.dashboard-toolbar{
+  overflow:visible!important;
+}
+
+.dashboard-toolbar-left{
+  overflow:visible!important;
+}
+
+@media(max-width:700px){
+  .dashboard-toolbar select{
+    min-width:100%!important;
+  }
+}
+
 </style>
 </head>
 <body class="login-locked">
@@ -370,7 +812,7 @@ body.login-locked > #toast{
 </span>
 </h1><p></p></div><div class="actions"><button class="btn-primary" onclick="adminLogin()">Admin Login</button><button class="btn-secondary admin-only" onclick="adminLogout()">Logout</button><button class="btn-secondary admin-only" onclick="exportJson()">Export JSON</button><button class="btn-secondary" onclick="userLogout()">User Logout</button></div></div>
   <div class="tabs"><button class="tab active" data-tab="dashboard">Dashboard</button><button class="tab" data-tab="licenses">License Tools</button><button class="tab" data-tab="apps">Application Tools</button><button class="tab" data-tab="email">Email Confirm</button></div>
-  <section id="tab-dashboard"><div class="grid-4"><div class="kpi"><div class="muted">Total Software</div><div class="num" id="kpiTools">0</div></div><div class="kpi"><div class="muted">Total Seats</div><div class="num" id="kpiSeats">0</div></div><div class="kpi"><div class="muted">Assigned Users</div><div class="num" id="kpiUsers">0</div></div><div class="kpi"><div class="muted">Annual Cost</div><div class="num" id="kpiCost">0</div></div></div><div class="card"><div class="head"><div><h2>Cost Overview</h2><p></p></div></div><div id="costTable"></div></div></section>
+  <section id="tab-dashboard"><div class="grid-4"><div class="kpi"><div class="muted">Total Software</div><div class="num" id="kpiTools">0</div></div><div class="kpi"><div class="muted">Total Seats</div><div class="num" id="kpiSeats">0</div></div><div class="kpi"><div class="muted">Assigned Users</div><div class="num" id="kpiUsers">0</div></div><div class="kpi"><div class="muted">Annual Cost</div><div class="num" id="kpiCost">0</div></div></div><div class="card"><div class="head"><div><h2>Portfolio Overview</h2><p></p></div></div><div id="costTable"></div></div></section>
   <section id="tab-licenses" style="display:none"><div class="card"><div class="head"><div><h2>License Tools</h2><p></p></div><button class="btn-primary admin-only" onclick="openToolModal(null,'Adobe')">+ Add License</button></div><div class="toolbar"><input id="licenseSearch" placeholder="Search license, vendor, user..."><select id="licenseVendor"><option value="all">All Vendors</option></select></div><div id="licenseGrid" class="tool-grid"></div></div></section>
   <section id="tab-apps" style="display:none"><div class="card"><div class="head"><div><h2>Application Tools</h2><p></p></div><button class="btn-primary admin-only" onclick="openToolModal(null,'AI Tool')">+ Add App</button></div><div class="toolbar"><input id="appSearch" placeholder="Search app, vendor, user..."><select id="appCycle"><option value="all">All Cycles</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select><select id="appVendor"><option value="all">All Vendors</option></select></div><div id="appGroups"></div></div></section>
   
@@ -420,7 +862,7 @@ body.login-locked > #toast{
   </section>
 
 </div>
-<div id="toolModal" class="modal"><div class="modal-card"><div class="head"><div><h2 id="toolModalTitle">Add License</h2><p>Add or edit tool.</p></div><button class="btn-secondary" onclick="closeToolModal()">Close</button></div><div class="form-grid"><div><label>Name</label><input id="toolName"></div><div><label>Vendor</label><input id="toolVendor"></div><div><label>Billing Cycle</label><select id="toolCycle"><option value="yearly">Yearly</option><option value="monthly">Monthly</option></select></div><div><label>Seats</label><input id="toolSeats" type="number"></div><div><label>Cost</label><input id="toolCost" type="number"></div><div><label>Renewal Date</label><input id="toolRenewal" type="date"></div><div class="full"><label>Notes</label><textarea id="toolNotes"></textarea></div></div><div class="actions" style="margin-top:16px"><button class="btn-primary admin-only" onclick="saveTool()">Save Tool</button></div></div></div>
+<div id="toolModal" class="modal"><div class="modal-card"><div class="head"><div><h2 id="toolModalTitle">Add License</h2><p>Add or edit tool.</p></div><button class="btn-secondary" onclick="closeToolModal()">Close</button></div><div class="form-grid"><div><label>Name</label><input id="toolName"></div><div><label>Vendor</label><input id="toolVendor"></div><div><label>Billing Cycle</label><select id="toolCycle"><option value="yearly">Yearly</option><option value="monthly">Monthly</option></select></div><div><label>Seats</label><input id="toolSeats" type="number"></div><div><label>Manual Used Seats</label><input id="toolManualUsed" type="number" min="0" placeholder="Optional override"></div><div><label>Cost</label><input id="toolCost" type="number"></div><div><label>Renewal Date</label><input id="toolRenewal" type="date"></div><div class="full"><label>Notes</label><textarea id="toolNotes"></textarea></div></div><div class="actions" style="margin-top:16px"><button class="btn-primary admin-only" onclick="saveTool()">Save Tool</button></div></div></div>
 <div id="usersModal" class="modal"><div class="modal-card"><div class="head"><div><h2 id="usersTitle">Users</h2><p>Manage users by software.</p></div><button class="btn-secondary" onclick="closeUsersModal()">Close</button></div><div class="grid-2"><div class="card" style="box-shadow:none;margin:0"><div class="head"><div><h2>Add User Manually</h2></div></div><div class="form-grid"><div><label>Name</label><input id="userName"></div><div><label>Email</label><input id="userEmail"></div><div><label>Department</label><input id="userDept"></div><div><label>Role</label><input id="userRole"></div><div><label>Date</label><input id="userDate" type="date"></div><div><label>Status</label><select id="userStatus"><option>Active</option><option>Inactive</option></select></div></div><div class="actions" style="margin-top:12px"><button class="btn-primary admin-only" onclick="addUser()">Add User</button></div></div><div class="card" style="box-shadow:none;margin:0"><div class="head"><div><h2>Import CSV</h2></div></div><input id="csvFile" type="file" accept=".csv,text/csv"><div class="actions" style="margin-top:12px"><button class="btn-orange admin-only" onclick="importCsv()">Import CSV</button><button class="btn-secondary admin-only" onclick="downloadCsvTemplate()">CSV Template</button></div></div></div><div class="card" style="box-shadow:none;margin-top:16px"><div class="head"><div><h2>User List</h2></div></div><div id="usersTable"></div></div></div></div>
 <div id="emailModal" class="modal"><div class="modal-card"><div class="head"><div><h2>Send Review</h2><p>Review and edit email content before queueing.</p></div><div class="actions"><button class="btn-secondary admin-only" onclick="toggleReviewEdit()">Edit Content</button><button class="btn-primary admin-only" onclick="saveReviewEdits()">Save Edits</button><button class="btn-primary admin-only" onclick="queueEmails(true)">Send Email</button><button class="btn-secondary" onclick="closeEmailModal()">Close</button></div></div>
 <div class="review-edit" id="reviewEditBox">
@@ -507,6 +949,7 @@ Nếu không còn nhu cầu sử dụng, vui lòng phản hồi để IT thực 
 Trân trọng,
 IT Software Asset Management`}};
 function $(id){return document.getElementById(id)}function saveState(){localStorage.setItem(LS_KEY,JSON.stringify(state))}function toast(msg){let t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}function money(v){return Number(v||0).toLocaleString("en-US",{maximumFractionDigits:0})+" VND"}function daysLeft(d){if(!d)return"-";let now=new Date(),end=new Date(d);return Math.ceil((end-now)/(1000*60*60*24))}function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function initials(n){return String(n||"?").split(/\s+/).filter(Boolean).slice(-2).map(x=>x[0]).join("").toUpperCase()}function allUsers(){return state.tools.flatMap((t,ti)=>(t.users||[]).map((u,ui)=>({tool:t,toolIndex:ti,user:u,userIndex:ui})))}function statusClass(s){return s==="Confirmed"?"active-chip":s==="Declined"?"bad-chip":"warn-chip"}function isAppTool(t){return["AI Tool","AI IDE"].includes(t.type)}
+function usedSeats(t){const emailUsers=(t&&Array.isArray(t.users))?t.users.length:0;const manualUsed=Number(t&&(t.manualUsedSeats??t.manualUsed??0))||0;return Math.max(emailUsers,manualUsed)}
 function uniqueVendors(list){
   return [...new Set((list||[]).map(t=>t.vendor).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
 }
@@ -538,16 +981,16 @@ function getSortedToolsForDashboard(tools){
 
     case "usageHigh":
       arr.sort((a,b)=>{
-        const ua = a.seats ? ((a.users||[]).length / a.seats) : 0;
-        const ub = b.seats ? ((b.users||[]).length / b.seats) : 0;
+        const ua = a.seats ? (usedSeats(a) / a.seats) : 0;
+        const ub = b.seats ? (usedSeats(b) / b.seats) : 0;
         return ub - ua;
       });
       break;
 
     case "usageLow":
       arr.sort((a,b)=>{
-        const ua = a.seats ? ((a.users||[]).length / a.seats) : 0;
-        const ub = b.seats ? ((b.users||[]).length / b.seats) : 0;
+        const ua = a.seats ? (usedSeats(a) / a.seats) : 0;
+        const ub = b.seats ? (usedSeats(b) / b.seats) : 0;
         return ua - ub;
       });
       break;
@@ -568,50 +1011,217 @@ function getSortedToolsForDashboard(tools){
   return arr;
 }
 
-function renderDashboard(){let users=allUsers(),cost=state.tools.reduce((s,t)=>s+Number(t.cost||0),0),seats=state.tools.reduce((s,t)=>s+Number(t.seats||0),0);$("kpiTools").textContent=state.tools.length;$("kpiSeats").textContent=seats;$("kpiUsers").textContent=users.length;$("kpiCost").textContent=money(cost);let rows=state.tools.map(t=>{let used=(t.users||[]).length,pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length;return `<tr><td><strong>${esc(t.name)}</strong></td><td>${esc(t.vendor)}</td><td>${costLabel(t)}</td><td><div class="dash-usage-mini"><div class="dash-usage-track"><div class="dash-usage-fill" style="width:${Math.min(100, t.seats ? Math.round(used/t.seats*100) : 0)}%"></div><span class="dash-usage-num">${used}/${t.seats}</span></div></div></td><td><span class="chip ${daysLeft(t.renewal)<=7?'bad-chip':daysLeft(t.renewal)<=30?'warn-chip':'active-chip'}">${daysLeft(t.renewal)} days</span></td><td>${formatDateVN(t.renewal)}</td></tr>`}).join("");$("costTable").innerHTML=`
 
-<div class="table-wrap"><table><thead><tr><th>Software</th><th>Vendor</th><th>Cost</th><th onclick="sortDashboardBy('usage')" style="cursor:pointer">Usage ↕</th><th>Days Left</th><th onclick="sortDashboardBy('renewal')" style="cursor:pointer">Renewal ↕</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+function dashboardUsedSeats(tool){
+  const emailUsers = (tool.users || []).length;
+  const manualUsed = Number(tool.manualUsedSeats || tool.manualUsed || 0);
+  return Math.max(emailUsers, manualUsed);
+}
+
+function dashboardFilteredTools(){
+  const searchEl = document.getElementById("dashboardSearch");
+  const typeEl = document.getElementById("dashboardTypeFilter");
+  const statusEl = document.getElementById("dashboardStatusFilter");
+
+  const q = (window.__dashboardSearch !== undefined ? window.__dashboardSearch : (searchEl ? searchEl.value : "")).toLowerCase().trim();
+  const type = window.__dashboardTypeFilter || (typeEl ? typeEl.value : "all");
+  const status = window.__dashboardStatusFilter || (statusEl ? statusEl.value : "all");
+
+  return (state.tools || []).filter(function(t){
+    const used = dashboardUsedSeats(t);
+    const seats = Number(t.seats || 0);
+    const left = typeof daysLeft === "function" ? Number(daysLeft(t.renewal)) : 999999;
+    const app = typeof isAppTool === "function" ? isAppTool(t) : false;
+    const text = JSON.stringify(t).toLowerCase();
+
+    if(q && !text.includes(q)) return false;
+    if(type === "license" && app) return false;
+    if(type === "app" && !app) return false;
+    if(status === "full" && used < seats) return false;
+    if(status === "available" && used >= seats) return false;
+    if(status === "expiring30" && !(left <= 30)) return false;
+    if(status === "expiring90" && !(left <= 90)) return false;
+
+    return true;
+  });
+}
+
+function renderDashboard(){
+  const tools = state.tools || [];
+  const cost = tools.reduce((s,t)=>s+Number(t.cost||0),0);
+  const seats = tools.reduce((s,t)=>s+Number(t.seats||0),0);
+  const usedTotal = tools.reduce((s,t)=>s+dashboardUsedSeats(t),0);
+  const apps = tools.filter(t=>typeof isAppTool === "function" && isAppTool(t)).length;
+  const licenses = tools.length - apps;
+  const fullCount = tools.filter(t=>dashboardUsedSeats(t) >= Number(t.seats || 0)).length;
+  const availableCount = Math.max(0, tools.length - fullCount);
+  const expiring30 = tools.filter(t=>Number(daysLeft(t.renewal)) <= 30).length;
+  const expiring90 = tools.filter(t=>Number(daysLeft(t.renewal)) <= 90).length;
+  const utilization = seats ? Math.round(usedTotal / seats * 100) : 0;
+
+  $("kpiTools").textContent = tools.length;
+  $("kpiSeats").textContent = seats;
+  $("kpiUsers").textContent = usedTotal;
+  $("kpiCost").textContent = money(cost);
+
+  const filtered = dashboardFilteredTools();
+
+  let rows = filtered.map(t=>{
+    const used = dashboardUsedSeats(t);
+    const emailUsers = (t.users||[]).length;
+    const manualUsed = Number(t.manualUsedSeats || t.manualUsed || 0);
+    const seatCount = Number(t.seats || 0);
+    const percent = seatCount ? Math.round(used / seatCount * 100) : 0;
+    const left = Number(daysLeft(t.renewal));
+    const app = typeof isAppTool === "function" && isAppTool(t);
+    const typeClass = app ? "type-app" : "type-license";
+
+    return `<tr>
+      <td>
+        <div class="software-cell">
+          <strong>${esc(t.name)}</strong>
+          <div class="muted">${esc(t.vendor || "-")}</div>
+        </div>
+      </td>
+      <td><span class="dashboard-pill ${typeClass}">${app ? "Application" : "License"}</span></td>
+      <td>${costLabel(t)}</td>
+      <td>
+        <div class="dash-usage-mini">
+          <div class="dash-usage-track">
+            <div class="dash-usage-fill" style="width:${Math.min(100,percent)}%"></div>
+            <span class="dash-usage-num">${used}/${seatCount}</span>
+          </div>
+        </div>
+      </td>
+      <td><span class="chip ${used < seatCount ? "active-chip" : "warn-chip"}">${used < seatCount ? "Available" : "Full"}</span></td>
+      <td><span class="chip ${left<=7?'bad-chip':left<=30?'warn-chip':'active-chip'}">${left} days</span></td>
+      <td>${formatDateVN(t.renewal)}</td>
+    </tr>`;
+  }).join("");
+
+  if(!rows){
+    rows = `<tr><td colspan="7"><div class="dashboard-empty">No software matches current search/filter.</div></td></tr>`;
+  }
+
+  $("costTable").innerHTML = `
+<div class="dashboard-panel">
+      <div class="dashboard-summary-card">
+        <h3>Portfolio</h3>
+        <div class="big">${tools.length}</div>
+        <div class="sub">${licenses} licenses · ${apps} apps</div>
+      </div>
+      <div class="dashboard-summary-card good">
+        <h3>Seat Utilization</h3>
+        <div class="big">${utilization}%</div>
+        <div class="sub">${usedTotal}/${seats} seats used</div>
+      </div>
+      <div class="dashboard-summary-card">
+        <h3>Available</h3>
+        <div class="big">${availableCount}</div>
+        <div class="sub">software still has capacity</div>
+      </div>
+      <div class="dashboard-summary-card warn">
+        <h3>Full</h3>
+        <div class="big">${fullCount}</div>
+        <div class="sub">requires review or expansion</div>
+      </div>
+      <div class="dashboard-summary-card warn">
+        <h3>≤ 90 Days</h3>
+        <div class="big">${expiring90}</div>
+        <div class="sub">upcoming renewals</div>
+      </div>
+      <div class="dashboard-summary-card risk">
+        <h3>≤ 30 Days</h3>
+        <div class="big">${expiring30}</div>
+        <div class="sub">urgent renewal risk</div>
+      </div>
+    </div>
+
+    <div class="dashboard-toolbar">
+      <div class="dashboard-toolbar-left">
+        <div class="dashboard-search-wrap">
+          <input id="dashboardSearch" placeholder="Search software, vendor, user..." value="${esc(window.__dashboardSearch || "")}">
+        </div>
+        <select id="dashboardTypeFilter">
+          <option value="all">All Types</option>
+          <option value="license">License only</option>
+          <option value="app">Application only</option>
+        </select>
+        <select id="dashboardStatusFilter">
+          <option value="all">All Status</option>
+          <option value="available">Available</option>
+          <option value="full">Full</option>
+          <option value="expiring30">Expiring ≤ 30 days</option>
+          <option value="expiring90">Expiring ≤ 90 days</option>
+        </select>
+      </div>
+      <span class="dashboard-pill">${filtered.length}/${tools.length} shown</span>
+    </div>
+
+    <div class="dashboard-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Software</th>
+            <th>Category</th>
+            <th>Cost</th>
+            <th>Usage</th>
+            <th>Status</th>
+            <th>Risk</th>
+            <th>Renewal</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+
+  const typeEl = document.getElementById("dashboardTypeFilter");
+  const statusEl = document.getElementById("dashboardStatusFilter");
+  const searchEl = document.getElementById("dashboardSearch");
+
+  if(typeEl) typeEl.value = window.__dashboardTypeFilter || "all";
+  if(statusEl) statusEl.value = window.__dashboardStatusFilter || "all";
+
+  if(searchEl){
+    searchEl.oninput = function(){
+      window.__dashboardSearch = this.value;
+      renderDashboard();
+    };
+  }
+  if(typeEl){
+    typeEl.onchange = function(){
+      window.__dashboardTypeFilter = this.value;
+      renderDashboard();
+    };
+  }
+  if(statusEl){
+    statusEl.onchange = function(){
+      window.__dashboardStatusFilter = this.value;
+      renderDashboard();
+    };
+  }
+}
 function toolCard(t,i){
-  let used=(t.users||[]).length,
-      pending=(t.users||[]).filter(u=>(u.renewalStatus||"Pending")==="Pending").length,
-      p=t.seats?Math.round(used/t.seats*100):0;
-
+  let used=usedSeats(t),emailUsers=(t.users||[]).length,manualUsed=Number(t.manualUsedSeats||0)||0,p=t.seats?Math.round(used/t.seats*100):0;
   return `<div class="tool-card">
     <div class="tool-top">
-      <div>
-        <div class="tool-name">${esc(t.name)}</div>
-      </div>
+      <div><div class="tool-name">${esc(t.name)}</div></div>
       <span class="chip ${used<t.seats?"active-chip":"warn-chip"}">${used<t.seats?"Available":"Full"}</span>
     </div>
-
     <div>
       <div class="bar"><div style="width:${Math.min(100,p)}%"></div></div>
-      <div class="muted" style="display:flex;justify-content:space-between;margin-top:7px">
-        <span>${used}/${t.seats} users</span>
-        <span>${p}%</span>
-      </div>
+      <div class="muted" style="display:flex;justify-content:space-between;margin-top:7px"><span>${used}/${t.seats} users</span><span>${p}%</span></div>
+      ${manualUsed>emailUsers?`<div class="muted" style="margin-top:5px">Manual used override: ${manualUsed}</div>`:""}
     </div>
-
-    <div class="meta">
-      <div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div>
-      <div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div>
-      <div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div>
-    </div>
-
-    <div class="actions">
-      <button class="btn-secondary" onclick="openUsersModal(${i})">Users</button>
-      <button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button>
-      <button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button>
-      <button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button>
-      <button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},-1)">↑</button>
-      <button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},1)">↓</button>
-    </div>
+    <div class="meta"><div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div><div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div><div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div></div>
+    <div class="actions"><button class="btn-secondary" onclick="openUsersModal(${i})">Users</button><button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button><button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button><button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},-1)">↑</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},1)">↓</button></div>
   </div>`;
 }
 function renderLicenseTools(){renderVendorFilter("licenseVendor",state.tools.filter(t=>!isAppTool(t)));let q=$("licenseSearch").value.toLowerCase().trim(),vendor=$("licenseVendor").value;let list=state.tools.map((t,i)=>({t,i})).filter(x=>!isAppTool(x.t)).filter(x=>(vendor==="all"||x.t.vendor===vendor)&&JSON.stringify(x.t).toLowerCase().includes(q));$("licenseGrid").innerHTML=list.map(x=>toolCard(x.t,x.i)).join("")||`<div class="empty">No license tools.</div>`}
 function renderAppTools(){renderVendorFilter("appVendor",state.tools.filter(t=>isAppTool(t)||t.type==="Other"));let q=$("appSearch").value.toLowerCase().trim(),cycle=$("appCycle").value,vendor=$("appVendor").value;let list=state.tools.map((t,i)=>({t,i})).filter(x=>isAppTool(x.t)||x.t.type==="Other").filter(x=>(cycle==="all"||x.t.billingCycle===cycle)&&(vendor==="all"||x.t.vendor===vendor)&&JSON.stringify(x.t).toLowerCase().includes(q));let group=(name,items)=>items.length?`<div class="card" style="box-shadow:none"><div class="head"><div><h2>${name}</h2><p>${items.length} tools</p></div></div><div class="tool-grid">${items.map(x=>toolCard(x.t,x.i)).join("")}</div></div>`:"";$("appGroups").innerHTML=(cycle==="monthly"?group("Monthly Tools",list.filter(x=>x.t.billingCycle==="monthly")):cycle==="yearly"?group("Yearly Tools",list.filter(x=>x.t.billingCycle==="yearly")):group("Monthly Tools",list.filter(x=>x.t.billingCycle==="monthly"))+group("Yearly Tools",list.filter(x=>x.t.billingCycle==="yearly")))||`<div class="empty">No application tools.</div>`}
 ["licenseSearch","licenseVendor"].forEach(id=>$(id).oninput=$(id).onchange=renderLicenseTools);["appSearch","appCycle","appVendor"].forEach(id=>$(id).oninput=$(id).onchange=renderAppTools);
-function openToolModal(i=null,defaultType="Adobe"){defaultToolType=defaultType;editingToolIndex=i;let t=i==null?{}:state.tools[i];$("toolModalTitle").textContent=i==null?(["AI Tool","AI IDE"].includes(defaultType)?"Add App":"Add License"):"Edit Tool";$("toolName").value=t.name||"";$("toolVendor").value=t.vendor||"";$("toolCycle").value=t.billingCycle||(["AI Tool","AI IDE"].includes(defaultType)?"monthly":"yearly");$("toolSeats").value=t.seats||0;$("toolCost").value=t.cost||0;$("toolRenewal").value=t.renewal||"";$("toolNotes").value=t.notes||"";$("toolModal").classList.add("show")}function closeToolModal(){$("toolModal").classList.remove("show")}function saveTool(){let autoType=editingToolIndex==null?defaultToolType:(state.tools[editingToolIndex]?.type||"Other");let payload={code:("TOOL-"+Date.now()),name:$("toolName").value.trim(),vendor:$("toolVendor").value.trim(),type:autoType,billingCycle:$("toolCycle").value,seats:Number($("toolSeats").value||0),cost:Number($("toolCost").value||0),renewal:$("toolRenewal").value,notes:$("toolNotes").value.trim(),users:editingToolIndex==null?[]:state.tools[editingToolIndex].users||[]};if(!payload.name){toast("Name is required");return}if(editingToolIndex==null)state.tools.push(payload);else state.tools[editingToolIndex]=payload;saveState();closeToolModal();renderAll();toast("Tool saved")}function deleteTool(i){if(confirm("Delete tool?")){state.tools.splice(i,1);saveState();renderAll();toast("Tool deleted")}}
+function openToolModal(i=null,defaultType="Adobe"){defaultToolType=defaultType;editingToolIndex=i;let t=i==null?{}:state.tools[i];$("toolModalTitle").textContent=i==null?(["AI Tool","AI IDE"].includes(defaultType)?"Add App":"Add License"):"Edit Tool";$("toolName").value=t.name||"";$("toolVendor").value=t.vendor||"";$("toolCycle").value=t.billingCycle||(["AI Tool","AI IDE"].includes(defaultType)?"monthly":"yearly");$("toolSeats").value=t.seats||0;if($("toolManualUsed"))$("toolManualUsed").value=t.manualUsedSeats||0;$("toolCost").value=t.cost||0;$("toolRenewal").value=t.renewal||"";$("toolNotes").value=t.notes||"";$("toolModal").classList.add("show")}function closeToolModal(){$("toolModal").classList.remove("show")}function saveTool(){let autoType=editingToolIndex==null?defaultToolType:(state.tools[editingToolIndex]?.type||"Other");let payload={code:("TOOL-"+Date.now()),name:$("toolName").value.trim(),vendor:$("toolVendor").value.trim(),type:autoType,billingCycle:$("toolCycle").value,seats:Number($("toolSeats").value||0),manualUsedSeats:Number($("toolManualUsed")?$("toolManualUsed").value||0:0),cost:Number($("toolCost").value||0),renewal:$("toolRenewal").value,notes:$("toolNotes").value.trim(),users:editingToolIndex==null?[]:state.tools[editingToolIndex].users||[]};if(!payload.name){toast("Name is required");return}if(editingToolIndex==null)state.tools.push(payload);else state.tools[editingToolIndex]=payload;saveState();closeToolModal();renderAll();toast("Tool saved")}function deleteTool(i){if(confirm("Delete tool?")){state.tools.splice(i,1);saveState();renderAll();toast("Tool deleted")}}
 function openUsersModal(i){currentUserToolIndex=i;$("usersTitle").textContent=state.tools[i].name+" - Users";$("userDate").value=new Date().toISOString().slice(0,10);renderUsersTable();$("usersModal").classList.add("show")}function closeUsersModal(){$("usersModal").classList.remove("show")}function renderUsersTable(){let t=state.tools[currentUserToolIndex];let rows=(t.users||[]).map((u,ui)=>`<tr><td><div class="user-cell"><div class="avatar">${initials(u.name)}</div><div><strong>${esc(u.name)}</strong><div class="muted">${esc(u.email)}</div></div></div></td><td>${esc(u.dept)}<div class="muted">${esc(u.role)}</div></td><td><span class="chip ${u.status==="Active"?"active-chip":"info-chip"}">${esc(u.status)}</span></td><td><span class="chip ${statusClass(u.renewalStatus||"Pending")}">${esc(u.renewalStatus||"Pending")}</span></td><td><button class="btn-orange admin-only" onclick="openEmailReview(${currentUserToolIndex},${ui})">Send Review</button><button class="btn-danger admin-only" onclick="removeUser(${ui})">Remove</button></td></tr>`).join("");$("usersTable").innerHTML=rows?`<div class="table-wrap"><table><thead><tr><th>User</th><th>Department / Role</th><th>Status</th><th>Days Left</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="empty">No users.</div>`}
 function addUser(){let t=state.tools[currentUserToolIndex],name=$("userName").value.trim(),email=$("userEmail").value.trim();if(!name||!email){toast("Name and Email are required");return}t.users=t.users||[];t.users.push({name,email,dept:$("userDept").value.trim(),role:$("userRole").value.trim(),date:$("userDate").value,status:$("userStatus").value,renewalStatus:"Pending",lastEmailSent:""});["userName","userEmail","userDept","userRole"].forEach(id=>$(id).value="");saveState();renderAll();renderUsersTable();toast("User added")}function removeUser(i){if(confirm("Remove user?")){state.tools[currentUserToolIndex].users.splice(i,1);saveState();renderAll();renderUsersTable()}}
 function csvLine(line){let out=[],cur="",q=false;for(let i=0;i<line.length;i++){let c=line[i];if(c=='"'&&line[i+1]=='"'){cur+='"';i++}else if(c=='"')q=!q;else if(c==","&&!q){out.push(cur.trim());cur=""}else cur+=c}out.push(cur.trim());return out}async function importCsv(){let f=$("csvFile").files[0];if(!f){toast("Choose CSV file");return}let text=await f.text(),lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),start=/name.*email/i.test(lines[0])?1:0,count=0,t=state.tools[currentUserToolIndex];t.users=t.users||[];for(let i=start;i<lines.length;i++){let [name,email,dept,role,date,status]=csvLine(lines[i]);if(name&&email){t.users.push({name,email,dept:dept||"",role:role||"",date:date||new Date().toISOString().slice(0,10),status:status||"Active",renewalStatus:"Pending",lastEmailSent:""});count++}}saveState();renderAll();renderUsersTable();toast(count+" users imported")}function downloadCsvTemplate(){let b=new Blob(["name,email,dept,role,date,status\nNguyen Van A,user@vib.com.vn,IT,Developer,2026-05-11,Active\n"],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="license_users_template.csv";a.click();URL.revokeObjectURL(a.href)}
@@ -3006,7 +3616,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   let sortState = JSON.parse(localStorage.getItem("vib_dashboard_sort_state") || '{"col":null,"asc":true}');
 
   function getToolValue(tool, col){
-    const used = (tool.users || []).length;
+    const used = usedSeats(tool);
     const seats = Number(tool.seats || 0);
 
     switch(col){
