@@ -220,9 +220,146 @@ body.admin-mode .admin-banner{display:block}
   align-items:start;
 }
 
+
+/* ===== USER PASSWORD LOGIN GATE ===== */
+body.login-locked > .app,
+body.login-locked > .modal,
+body.login-locked > #toast{
+  display:none!important;
+}
+#loginOverlay{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  background:linear-gradient(135deg,#0b5cab,#083f88);
+}
+.login-box{
+  width:min(420px,100%);
+  background:#fff;
+  border-radius:24px;
+  padding:28px;
+  box-shadow:0 24px 70px rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.35);
+}
+.login-logo-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:18px;
+}
+.login-logo-row img{height:42px;width:auto;display:block}
+.login-title{font-size:20px;font-weight:900;color:#172033;line-height:1.2}
+.login-subtitle{font-size:13px;color:#667085;margin-top:4px}
+.login-box label{display:block;font-size:12px;color:#475467;font-weight:900;margin:12px 0 6px}
+.login-box input{width:100%;border:1px solid #dfe7f3;border-radius:14px;padding:12px;font:inherit;outline:none}
+.login-box input:focus{border-color:#f37021;box-shadow:0 0 0 3px rgba(243,112,33,.14)}
+.login-box button{width:100%;margin-top:16px;border:0;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#ff8a3d,#f37021);color:#fff}
+.login-error{min-height:18px;margin-top:12px;color:#dc2626;font-size:13px;font-weight:800}
+.login-help{margin-top:12px;color:#667085;font-size:12px;text-align:center}
+
 </style>
 </head>
-<body>
+<body class="login-locked">
+
+<script>
+// ===== USER PASSWORD LOGIN GATE =====
+(function(){
+  const USER_LOGIN_SESSION_KEY = "vib_user_login_session_v1";
+  const USER_LOGIN_USERNAME = "vib";
+  const USER_LOGIN_PASSWORD = "vib112233";
+
+  function isConfirmActionPage(){
+    const p = new URLSearchParams(location.search);
+    return !!(p.get("action") && p.get("tool"));
+  }
+
+  function isLoggedIn(){
+    return sessionStorage.getItem(USER_LOGIN_SESSION_KEY) === "1";
+  }
+
+  function unlockPage(){
+    document.body.classList.remove("login-locked");
+    const overlay = document.getElementById("loginOverlay");
+    if(overlay) overlay.remove();
+  }
+
+  function renderLogin(){
+    if(isConfirmActionPage() || isLoggedIn()){
+      unlockPage();
+      return;
+    }
+
+    document.body.classList.add("login-locked");
+
+    if(document.getElementById("loginOverlay")) return;
+
+    const overlay = document.createElement("div");
+    overlay.id = "loginOverlay";
+    overlay.innerHTML = `
+      <div class="login-box">
+        <div class="login-logo-row">
+          <img src="https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png" alt="VIB Logo">
+          <div>
+            <div class="login-title">VIB Software License Manager</div>
+            <div class="login-subtitle">Please login to continue</div>
+          </div>
+        </div>
+
+        <label>Username</label>
+        <input id="userLoginName" autocomplete="username" placeholder="Username">
+
+        <label>Password</label>
+        <input id="userLoginPass" type="password" autocomplete="current-password" placeholder="Password">
+
+        <button id="userLoginBtn">Login</button>
+        <div id="userLoginError" class="login-error"></div>
+        
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const nameEl = document.getElementById("userLoginName");
+    const passEl = document.getElementById("userLoginPass");
+    const btn = document.getElementById("userLoginBtn");
+    const err = document.getElementById("userLoginError");
+
+    function doLogin(){
+      const u = (nameEl.value || "").trim();
+      const p = passEl.value || "";
+
+      if(u === USER_LOGIN_USERNAME && p === USER_LOGIN_PASSWORD){
+        sessionStorage.setItem(USER_LOGIN_SESSION_KEY,"1");
+        unlockPage();
+      }else{
+        err.textContent = "Invalid username or password";
+      }
+    }
+
+    btn.onclick = doLogin;
+    [nameEl, passEl].forEach(function(el){
+      el.addEventListener("keydown", function(e){
+        if(e.key === "Enter") doLogin();
+      });
+    });
+
+    setTimeout(function(){ nameEl.focus(); }, 50);
+  }
+
+  window.userLogout = function(){
+    sessionStorage.removeItem(USER_LOGIN_SESSION_KEY);
+    location.reload();
+  };
+
+  document.addEventListener("DOMContentLoaded", renderLogin);
+  window.addEventListener("load", renderLogin);
+})();
+</script>
+
 <div class="app">
   <div class="top"><div><h1>
 <span style="display:inline-flex;align-items:center;gap:14px">
@@ -231,7 +368,7 @@ body.admin-mode .admin-banner{display:block}
        style="height:42px;width:auto;display:inline-block;vertical-align:middle">
   <span>VIB Software License Manager</span>
 </span>
-</h1><p></p></div><div class="actions"><button class="btn-primary" onclick="adminLogin()">Admin Login</button><button class="btn-secondary admin-only" onclick="adminLogout()">Logout</button><button class="btn-secondary admin-only" onclick="exportJson()">Export JSON</button></div></div>
+</h1><p></p></div><div class="actions"><button class="btn-primary" onclick="adminLogin()">Admin Login</button><button class="btn-secondary admin-only" onclick="adminLogout()">Logout</button><button class="btn-secondary admin-only" onclick="exportJson()">Export JSON</button><button class="btn-secondary" onclick="userLogout()">User Logout</button></div></div>
   <div class="tabs"><button class="tab active" data-tab="dashboard">Dashboard</button><button class="tab" data-tab="licenses">License Tools</button><button class="tab" data-tab="apps">Application Tools</button><button class="tab" data-tab="email">Email Confirm</button></div>
   <section id="tab-dashboard"><div class="grid-4"><div class="kpi"><div class="muted">Total Software</div><div class="num" id="kpiTools">0</div></div><div class="kpi"><div class="muted">Total Seats</div><div class="num" id="kpiSeats">0</div></div><div class="kpi"><div class="muted">Assigned Users</div><div class="num" id="kpiUsers">0</div></div><div class="kpi"><div class="muted">Annual Cost</div><div class="num" id="kpiCost">0</div></div></div><div class="card"><div class="head"><div><h2>Cost Overview</h2><p></p></div></div><div id="costTable"></div></div></section>
   <section id="tab-licenses" style="display:none"><div class="card"><div class="head"><div><h2>License Tools</h2><p></p></div><button class="btn-primary admin-only" onclick="openToolModal(null,'Adobe')">+ Add License</button></div><div class="toolbar"><input id="licenseSearch" placeholder="Search license, vendor, user..."><select id="licenseVendor"><option value="all">All Vendors</option></select></div><div id="licenseGrid" class="tool-grid"></div></div></section>
