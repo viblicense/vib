@@ -703,6 +703,58 @@ body.login-locked > #toast{
   }
 }
 
+
+/* ===== MONTHLY AUTO RENEW SWITCH ===== */
+.auto-renew-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+}
+.auto-renew-label{
+  font-size:12px;
+  font-weight:800;
+  color:#475467;
+}
+.auto-renew-switch{
+  position:relative;
+  display:inline-block;
+  width:50px;
+  height:26px;
+  flex:0 0 auto;
+}
+.auto-renew-switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+.auto-renew-slider{
+  position:absolute;
+  cursor:pointer;
+  inset:0;
+  background:#cbd5e1;
+  transition:.25s;
+  border-radius:999px;
+}
+.auto-renew-slider:before{
+  position:absolute;
+  content:"";
+  width:20px;
+  height:20px;
+  left:3px;
+  top:3px;
+  background:#fff;
+  border-radius:50%;
+  transition:.25s;
+  box-shadow:0 1px 3px rgba(0,0,0,.22);
+}
+.auto-renew-switch input:checked + .auto-renew-slider{
+  background:#16a34a;
+}
+.auto-renew-switch input:checked + .auto-renew-slider:before{
+  transform:translateX(24px);
+}
+
 </style>
 </head>
 <body class="login-locked">
@@ -3785,6 +3837,170 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     }
   });
 
+})();
+</script>
+
+
+
+
+
+<script>
+// ===== MONTHLY AUTO RENEW OVERRIDE =====
+(function(){
+  function safe(v){ return String(v == null ? "" : v); }
+  function isMonthlyTool(t){ return safe(t && t.billingCycle).toLowerCase() === "monthly"; }
+
+  window.toggleAutoRenewMonthly = async function(index){
+    if(typeof requireAdmin === "function" && !requireAdmin()) return;
+
+    const tool = state.tools[index];
+    if(!tool) return;
+
+    if(!isMonthlyTool(tool)){
+      alert("Chỉ áp dụng cho phần mềm billing Monthly.");
+      return;
+    }
+
+    const enabled = !tool.autoRenewMonthly;
+    tool.autoRenewMonthly = enabled;
+    tool.renewalMode = enabled ? "auto_monthly" : "manual";
+    tool.autoRenewUpdatedAt = new Date().toISOString();
+
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: new Date().toLocaleString(),
+        type: "Auto Renew Monthly",
+        count: 1,
+        sender: "admin",
+        status: enabled ? "Enabled" : "Disabled",
+        tool: tool.name
+      });
+      emailLogs = emailLogs.slice(0, 500);
+      try{ localStorage.setItem(LOG_KEY, JSON.stringify(emailLogs)); }catch(e){}
+    }
+
+    if(typeof saveState === "function") saveState();
+
+    try{
+      if(typeof putOnlineRecord === "function" && typeof currentOnlinePayload === "function" && typeof jsonBinConfig === "function" && jsonBinConfig(false)){
+        await putOnlineRecord(currentOnlinePayload(), false);
+      }
+    }catch(e){
+      console.error(e);
+      if(typeof toast === "function") toast("Auto renew saved local only");
+    }
+
+    if(typeof renderAll === "function") renderAll();
+    if(typeof toast === "function") toast(enabled ? "Auto renew monthly enabled" : "Auto renew monthly disabled");
+  };
+
+  function installCleanToolCard(){
+    window.toolCard = function(t,i){
+      let used=usedSeats(t),
+          emailUsers=(t.users||[]).length,
+          manualUsed=Number(t.manualUsedSeats||0)||0,
+          p=t.seats?Math.round(used/t.seats*100):0,
+          monthly=isMonthlyTool(t),
+          auto=!!t.autoRenewMonthly;
+
+      const autoRenewBlock = monthly ? `
+        <div class="auto-renew-wrap">
+          <span class="auto-renew-label">${auto ? "Auto Renew ON" : "Auto Renew"}</span>
+          <label class="auto-renew-switch">
+            <input type="checkbox" ${auto ? "checked" : ""} onchange="toggleAutoRenewMonthly(${i})">
+            <span class="auto-renew-slider"></span>
+          </label>
+        </div>
+      ` : "";
+
+      const autoChip = monthly ? `
+        <div class="muted" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:-2px">
+          <span class="chip ${auto ? "active-chip" : "info-chip"}">${auto ? "Auto monthly" : "Manual monthly"}</span>
+        </div>
+      ` : "";
+
+      return `<div class="tool-card">
+        <div class="tool-top">
+          <div><div class="tool-name">${esc(t.name)}</div></div>
+          <span class="chip ${used<t.seats?"active-chip":"warn-chip"}">${used<t.seats?"Available":"Full"}</span>
+        </div>
+        <div>
+          <div class="bar"><div style="width:${Math.min(100,p)}%"></div></div>
+          <div class="muted" style="display:flex;justify-content:space-between;margin-top:7px">
+            <span>${used}/${t.seats} users</span><span>${p}%</span>
+          </div>
+          ${manualUsed>emailUsers?`<div class="muted" style="margin-top:5px">Manual used override: ${manualUsed}</div>`:""}
+        </div>
+        ${autoChip}
+        <div class="meta">
+          <div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div>
+          <div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div>
+          <div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div>
+        </div>
+        ${autoRenewBlock}
+        <div class="actions">
+          <button class="btn-secondary" onclick="openUsersModal(${i})">Users</button>
+          <button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button>
+          <button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button>
+          <button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button>
+          <button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},-1)">↑</button>
+          <button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},1)">↓</button>
+        </div>
+      </div>`;
+    };
+  }
+
+  function installDashboardAutoRenewColumn(){
+    if(typeof window.renderDashboard !== "function" || window.renderDashboard.__monthlyAutoRenewColumn) return;
+    const oldRenderDashboard = window.renderDashboard;
+
+    window.renderDashboard = function(){
+      oldRenderDashboard.apply(this, arguments);
+
+      const table = document.querySelector("#costTable table");
+      if(!table) return;
+
+      const header = table.querySelector("thead tr");
+      if(header && !header.querySelector(".auto-renew-head")){
+        const th = document.createElement("th");
+        th.className = "auto-renew-head";
+        th.textContent = "Auto Renew";
+        header.appendChild(th);
+      }
+
+      const tools = typeof dashboardFilteredTools === "function" ? dashboardFilteredTools() : (state.tools || []);
+      const rows = table.querySelectorAll("tbody tr");
+
+      rows.forEach(function(row, idx){
+        if(row.querySelector(".auto-renew-cell")) return;
+
+        const tool = tools[idx];
+        const td = document.createElement("td");
+        td.className = "auto-renew-cell";
+
+        if(!tool || !isMonthlyTool(tool)){
+          td.innerHTML = '<span class="muted">-</span>';
+        }else{
+          td.innerHTML = tool.autoRenewMonthly
+            ? '<span class="chip active-chip">Auto monthly</span>'
+            : '<span class="chip info-chip">Manual</span>';
+        }
+
+        row.appendChild(td);
+      });
+    };
+
+    window.renderDashboard.__monthlyAutoRenewColumn = true;
+  }
+
+  function init(){
+    installCleanToolCard();
+    installDashboardAutoRenewColumn();
+    if(typeof renderAll === "function") renderAll();
+  }
+
+  setTimeout(init, 250);
+  window.addEventListener("load", function(){ setTimeout(init, 250); });
 })();
 </script>
 
