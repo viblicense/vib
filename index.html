@@ -5187,3 +5187,142 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 </script>
 
 </body></html>
+
+<script>
+// ===== FINAL HOTFIX V4: OUTLOOK DESKTOP MAILTO USES PLAIN TEXT ONLY =====
+// mailto cannot reliably create HTML buttons/hidden hyperlinks in Outlook desktop.
+// This override prevents raw <div>/<a> HTML from being inserted into the Outlook compose window.
+(function(){
+  const PUBLIC_URL = location.href.split("?")[0].split("#")[0];
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+
+  function safe(v){ return String(v == null ? "" : v); }
+  function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function actionUrl(action, tool, campaignId){
+    const p = new URLSearchParams({
+      action: action,
+      tool: safe(tool && tool.name),
+      cid: safe(campaignId || "")
+    });
+    return PUBLIC_URL + "?" + p.toString();
+  }
+  function currentType(){
+    const sel = document.getElementById("reviewEmailType");
+    return (sel && sel.value) || (typeof currentTemplate !== "undefined" ? currentTemplate : "renew") || "renew";
+  }
+  function currentEmailTypeLabel(){
+    return currentType() === "usage" ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn license";
+  }
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){
+      try{ const r = reviewRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    if(typeof emailRecipients === "function"){
+      try{ const r = emailRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    return [];
+  }
+  function subjectFor(tool){
+    return "[VIB] " + currentEmailTypeLabel() + " - " + safe(tool && tool.name);
+  }
+  function plainBody(tool, campaignId){
+    const type = currentType();
+    const mainLine = type === "usage"
+      ? "Vui lòng xác nhận Anh/Chị đã nhận và vẫn cần sử dụng phần mềm dưới đây."
+      : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.";
+    const confirmUrl = actionUrl("confirm", tool, campaignId);
+    const declineUrl = actionUrl("decline", tool, campaignId);
+    return [
+      "Kính gửi Anh/Chị,",
+      "",
+      mainLine,
+      "",
+      "Thông tin phần mềm:",
+      "- Phần mềm: " + safe(tool && tool.name),
+      "- Nhà cung cấp: " + safe(tool && tool.vendor),
+      safe(tool && tool.renewal) ? "- Ngày gia hạn: " + safe(tool && tool.renewal) : "",
+      "",
+      "Vui lòng chọn một trong hai lựa chọn bên dưới:",
+      "",
+      "Xác nhận: " + confirmUrl,
+      "",
+      "Từ chối: " + declineUrl,
+      "",
+      "Sau khi bấm link, hệ thống sẽ yêu cầu nhập email VIB để ghi nhận phản hồi.",
+      "",
+      "Trân trọng,",
+      "IT Software Asset Management"
+    ].filter(Boolean).join("\n");
+  }
+  function htmlPreviewFromPlain(text){
+    return safe(text)
+      .replace(/[&<>]/g, function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[m]; })
+      .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>')
+      .replace(/\n/g,"<br>");
+  }
+  function openOutlook(to, bcc, subject, body){
+    const mailtoUrl = "mailto:" + encodeURIComponent(to) +
+      "?bcc=" + encodeURIComponent(bcc) +
+      "&subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+    window.location.href = mailtoUrl;
+  }
+
+  const prevOpenEmailReview = window.openEmailReview;
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof prevOpenEmailReview === "function") prevOpenEmailReview.apply(this, arguments);
+    setTimeout(function(){
+      let tool = null;
+      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      else { const rec = getRecipients(); if(rec.length) tool = rec[0].tool; }
+      if(!tool) return;
+      const subject = subjectFor(tool);
+      const body = plainBody(tool, "PREVIEW");
+      const subjectEl = document.getElementById("modalSubject");
+      const bodyEl = document.getElementById("modalBody");
+      const emailSubject = document.getElementById("emailSubject");
+      const emailBody = document.getElementById("emailBody");
+      const recipientEl = document.getElementById("modalRecipient");
+      if(subjectEl) subjectEl.textContent = subject;
+      if(bodyEl) bodyEl.innerHTML = htmlPreviewFromPlain(body);
+      if(emailSubject) emailSubject.value = subject;
+      if(emailBody) emailBody.value = body;
+      if(recipientEl) recipientEl.textContent = "BCC recipients";
+    }, 250);
+  };
+
+  window.queueEmails = function(fromModal){
+    const recipients = getRecipients();
+    if(!recipients.length) return;
+    const tool = recipients[0].tool || {};
+    const campaignId = makeCampaignId();
+    const subject = subjectFor(tool);
+    const body = plainBody(tool, campaignId);
+    const bcc = recipients.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join(";");
+
+    openOutlook(OUTLOOK_TO, bcc, subject, body);
+
+    const sentTime = new Date().toLocaleString();
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.campaignId = campaignId;
+      }
+    });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({time:sentTime,type:"License Confirmation",count:recipients.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:campaignId});
+      emailLogs = emailLogs.slice(0, 50);
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+  };
+})();
+</script>
