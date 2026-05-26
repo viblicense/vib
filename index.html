@@ -4004,4 +4004,304 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 })();
 </script>
 
+
+
+<script>
+// ===== FINAL REQUEST OVERRIDE: NO LOCAL APP DATA + SHORT HYPERLINK EMAIL LINKS + EMAIL REQUIRED RESPONSE BOX =====
+(function(){
+  const PUBLIC_URL = location.href.split("?")[0].split("#")[0];
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+  const APP_LOCAL_KEYS = ["vib_lm_clean_v2", "vib_lm_logs_v2", "vib_email_template_current", "vib_dashboard_sort_state"];
+
+  function safe(v){ return String(v == null ? "" : v); }
+  function htmlEsc(s){
+    return safe(s).replace(/[&<>"']/g, function(m){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
+    });
+  }
+  function visibleAction(action){ return action === "confirm" ? "Xác nhận" : "Từ chối"; }
+  function statusFromAction(action){ return action === "confirm" ? "Confirmed" : "Declined"; }
+  function actionColor(action){ return action === "confirm" ? "#16a34a" : "#dc2626"; }
+
+  // Không lưu dữ liệu ứng dụng ở localStorage. Chỉ giữ dữ liệu trên biến hiện tại và JSONBin online.
+  function clearAppLocalData(){
+    APP_LOCAL_KEYS.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  }
+  window.disableLocalAppStorage = true;
+  clearAppLocalData();
+
+  if(typeof window.saveState === "function" && !window.saveState.__noLocalAppData){
+    window.saveState = function(){
+      clearAppLocalData();
+      if(typeof scheduleAutoSaveOnline === "function") scheduleAutoSaveOnline("no-local-saveState");
+    };
+    window.saveState.__noLocalAppData = true;
+  }
+
+  function currentCfg(){
+    try{
+      if(typeof getOnlineConfig === "function") return getOnlineConfig();
+    }catch(e){}
+    return {binId:"", accessKey:""};
+  }
+
+  function buildActionUrl(action, tool, campaignId){
+    const cfg = currentCfg();
+    const p = new URLSearchParams({
+      action: action,
+      tool: safe(tool && tool.name),
+      cid: safe(campaignId || ""),
+      b: safe(cfg.binId || ""),
+      k: safe(cfg.accessKey || "")
+    });
+    return PUBLIC_URL + "?" + p.toString();
+  }
+
+  function makeCampaignId(){
+    return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8);
+  }
+
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){
+      try{ const r = reviewRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    if(typeof emailRecipients === "function"){
+      try{ const r = emailRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    return [];
+  }
+
+  function buildEmailHtml(tool, campaignId){
+    const name = htmlEsc(tool && tool.name);
+    const vendor = htmlEsc(tool && tool.vendor);
+    const renewal = htmlEsc(tool && tool.renewal);
+    const confirmUrl = htmlEsc(buildActionUrl("confirm", tool, campaignId));
+    const declineUrl = htmlEsc(buildActionUrl("decline", tool, campaignId));
+    const type = (document.getElementById("reviewEmailType") && document.getElementById("reviewEmailType").value)
+      || (typeof currentTemplate !== "undefined" ? currentTemplate : "renew") || "renew";
+    const mainLine = type === "usage"
+      ? "Vui lòng xác nhận Anh/Chị đã nhận và vẫn cần sử dụng phần mềm dưới đây."
+      : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.";
+
+    return [
+      '<div style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#172033">',
+      '<p>Kính gửi Anh/Chị,</p>',
+      '<p>' + mainLine + '</p>',
+      '<p><b>Thông tin phần mềm:</b><br>',
+      '- Phần mềm: ' + name + '<br>',
+      '- Nhà cung cấp: ' + vendor + '<br>',
+      (renewal ? '- Ngày gia hạn: ' + renewal + '<br>' : ''),
+      '</p>',
+      '<p>Vui lòng chọn một trong hai lựa chọn bên dưới:</p>',
+      '<p style="margin:20px 0">',
+      '<a href="' + confirmUrl + '" style="background:#16a34a;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:700;display:inline-block">Xác nhận</a>',
+      '&nbsp;&nbsp;',
+      '<a href="' + declineUrl + '" style="background:#dc2626;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:700;display:inline-block">Từ chối</a>',
+      '</p>',
+      '<p style="color:#667085;font-size:12px">Sau khi bấm, hệ thống sẽ yêu cầu nhập email VIB để ghi nhận phản hồi.</p>',
+      '<p>Trân trọng,<br>IT Software Asset Management</p>',
+      '</div>'
+    ].join("");
+  }
+
+  function buildEmailText(tool, campaignId){
+    const confirmUrl = buildActionUrl("confirm", tool, campaignId);
+    const declineUrl = buildActionUrl("decline", tool, campaignId);
+    return [
+      "Kính gửi Anh/Chị,",
+      "",
+      "Vui lòng xác nhận nhu cầu sử dụng phần mềm: " + safe(tool && tool.name),
+      "Nhà cung cấp: " + safe(tool && tool.vendor),
+      safe(tool && tool.renewal) ? "Ngày gia hạn: " + safe(tool && tool.renewal) : "",
+      "",
+      "Xác nhận: " + confirmUrl,
+      "Từ chối: " + declineUrl,
+      "",
+      "Sau khi bấm link, vui lòng nhập email VIB để ghi nhận phản hồi.",
+      "",
+      "Trân trọng,",
+      "IT Software Asset Management"
+    ].filter(Boolean).join("\n");
+  }
+
+  function openOutlookCompose(to, bcc, subject, htmlBody, textBody){
+    const outlookUrl = "https://outlook.office.com/mail/deeplink/compose?" + new URLSearchParams({
+      to: to,
+      bcc: bcc,
+      subject: subject,
+      body: htmlBody
+    }).toString();
+    const mailtoUrl = "mailto:" + encodeURIComponent(to) +
+      "?bcc=" + encodeURIComponent(bcc) +
+      "&subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(textBody);
+
+    const opened = window.open(outlookUrl, "_blank", "noopener");
+    if(!opened) window.location.href = mailtoUrl;
+  }
+
+  window.queueEmails = function(fromModal){
+    const recipients = getRecipients();
+    if(!recipients.length){ alert("No recipients found."); return; }
+
+    const tool = recipients[0].tool || {};
+    const campaignId = makeCampaignId();
+    const subject = "[VIB] Xác nhận license - " + safe(tool.name);
+    const htmlBody = buildEmailHtml(tool, campaignId);
+    const textBody = buildEmailText(tool, campaignId);
+    const bcc = recipients.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join(";");
+
+    openOutlookCompose(OUTLOOK_TO, bcc, subject, htmlBody, textBody);
+
+    const sentTime = new Date().toLocaleString();
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.campaignId = campaignId;
+      }
+    });
+
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({time:sentTime,type:"License Confirmation",count:recipients.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:campaignId});
+      emailLogs = emailLogs.slice(0, 50);
+    }
+
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    alert("Opened Outlook draft. Email chỉ hiển thị hyperlink ngắn: Xác nhận / Từ chối.");
+  };
+
+  const prevOpenEmailReview = window.openEmailReview;
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof prevOpenEmailReview === "function") prevOpenEmailReview.apply(this, arguments);
+    setTimeout(function(){
+      let tool = null;
+      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      else { const r = getRecipients(); if(r.length) tool = r[0].tool; }
+      if(!tool) return;
+      const campaignId = "PREVIEW";
+      const subject = "[VIB] Xác nhận license - " + safe(tool.name);
+      const htmlBody = buildEmailHtml(tool, campaignId);
+      const textBody = buildEmailText(tool, campaignId);
+      const subjectEl = document.getElementById("modalSubject");
+      const bodyEl = document.getElementById("modalBody");
+      const emailSubject = document.getElementById("emailSubject");
+      const emailBody = document.getElementById("emailBody");
+      const recipientEl = document.getElementById("modalRecipient");
+      if(subjectEl) subjectEl.textContent = subject;
+      if(bodyEl) bodyEl.innerHTML = htmlBody;
+      if(emailSubject) emailSubject.value = subject;
+      if(emailBody) emailBody.value = textBody;
+      if(recipientEl) recipientEl.textContent = "BCC recipients";
+    }, 80);
+  };
+
+  async function submitResponse(action, toolName, status){
+    const input = document.getElementById("confirmEmailInput");
+    const msg = document.getElementById("confirmMsg");
+    const email = (input && input.value ? input.value : "").trim().toLowerCase();
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      msg.style.color = "#dc2626";
+      msg.textContent = "Vui lòng nhập email hợp lệ để ghi nhận phản hồi.";
+      input && input.focus();
+      return;
+    }
+    msg.style.color = "#667085";
+    msg.textContent = "Đang ghi nhận phản hồi...";
+
+    try{
+      const record = await fetchOnlineRecord(true);
+      const tools = record.tools || [];
+      let found = false, displayName = "", already = false, oldStatus = "";
+      tools.forEach(function(t){
+        if(safe(t.name).toLowerCase() === safe(toolName).toLowerCase()){
+          (t.users || []).forEach(function(u){
+            if(safe(u.email).toLowerCase() === email){
+              displayName = u.name || "";
+              oldStatus = u.renewalStatus || "";
+              if(u.replyDate && oldStatus && oldStatus !== "Pending") already = true;
+              else { u.renewalStatus = status; u.replyDate = new Date().toISOString(); }
+              found = true;
+            }
+          });
+        }
+      });
+      if(!found){
+        msg.style.color = "#dc2626";
+        msg.textContent = "Không tìm thấy email này trong danh sách nhận license/phần mềm.";
+        return;
+      }
+      if(!already){
+        const logs = record.emailLogs || record.logs || [];
+        logs.unshift({time:new Date().toLocaleString(),type:"User Confirmation",count:1,sender:email,status:status,tool:toolName});
+        await putOnlineRecord({tools:tools,emailConfig:record.emailConfig || {},emailLogs:logs.slice(0,100),updatedAt:new Date().toISOString()}, true);
+      }
+      clearAppLocalData();
+      history.replaceState({}, "", PUBLIC_URL + "?result=success");
+      document.body.innerHTML = [
+        '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+        '<h2 style="margin-top:0;color:#0b5cab">Ghi nhận phản hồi thành công</h2>',
+        '<p><b>Trạng thái:</b> ' + htmlEsc(already ? oldStatus : status) + '</p>',
+        '<p><b>Người dùng:</b> ' + htmlEsc(displayName || email) + '</p>',
+        '<p><b>Email:</b> ' + htmlEsc(email) + '</p>',
+        '<p><b>Phần mềm:</b> ' + htmlEsc(toolName) + '</p>',
+        already ? '<p style="color:#92400e">Bạn đã phản hồi trước đó. Hệ thống không ghi đè phản hồi cũ.</p>' : '<p>Bạn có thể đóng tab này.</p>',
+        '</div>'
+      ].join("");
+    }catch(e){
+      console.error(e);
+      msg.style.color = "#dc2626";
+      msg.textContent = "Không cập nhật được dữ liệu online: " + safe(e.message || e);
+    }
+  }
+
+  function renderActionPageFinal(){
+    const params = new URLSearchParams(location.search);
+    const action = params.get("action");
+    const tool = params.get("tool");
+    if(!action || !tool) return false;
+    const status = statusFromAction(action);
+    const label = visibleAction(action);
+    const color = actionColor(action);
+    document.body.innerHTML = [
+      '<div style="min-height:100vh;background:#f4f7fb;padding:24px;box-sizing:border-box">',
+      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:18px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08);border:1px solid #dfe7f3">',
+      '<h2 style="margin:0 0 10px;color:#0b5cab">' + htmlEsc(label) + ' license/phần mềm</h2>',
+      '<p style="margin:0 0 18px;color:#667085">Vui lòng nhập email VIB để ghi nhận lựa chọn <b style="color:' + color + '">' + htmlEsc(label) + '</b>.</p>',
+      '<p><b>Phần mềm:</b> ' + htmlEsc(tool) + '</p>',
+      '<label style="display:block;font-size:13px;font-weight:700;color:#475467;margin:18px 0 6px">Email VIB</label>',
+      '<input id="confirmEmailInput" type="email" required placeholder="your.name@vib.com.vn" style="width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:10px;font-size:15px;box-sizing:border-box">',
+      '<button id="confirmSubmitBtn" style="margin-top:14px;background:' + color + ';color:#fff;border:0;border-radius:10px;padding:11px 16px;font-weight:800;cursor:pointer">' + htmlEsc(label) + '</button>',
+      '<div id="confirmMsg" style="margin-top:14px;color:#667085"></div>',
+      '</div></div>'
+    ].join("");
+    setTimeout(function(){
+      const btn = document.getElementById("confirmSubmitBtn");
+      const input = document.getElementById("confirmEmailInput");
+      if(btn) btn.onclick = function(){ submitResponse(action, tool, status); };
+      if(input){
+        input.focus();
+        input.addEventListener("keydown", function(e){ if(e.key === "Enter") submitResponse(action, tool, status); });
+      }
+    }, 30);
+    return true;
+  }
+
+  // Chạy sau mọi script cũ để đảm bảo override cuối cùng.
+  setTimeout(function(){
+    clearAppLocalData();
+    renderActionPageFinal();
+  }, 1200);
+  window.addEventListener("load", function(){ setTimeout(renderActionPageFinal, 1200); });
+})();
+</script>
+
 </body></html>
