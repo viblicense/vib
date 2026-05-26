@@ -4200,15 +4200,10 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   }
 
   async function fetchWithTimeout(url, options, timeoutMs){
-    const controller = new AbortController();
-    const timer = setTimeout(function(){ controller.abort(); }, timeoutMs || 15000);
-
-    try{
-      const res = await fetch(url, Object.assign({}, options || {}, {signal: controller.signal}));
-      return res;
-    }finally{
-      clearTimeout(timer);
-    }
+    // Do not use AbortController here. Some mobile/enterprise browsers and
+    // slow JSONBin responses raise "AbortError: signal is aborted without reason"
+    // even when the request can still complete. Let fetch finish naturally.
+    return await fetch(url, options || {});
   }
 
   async function readRecord(){
@@ -4295,6 +4290,8 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   }
 
   window.handleUserAction = async function(){
+    if(window.__vibConfirmHandling) return true;
+    window.__vibConfirmHandling = true;
     const p = new URLSearchParams(location.search);
 
     const action = p.get("action");
@@ -4302,7 +4299,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     const toolName = safe(p.get("tool")).trim();
     const campaignId = safe(p.get("cid")).trim();
 
-    if(!action || !toolName) return false;
+    if(!action || !toolName){ window.__vibConfirmHandling = false; return false; }
 
     if(!email){
       showError("Confirmation link is missing user email.", "The URL must include email=...");
