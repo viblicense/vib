@@ -1893,6 +1893,11 @@ if(originalApplyTemplateForOnline){
 
 async function handleUserAction(){
   const p = new URLSearchParams(location.search);
+  // New campaign links contain cid and are handled by renderActionPage()/submitResponse below.
+  // Returning false here prevents the older direct JSONBin handler from running at the same time,
+  // which caused AbortError / duplicate confirmation handling on GitHub Pages.
+  if(p.get("cid")) return false;
+
   const action = p.get("action");
   const email = p.get("email");
   const toolName = p.get("tool");
