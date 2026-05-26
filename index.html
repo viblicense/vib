@@ -862,7 +862,7 @@ body.login-locked > #toast{
        style="height:42px;width:auto;display:inline-block;vertical-align:middle">
   <span>VIB Software License Manager</span>
 </span>
-</h1><p></p></div><div class="actions"><button class="btn-primary" onclick="adminLogin()">Admin Login</button><button class="btn-secondary admin-only" onclick="adminLogout()">Logout</button><button class="btn-secondary admin-only" onclick="exportJson()">Export JSON</button><button class="btn-secondary" onclick="userLogout()">User Logout</button></div></div>
+</h1><p></p></div><div class="actions"><button class="btn-primary" onclick="adminLogin()">Admin Login</button><button class="btn-secondary admin-only" onclick="adminLogout()">Logout</button><button class="btn-secondary admin-only" onclick="exportJson()">Export JSON</button><button class="btn-secondary" onclick="userLogout()">User Logout</button><input id="importJsonFile" type="file" accept="application/json,.json" style="display:none" onchange="importJsonToSupabase(event)"><button class="btn-secondary admin-only" onclick="document.getElementById('importJsonFile').click()">Import JSON</button></div></div>
   <div class="tabs"><button class="tab active" data-tab="dashboard">Dashboard</button><button class="tab" data-tab="licenses">License Tools</button><button class="tab" data-tab="apps">Application Tools</button><button class="tab" data-tab="email">Email Confirm</button></div>
   <section id="tab-dashboard"><div class="grid-4"><div class="kpi"><div class="muted">Total Software</div><div class="num" id="kpiTools">0</div></div><div class="kpi"><div class="muted">Total Seats</div><div class="num" id="kpiSeats">0</div></div><div class="kpi"><div class="muted">Assigned Users</div><div class="num" id="kpiUsers">0</div></div><div class="kpi"><div class="muted">Annual Cost</div><div class="num" id="kpiCost">0</div></div></div><div class="card"><div class="head"><div><h2>Portfolio Overview</h2><p></p></div></div><div id="costTable"></div></div></section>
   <section id="tab-licenses" style="display:none"><div class="card"><div class="head"><div><h2>License Tools</h2><p></p></div><button class="btn-primary admin-only" onclick="openToolModal(null,'Adobe')">+ Add License</button></div><div class="toolbar"><input id="licenseSearch" placeholder="Search license, vendor, user..."><select id="licenseVendor"><option value="all">All Vendors</option></select></div><div id="licenseGrid" class="tool-grid"></div></div></section>
@@ -2400,6 +2400,57 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     }
   }
 
+
+  window.importJsonToSupabase = async function(event){
+    try{
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if(!file){
+        alert("Please choose JSON file.");
+        return;
+      }
+      const text = await file.text();
+      let imported = JSON.parse(text);
+
+      // Accept either full export {tools,emailConfig,emailLogs} or wrapped {data:{...}}
+      if(imported && imported.data && typeof imported.data === "object"){
+        imported = imported.data;
+      }
+
+      const nextState = {
+        tools: Array.isArray(imported.tools) ? imported.tools : [],
+        emailConfig: imported.emailConfig || {},
+        emailLogs: Array.isArray(imported.emailLogs) ? imported.emailLogs : (Array.isArray(imported.logs) ? imported.logs : [])
+      };
+
+      if(!Array.isArray(nextState.tools)){
+        alert("Invalid JSON: missing tools array.");
+        return;
+      }
+
+      state = {
+        tools: nextState.tools,
+        emailConfig: nextState.emailConfig
+      };
+      emailLogs = nextState.emailLogs;
+
+      await window.putOnlineRecord({
+        tools: state.tools,
+        emailConfig: state.emailConfig,
+        emailLogs: emailLogs
+      });
+
+      if(typeof renderAll === "function") renderAll();
+      if(typeof applyAdminMode === "function") applyAdminMode();
+      if(typeof toast === "function") toast("Imported JSON and uploaded to Supabase");
+      alert("Import JSON thành công và đã upload lên Supabase. Tools: " + state.tools.length + ", logs: " + emailLogs.length);
+    }catch(e){
+      console.error(e);
+      alert("Import JSON lỗi:\n" + (e.message || e));
+    }finally{
+      try{ if(event && event.target) event.target.value = ""; }catch(_e){}
+    }
+  };
+
   window.addEventListener("load", function(){
     renderActionPage();
   });
@@ -3252,6 +3303,57 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(tab === "email") setTimeout(renderEmail, 100);
   };
 
+
+  window.importJsonToSupabase = async function(event){
+    try{
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if(!file){
+        alert("Please choose JSON file.");
+        return;
+      }
+      const text = await file.text();
+      let imported = JSON.parse(text);
+
+      // Accept either full export {tools,emailConfig,emailLogs} or wrapped {data:{...}}
+      if(imported && imported.data && typeof imported.data === "object"){
+        imported = imported.data;
+      }
+
+      const nextState = {
+        tools: Array.isArray(imported.tools) ? imported.tools : [],
+        emailConfig: imported.emailConfig || {},
+        emailLogs: Array.isArray(imported.emailLogs) ? imported.emailLogs : (Array.isArray(imported.logs) ? imported.logs : [])
+      };
+
+      if(!Array.isArray(nextState.tools)){
+        alert("Invalid JSON: missing tools array.");
+        return;
+      }
+
+      state = {
+        tools: nextState.tools,
+        emailConfig: nextState.emailConfig
+      };
+      emailLogs = nextState.emailLogs;
+
+      await window.putOnlineRecord({
+        tools: state.tools,
+        emailConfig: state.emailConfig,
+        emailLogs: emailLogs
+      });
+
+      if(typeof renderAll === "function") renderAll();
+      if(typeof applyAdminMode === "function") applyAdminMode();
+      if(typeof toast === "function") toast("Imported JSON and uploaded to Supabase");
+      alert("Import JSON thành công và đã upload lên Supabase. Tools: " + state.tools.length + ", logs: " + emailLogs.length);
+    }catch(e){
+      console.error(e);
+      alert("Import JSON lỗi:\n" + (e.message || e));
+    }finally{
+      try{ if(event && event.target) event.target.value = ""; }catch(_e){}
+    }
+  };
+
   window.addEventListener("load", function(){ setTimeout(renderEmail, 900); });
 })();
 </script>
@@ -3747,6 +3849,57 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     window.renderDashboard.__persistentSortWrapped = true;
   }
 
+
+  window.importJsonToSupabase = async function(event){
+    try{
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if(!file){
+        alert("Please choose JSON file.");
+        return;
+      }
+      const text = await file.text();
+      let imported = JSON.parse(text);
+
+      // Accept either full export {tools,emailConfig,emailLogs} or wrapped {data:{...}}
+      if(imported && imported.data && typeof imported.data === "object"){
+        imported = imported.data;
+      }
+
+      const nextState = {
+        tools: Array.isArray(imported.tools) ? imported.tools : [],
+        emailConfig: imported.emailConfig || {},
+        emailLogs: Array.isArray(imported.emailLogs) ? imported.emailLogs : (Array.isArray(imported.logs) ? imported.logs : [])
+      };
+
+      if(!Array.isArray(nextState.tools)){
+        alert("Invalid JSON: missing tools array.");
+        return;
+      }
+
+      state = {
+        tools: nextState.tools,
+        emailConfig: nextState.emailConfig
+      };
+      emailLogs = nextState.emailLogs;
+
+      await window.putOnlineRecord({
+        tools: state.tools,
+        emailConfig: state.emailConfig,
+        emailLogs: emailLogs
+      });
+
+      if(typeof renderAll === "function") renderAll();
+      if(typeof applyAdminMode === "function") applyAdminMode();
+      if(typeof toast === "function") toast("Imported JSON and uploaded to Supabase");
+      alert("Import JSON thành công và đã upload lên Supabase. Tools: " + state.tools.length + ", logs: " + emailLogs.length);
+    }catch(e){
+      console.error(e);
+      alert("Import JSON lỗi:\n" + (e.message || e));
+    }finally{
+      try{ if(event && event.target) event.target.value = ""; }catch(_e){}
+    }
+  };
+
   window.addEventListener("load", function(){
     setTimeout(applySortableHeaders, 500);
   });
@@ -3827,6 +3980,57 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       oldRenderAll.apply(this, arguments);
     };
   }
+
+
+  window.importJsonToSupabase = async function(event){
+    try{
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if(!file){
+        alert("Please choose JSON file.");
+        return;
+      }
+      const text = await file.text();
+      let imported = JSON.parse(text);
+
+      // Accept either full export {tools,emailConfig,emailLogs} or wrapped {data:{...}}
+      if(imported && imported.data && typeof imported.data === "object"){
+        imported = imported.data;
+      }
+
+      const nextState = {
+        tools: Array.isArray(imported.tools) ? imported.tools : [],
+        emailConfig: imported.emailConfig || {},
+        emailLogs: Array.isArray(imported.emailLogs) ? imported.emailLogs : (Array.isArray(imported.logs) ? imported.logs : [])
+      };
+
+      if(!Array.isArray(nextState.tools)){
+        alert("Invalid JSON: missing tools array.");
+        return;
+      }
+
+      state = {
+        tools: nextState.tools,
+        emailConfig: nextState.emailConfig
+      };
+      emailLogs = nextState.emailLogs;
+
+      await window.putOnlineRecord({
+        tools: state.tools,
+        emailConfig: state.emailConfig,
+        emailLogs: emailLogs
+      });
+
+      if(typeof renderAll === "function") renderAll();
+      if(typeof applyAdminMode === "function") applyAdminMode();
+      if(typeof toast === "function") toast("Imported JSON and uploaded to Supabase");
+      alert("Import JSON thành công và đã upload lên Supabase. Tools: " + state.tools.length + ", logs: " + emailLogs.length);
+    }catch(e){
+      console.error(e);
+      alert("Import JSON lỗi:\n" + (e.message || e));
+    }finally{
+      try{ if(event && event.target) event.target.value = ""; }catch(_e){}
+    }
+  };
 
   window.addEventListener("load", function(){
     applyLicenseFirstSort();
@@ -3999,6 +4203,57 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   }
 
   setTimeout(init, 250);
+
+  window.importJsonToSupabase = async function(event){
+    try{
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if(!file){
+        alert("Please choose JSON file.");
+        return;
+      }
+      const text = await file.text();
+      let imported = JSON.parse(text);
+
+      // Accept either full export {tools,emailConfig,emailLogs} or wrapped {data:{...}}
+      if(imported && imported.data && typeof imported.data === "object"){
+        imported = imported.data;
+      }
+
+      const nextState = {
+        tools: Array.isArray(imported.tools) ? imported.tools : [],
+        emailConfig: imported.emailConfig || {},
+        emailLogs: Array.isArray(imported.emailLogs) ? imported.emailLogs : (Array.isArray(imported.logs) ? imported.logs : [])
+      };
+
+      if(!Array.isArray(nextState.tools)){
+        alert("Invalid JSON: missing tools array.");
+        return;
+      }
+
+      state = {
+        tools: nextState.tools,
+        emailConfig: nextState.emailConfig
+      };
+      emailLogs = nextState.emailLogs;
+
+      await window.putOnlineRecord({
+        tools: state.tools,
+        emailConfig: state.emailConfig,
+        emailLogs: emailLogs
+      });
+
+      if(typeof renderAll === "function") renderAll();
+      if(typeof applyAdminMode === "function") applyAdminMode();
+      if(typeof toast === "function") toast("Imported JSON and uploaded to Supabase");
+      alert("Import JSON thành công và đã upload lên Supabase. Tools: " + state.tools.length + ", logs: " + emailLogs.length);
+    }catch(e){
+      console.error(e);
+      alert("Import JSON lỗi:\n" + (e.message || e));
+    }finally{
+      try{ if(event && event.target) event.target.value = ""; }catch(_e){}
+    }
+  };
+
   window.addEventListener("load", function(){ setTimeout(init, 250); });
 })();
 </script>
@@ -4293,6 +4548,57 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     clearAppLocalData();
     renderActionPageFinal();
   }, 1200);
+
+  window.importJsonToSupabase = async function(event){
+    try{
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if(!file){
+        alert("Please choose JSON file.");
+        return;
+      }
+      const text = await file.text();
+      let imported = JSON.parse(text);
+
+      // Accept either full export {tools,emailConfig,emailLogs} or wrapped {data:{...}}
+      if(imported && imported.data && typeof imported.data === "object"){
+        imported = imported.data;
+      }
+
+      const nextState = {
+        tools: Array.isArray(imported.tools) ? imported.tools : [],
+        emailConfig: imported.emailConfig || {},
+        emailLogs: Array.isArray(imported.emailLogs) ? imported.emailLogs : (Array.isArray(imported.logs) ? imported.logs : [])
+      };
+
+      if(!Array.isArray(nextState.tools)){
+        alert("Invalid JSON: missing tools array.");
+        return;
+      }
+
+      state = {
+        tools: nextState.tools,
+        emailConfig: nextState.emailConfig
+      };
+      emailLogs = nextState.emailLogs;
+
+      await window.putOnlineRecord({
+        tools: state.tools,
+        emailConfig: state.emailConfig,
+        emailLogs: emailLogs
+      });
+
+      if(typeof renderAll === "function") renderAll();
+      if(typeof applyAdminMode === "function") applyAdminMode();
+      if(typeof toast === "function") toast("Imported JSON and uploaded to Supabase");
+      alert("Import JSON thành công và đã upload lên Supabase. Tools: " + state.tools.length + ", logs: " + emailLogs.length);
+    }catch(e){
+      console.error(e);
+      alert("Import JSON lỗi:\n" + (e.message || e));
+    }finally{
+      try{ if(event && event.target) event.target.value = ""; }catch(_e){}
+    }
+  };
+
   window.addEventListener("load", function(){ setTimeout(renderActionPageFinal, 1200); });
 })();
 </script>
@@ -4665,6 +4971,218 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       window.loadOnlineData(true);
     }
   }, 1500);
+})();
+</script>
+
+
+
+<script>
+// ===== FINAL SUPABASE SAVE FIX: use real global state, always save to Supabase, no local app data =====
+(function(){
+  const SUPABASE_URL = "https://qiqhbpnhtukszgdjgrlj.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_D5DF5xZpvqKMRf_rbH96QA_k0CKl3bo";
+  const TABLE = "app_state";
+  const ROW_ID = 1;
+  let saveTimer = null;
+  let saveBusy = false;
+  let lastSavePayload = "";
+
+  function apiUrl(query){
+    return SUPABASE_URL.replace(/\/$/, "") + "/rest/v1/" + TABLE + (query || "");
+  }
+
+  function apiHeaders(extra){
+    const h = {
+      "apikey": SUPABASE_KEY,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    };
+    // Supabase publishable keys are not JWTs. Do not send them as Bearer tokens.
+    // Legacy anon JWT keys may be sent as Authorization Bearer.
+    if(!String(SUPABASE_KEY || "").startsWith("sb_publishable_")){
+      h["Authorization"] = "Bearer " + SUPABASE_KEY;
+    }
+    return Object.assign(h, extra || {});
+  }
+
+  function showStatus(msg, isError){
+    console[isError ? "error" : "log"]("[Supabase] " + msg);
+    if(typeof toast === "function") toast(msg);
+  }
+
+  function appPayload(){
+    return {
+      tools: Array.isArray(state && state.tools) ? state.tools : [],
+      emailConfig: (state && state.emailConfig) ? state.emailConfig : {},
+      emailLogs: Array.isArray(emailLogs) ? emailLogs : [],
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  window.currentOnlinePayload = appPayload;
+
+  window.fetchOnlineRecord = async function(){
+    const res = await fetch(apiUrl("?id=eq." + ROW_ID + "&select=id,data,updated_at"), {
+      method: "GET",
+      headers: apiHeaders(),
+      cache: "no-store"
+    });
+    const text = await res.text();
+    if(!res.ok){
+      throw new Error("GET app_state failed HTTP " + res.status + ": " + text);
+    }
+    const rows = text ? JSON.parse(text) : [];
+    if(!rows.length){
+      const empty = {tools:[], emailConfig:{}, emailLogs:[], updatedAt:new Date().toISOString()};
+      await window.putOnlineRecord(empty);
+      return empty;
+    }
+    const data = rows[0].data || {};
+    return {
+      tools: Array.isArray(data.tools) ? data.tools : [],
+      emailConfig: data.emailConfig || {},
+      emailLogs: data.emailLogs || data.logs || [],
+      updatedAt: data.updatedAt || rows[0].updated_at || ""
+    };
+  };
+
+  window.putOnlineRecord = async function(record){
+    const payload = {
+      id: ROW_ID,
+      data: {
+        tools: Array.isArray(record && record.tools) ? record.tools : [],
+        emailConfig: (record && record.emailConfig) ? record.emailConfig : {},
+        emailLogs: Array.isArray(record && record.emailLogs) ? record.emailLogs : (Array.isArray(record && record.logs) ? record.logs : []),
+        updatedAt: new Date().toISOString()
+      },
+      updated_at: new Date().toISOString()
+    };
+
+    const res = await fetch(apiUrl("?on_conflict=id&select=id,updated_at"), {
+      method: "POST",
+      headers: apiHeaders({"Prefer":"resolution=merge-duplicates,return=representation"}),
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
+    if(!res.ok){
+      throw new Error("UPSERT app_state failed HTTP " + res.status + ": " + text);
+    }
+    return text ? JSON.parse(text) : [];
+  };
+
+  window.applyOnlinePayload = function(record){
+    state = {
+      tools: Array.isArray(record && record.tools) ? record.tools : [],
+      emailConfig: (record && record.emailConfig) ? record.emailConfig : {}
+    };
+    emailLogs = Array.isArray(record && record.emailLogs) ? record.emailLogs : [];
+    if(typeof renderAll === "function") renderAll();
+    if(typeof applyAdminMode === "function") applyAdminMode();
+  };
+
+  window.loadOnlineData = async function(silent){
+    try{
+      const record = await window.fetchOnlineRecord();
+      window.applyOnlinePayload(record);
+      if(!silent) showStatus("Loaded Supabase data", false);
+    }catch(e){
+      console.error(e);
+      if(!silent) alert("Load Supabase lỗi:\n" + (e.message || e));
+    }
+  };
+
+  async function saveNow(reason){
+    if(saveBusy) return;
+    saveBusy = true;
+    try{
+      const payload = appPayload();
+      const current = JSON.stringify({tools:payload.tools,emailConfig:payload.emailConfig,emailLogs:payload.emailLogs});
+      if(current === lastSavePayload){
+        saveBusy = false;
+        return;
+      }
+      await window.putOnlineRecord(payload);
+      lastSavePayload = current;
+      showStatus("Saved Supabase data", false);
+    }catch(e){
+      console.error(e);
+      alert("Save Supabase lỗi:\n" + (e.message || e) + "\n\nLưu ý: nếu dùng sb_publishable_ key thì không gửi Authorization Bearer. Bản này đã sửa. Nếu vẫn lỗi, hãy kiểm tra RLS policy cho anon và grant insert/update/select.");
+    }finally{
+      saveBusy = false;
+    }
+  }
+
+  window.saveOnlineData = function(){
+    return saveNow("manual");
+  };
+
+  // Every app edit calls saveState(); make it save Supabase directly.
+  saveState = function(){
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){ saveNow("saveState"); }, 250);
+  };
+
+  // Make old JSONBin helpers point to Supabase so existing code paths still work.
+  window.jsonBinConfig = function(){ return {provider:"supabase"}; };
+  window.jsonBinConfigOrPrompt = window.jsonBinConfig;
+  window.configureOnlineData = function(){ alert("Supabase đã cấu hình sẵn trong HTML này."); };
+
+
+  window.importJsonToSupabase = async function(event){
+    try{
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if(!file){
+        alert("Please choose JSON file.");
+        return;
+      }
+      const text = await file.text();
+      let imported = JSON.parse(text);
+
+      // Accept either full export {tools,emailConfig,emailLogs} or wrapped {data:{...}}
+      if(imported && imported.data && typeof imported.data === "object"){
+        imported = imported.data;
+      }
+
+      const nextState = {
+        tools: Array.isArray(imported.tools) ? imported.tools : [],
+        emailConfig: imported.emailConfig || {},
+        emailLogs: Array.isArray(imported.emailLogs) ? imported.emailLogs : (Array.isArray(imported.logs) ? imported.logs : [])
+      };
+
+      if(!Array.isArray(nextState.tools)){
+        alert("Invalid JSON: missing tools array.");
+        return;
+      }
+
+      state = {
+        tools: nextState.tools,
+        emailConfig: nextState.emailConfig
+      };
+      emailLogs = nextState.emailLogs;
+
+      await window.putOnlineRecord({
+        tools: state.tools,
+        emailConfig: state.emailConfig,
+        emailLogs: emailLogs
+      });
+
+      if(typeof renderAll === "function") renderAll();
+      if(typeof applyAdminMode === "function") applyAdminMode();
+      if(typeof toast === "function") toast("Imported JSON and uploaded to Supabase");
+      alert("Import JSON thành công và đã upload lên Supabase. Tools: " + state.tools.length + ", logs: " + emailLogs.length);
+    }catch(e){
+      console.error(e);
+      alert("Import JSON lỗi:\n" + (e.message || e));
+    }finally{
+      try{ if(event && event.target) event.target.value = ""; }catch(_e){}
+    }
+  };
+
+  window.addEventListener("load", function(){
+    if(!new URLSearchParams(location.search).get("action")){
+      setTimeout(function(){ window.loadOnlineData(true); }, 600);
+    }
+  });
 })();
 </script>
 
