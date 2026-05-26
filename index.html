@@ -4159,4 +4159,248 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 })();
 </script>
 
+
+<script>
+// ===== ROBUST LICENSE CONFIRMATION RESPONSE FIX =====
+(function(){
+  function safe(v){ return String(v == null ? "" : v); }
+
+  function pageBase(){
+    return location.href.split("?")[0].split("#")[0];
+  }
+
+  function htmlEsc(s){
+    return safe(s).replace(/[&<>"']/g, function(m){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
+    });
+  }
+
+  function getConfirmJsonBinConfig(){
+    const p = new URLSearchParams(location.search);
+
+    const binId =
+      p.get("b") ||
+      (typeof HARDCODED_JSONBIN_BIN_ID !== "undefined" ? HARDCODED_JSONBIN_BIN_ID : "");
+
+    const accessKey =
+      p.get("k") ||
+      (typeof HARDCODED_JSONBIN_ACCESS_KEY !== "undefined" ? HARDCODED_JSONBIN_ACCESS_KEY : "");
+
+    if(!binId || !accessKey) return null;
+
+    return {
+      url: "https://api.jsonbin.io/v3/b/" + binId,
+      accessKey: accessKey
+    };
+  }
+
+  async function fetchWithTimeout(url, options, timeoutMs){
+    const controller = new AbortController();
+    const timer = setTimeout(function(){ controller.abort(); }, timeoutMs || 15000);
+
+    try{
+      const res = await fetch(url, Object.assign({}, options || {}, {signal: controller.signal}));
+      return res;
+    }finally{
+      clearTimeout(timer);
+    }
+  }
+
+  async function readRecord(){
+    const cfg = getConfirmJsonBinConfig();
+    if(!cfg) throw new Error("Missing JSONBin config in confirmation link.");
+
+    const res = await fetchWithTimeout(cfg.url + "/latest", {
+      method: "GET",
+      headers: {
+        "X-Access-Key": cfg.accessKey
+      }
+    }, 15000);
+
+    if(!res.ok){
+      throw new Error("Read JSONBin failed HTTP " + res.status + ": " + await res.text());
+    }
+
+    const json = await res.json();
+    return json.record || {};
+  }
+
+  async function writeRecord(record){
+    const cfg = getConfirmJsonBinConfig();
+    if(!cfg) throw new Error("Missing JSONBin config in confirmation link.");
+
+    const res = await fetchWithTimeout(cfg.url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Access-Key": cfg.accessKey
+      },
+      body: JSON.stringify(record)
+    }, 15000);
+
+    if(!res.ok){
+      throw new Error("Write JSONBin failed HTTP " + res.status + ": " + await res.text());
+    }
+  }
+
+  function showRecording(){
+    document.body.classList.remove("login-locked");
+    document.body.innerHTML = `
+      <div style="min-height:100vh;background:#f4f7fb;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Segoe UI,Arial">
+        <div style="max-width:720px;width:100%;background:#fff;padding:34px;border-radius:22px;box-shadow:0 16px 40px rgba(15,23,42,.10);border:1px solid #dfe7f3">
+          <h2 style="margin:0 0 12px;color:#0b5cab">Recording your response...</h2>
+          <p style="color:#667085">Please wait while we update your license confirmation.</p>
+          <div id="confirmProgress" style="margin-top:14px;color:#667085;font-weight:700">Connecting to JSONBin...</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function showSuccess(result){
+    try{ history.replaceState({}, "", pageBase() + "?result=success"); }catch(e){}
+
+    document.body.classList.remove("login-locked");
+    document.body.innerHTML = `
+      <div style="min-height:100vh;background:#f4f7fb;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Segoe UI,Arial">
+        <div style="max-width:720px;width:100%;background:#fff;padding:34px;border-radius:22px;box-shadow:0 16px 40px rgba(15,23,42,.10);border:1px solid #dfe7f3">
+          <h2 style="margin:0 0 12px;color:#0b5cab">Response Recorded Successfully</h2>
+          <p><b>Status:</b> ${htmlEsc(result.status)}</p>
+          <p><b>User:</b> ${htmlEsc(result.displayName || result.email)}</p>
+          <p><b>Email:</b> ${htmlEsc(result.email)}</p>
+          <p><b>Software:</b> ${htmlEsc(result.tool)}</p>
+          ${result.campaignId ? `<p><b>Campaign:</b> ${htmlEsc(result.campaignId)}</p>` : ""}
+          <p style="color:#667085">You can close this tab.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function showError(message, detail){
+    document.body.classList.remove("login-locked");
+    document.body.innerHTML = `
+      <div style="min-height:100vh;background:#f4f7fb;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Segoe UI,Arial">
+        <div style="max-width:760px;width:100%;background:#fff;padding:34px;border-radius:22px;box-shadow:0 16px 40px rgba(15,23,42,.10);border:1px solid #dfe7f3">
+          <h2 style="margin:0 0 12px;color:#dc2626">Could not record response</h2>
+          <p>${htmlEsc(message)}</p>
+          ${detail ? `<pre style="white-space:pre-wrap;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:12px;color:#334155;font-size:12px">${htmlEsc(detail)}</pre>` : ""}
+          <p style="color:#667085">Please contact admin to check JSONBin permission or confirmation link.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  window.handleUserAction = async function(){
+    const p = new URLSearchParams(location.search);
+
+    const action = p.get("action");
+    const email = safe(p.get("email")).trim().toLowerCase();
+    const toolName = safe(p.get("tool")).trim();
+    const campaignId = safe(p.get("cid")).trim();
+
+    if(!action || !toolName) return false;
+
+    if(!email){
+      showError("Confirmation link is missing user email.", "The URL must include email=...");
+      return true;
+    }
+
+    const status =
+      action === "confirm" ? "Confirmed" :
+      action === "decline" ? "Declined" :
+      action === "auto_renew" ? "Auto Renew Monthly" :
+      "Pending";
+
+    showRecording();
+
+    try{
+      const progress = document.getElementById("confirmProgress");
+
+      if(progress) progress.textContent = "Reading online data...";
+      const record = await readRecord();
+
+      const tools = record.tools || [];
+      let found = false;
+      let displayName = "";
+
+      if(progress) progress.textContent = "Updating response...";
+
+      tools.forEach(function(t){
+        if(safe(t.name).toLowerCase() === toolName.toLowerCase()){
+          if(action === "auto_renew"){
+            t.autoRenewMonthly = true;
+            t.renewalMode = "auto_monthly";
+            t.autoRenewUpdatedAt = new Date().toISOString();
+          }
+
+          (t.users || []).forEach(function(u){
+            if(safe(u.email).toLowerCase() === email){
+              u.renewalStatus = status;
+              u.replyDate = new Date().toISOString();
+              u.lastCampaignId = campaignId;
+              u.responseHistory = u.responseHistory || [];
+              u.responseHistory.push({
+                campaignId: campaignId,
+                status: status,
+                action: action,
+                time: new Date().toISOString(),
+                tool: toolName,
+                email: email
+              });
+              displayName = u.name || "";
+              found = true;
+            }
+          });
+        }
+      });
+
+      if(!found){
+        throw new Error("Email not found for this software: " + email + " / " + toolName);
+      }
+
+      const logs = record.emailLogs || record.logs || [];
+      logs.unshift({
+        time: new Date().toLocaleString(),
+        type: "User Confirmation",
+        count: 1,
+        sender: email,
+        status: status,
+        tool: toolName,
+        campaignId: campaignId
+      });
+
+      const newRecord = {
+        tools: tools,
+        emailConfig: record.emailConfig || {},
+        emailLogs: logs.slice(0, 500),
+        updatedAt: new Date().toISOString()
+      };
+
+      if(progress) progress.textContent = "Saving online data...";
+      await writeRecord(newRecord);
+
+      showSuccess({
+        status: status,
+        email: email,
+        displayName: displayName,
+        tool: toolName,
+        campaignId: campaignId
+      });
+    }catch(e){
+      console.error(e);
+      showError(safe(e.message || e), safe(e.stack || ""));
+    }
+
+    return true;
+  };
+
+  // Run early and override older handlers.
+  setTimeout(function(){
+    const p = new URLSearchParams(location.search);
+    if(p.get("action") && p.get("tool")){
+      window.handleUserAction();
+    }
+  }, 50);
+})();
+</script>
+
 </body></html>
