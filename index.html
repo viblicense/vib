@@ -4004,4 +4004,159 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 })();
 </script>
 
+
+<script>
+// ===== FIX LICENSE CONFIRMATION UPDATE CONFIG =====
+(function(){
+  function safe(v){ return String(v == null ? "" : v); }
+
+  window.getUrlConfig = function(){
+    const p = new URLSearchParams(location.search);
+    return {
+      binId: p.get("b") || (typeof HARDCODED_JSONBIN_BIN_ID !== "undefined" ? HARDCODED_JSONBIN_BIN_ID : ""),
+      accessKey: p.get("k") || (typeof HARDCODED_JSONBIN_ACCESS_KEY !== "undefined" ? HARDCODED_JSONBIN_ACCESS_KEY : "")
+    };
+  };
+
+  window.jsonBinConfig = function(allowUrl){
+    const urlCfg = allowUrl ? getUrlConfig() : {binId:"", accessKey:""};
+    const localCfg = typeof getOnlineConfig === "function" ? getOnlineConfig() : {binId:"", accessKey:""};
+    const binId = urlCfg.binId || localCfg.binId;
+    const accessKey = urlCfg.accessKey || localCfg.accessKey;
+    if(!binId || !accessKey) return null;
+    return {url:"https://api.jsonbin.io/v3/b/" + binId, binId:binId, accessKey:accessKey};
+  };
+
+  function pageBase(){ return location.href.split("?")[0].split("#")[0]; }
+
+  function actionLink(action, user, tool, campaignId){
+    const cfg = typeof getOnlineConfig === "function" ? getOnlineConfig() : getUrlConfig();
+    const p = new URLSearchParams({
+      action: action,
+      email: safe(user && user.email),
+      name: safe(user && user.name),
+      tool: safe(tool && tool.name),
+      vendor: safe(tool && tool.vendor),
+      renewal: safe(tool && tool.renewal),
+      cid: safe(campaignId || ""),
+      b: safe(cfg.binId || ""),
+      k: safe(cfg.accessKey || "")
+    });
+    return pageBase() + "?" + p.toString();
+  }
+
+  window.buildUserActionLink = function(action, user, tool){
+    return actionLink(action, user, tool, "");
+  };
+
+  window.queueEmails = function(fromModal){
+    const recipients = (typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && state.tools && state.tools[currentReviewToolScope])
+      ? (state.tools[currentReviewToolScope].users || []).map(function(u,ui){
+          return {tool:state.tools[currentReviewToolScope], toolIndex:currentReviewToolScope, user:u, userIndex:ui};
+        })
+      : (typeof reviewRecipients === "function" ? reviewRecipients() : []);
+
+    if(!recipients.length){ alert("No recipients found."); return; }
+
+    const campaignId = "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8);
+    const tool = recipients[0].tool || {};
+    const firstUser = recipients[0].user || {};
+    const confirmUrl = actionLink("confirm", firstUser, tool, campaignId);
+    const declineUrl = actionLink("decline", firstUser, tool, campaignId);
+    const name = safe(tool.name);
+    const vendor = safe(tool.vendor);
+    const renewal = safe(tool.renewal);
+    const type = (document.getElementById("reviewEmailType") && document.getElementById("reviewEmailType").value) || "renew";
+
+    const subject = type === "usage"
+      ? "[VIB] Xác nhận đã nhận phần mềm - " + name
+      : "[VIB] Xác nhận gia hạn license - " + name;
+
+    const body = type === "usage"
+      ? [
+          "Kính gửi Anh/Chị,",
+          "",
+          "Vui lòng xác nhận đã nhận được phần mềm dưới đây.",
+          "",
+          "Thông tin phần mềm:",
+          "- Phần mềm: " + name,
+          "- Nhà cung cấp: " + vendor,
+          "",
+          "XÁC NHẬN:",
+          confirmUrl,
+          "",
+          "TỪ CHỐI:",
+          declineUrl,
+          "",
+          "Trân trọng,",
+          "IT Software Asset Management"
+        ].join("\n")
+      : [
+          "Kính gửi Anh/Chị,",
+          "",
+          "Vui lòng xác nhận nhu cầu tiếp tục sử dụng phần mềm dưới đây.",
+          "",
+          "Thông tin license:",
+          "- Phần mềm: " + name,
+          "- Nhà cung cấp: " + vendor,
+          "- Ngày gia hạn: " + renewal,
+          "",
+          "XÁC NHẬN:",
+          confirmUrl,
+          "",
+          "TỪ CHỐI:",
+          declineUrl,
+          "",
+          "Trân trọng,",
+          "IT Software Asset Management"
+        ].join("\n");
+
+    const bcc = recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean).join(";");
+    const sentTime = new Date().toLocaleString();
+
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.lastCampaignId = campaignId;
+      }
+    });
+
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: sentTime,
+        type: "Mail Sent",
+        tool: name,
+        vendor: vendor,
+        campaignId: campaignId,
+        count: recipients.length,
+        sender: "quang.phamvan@vib.com.vn",
+        status: "Outlook Draft"
+      });
+      emailLogs = emailLogs.slice(0, 500);
+      try{ localStorage.setItem(LOG_KEY, JSON.stringify(emailLogs)); }catch(e){}
+    }
+
+    if(typeof saveState === "function") saveState();
+
+    try{
+      if(typeof putOnlineRecord === "function" && typeof currentOnlinePayload === "function" && jsonBinConfig(false)){
+        putOnlineRecord(currentOnlinePayload(), false).catch(function(e){ console.error(e); });
+      }
+    }catch(e){ console.error(e); }
+
+    window.location.href =
+      "mailto:" + encodeURIComponent("quang.phamvan@vib.com.vn") +
+      "?bcc=" + encodeURIComponent(bcc) +
+      "&subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    alert("Opened Outlook draft. Confirmation links are update-ready.");
+  };
+})();
+</script>
+
 </body></html>
