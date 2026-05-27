@@ -5,7 +5,7 @@
 <title>VIB License Manager Clean</title>
 <style>
 :root{--blue:#0b5cab;--blue2:#083f88;--orange:#f37021;--bg:#f4f7fb;--text:#172033;--muted:#667085;--border:#dfe7f3;--shadow:0 14px 32px rgba(15,23,42,.08)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text)}.app{max-width:1450px;margin:auto;padding:22px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Myriad Pro,Inter,Segoe UI,Arial,sans-serif;color:var(--text)}.app{max-width:1450px;margin:auto;padding:22px}
 .top{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border-radius:24px;padding:22px;box-shadow:var(--shadow);display:flex;justify-content:space-between;gap:14px;align-items:center}.top h1{margin:0;font-size:24px}.top p{margin:6px 0 0;opacity:.85}
 .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.tab{border:1px solid var(--border);background:#fff;color:#334155;padding:10px 14px;border-radius:999px;font-weight:900;cursor:pointer}.tab.active{background:var(--blue);color:#fff}
 .card{background:#fff;border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:16px}.head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}.head h2{margin:0;font-size:18px}.head p{margin:5px 0 0;color:var(--muted);font-size:13px}
@@ -1538,9 +1538,9 @@ async function handleSpAction(){
   const status=spStatus(p.get("action"));
   try{
     await spUpsert({UserEmail:p.get("email"),UserName:p.get("name")||"",ToolName:p.get("tool"),Vendor:p.get("vendor")||"",RenewalDate:p.get("renewal")||null,Status:status,Sender:"quang.phamvan@vib.com.vn",ReplyDate:new Date().toISOString(),Comment:`User clicked ${status}`});
-    document.body.innerHTML=`<div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#0b5cab">License confirmation recorded</h2><p>Status: <b>${status}</b></p><p>User: ${p.get("email")}</p><p>Tool: ${p.get("tool")}</p><p>You can close this tab.</p></div>`;
+    document.body.innerHTML=`<div style="font-family:Myriad Pro,Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#0b5cab">License confirmation recorded</h2><p>Status: <b>${status}</b></p><p>User: ${p.get("email")}</p><p>Tool: ${p.get("tool")}</p><p>You can close this tab.</p></div>`;
   }catch(e){
-    document.body.innerHTML=`<div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#dc2626">Không cập nhật được SharePoint</h2><p>${String(e.message||e)}</p><p>Kiểm tra Site URL, List Name và quyền truy cập.</p></div>`;
+    document.body.innerHTML=`<div style="font-family:Myriad Pro,Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#dc2626">Không cập nhật được SharePoint</h2><p>${String(e.message||e)}</p><p>Kiểm tra Site URL, List Name và quyền truy cập.</p></div>`;
   }
 }
 async function syncSharePointStatuses(){
@@ -1902,7 +1902,7 @@ async function handleUserAction(){
   const status = action === "confirm" ? "Confirmed" : action === "decline" ? "Declined" : "Pending";
 
   document.body.innerHTML = `
-    <div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
+    <div style="font-family:Myriad Pro,Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
       <h2 style="color:#0b5cab">Recording response...</h2>
       <p>Please wait.</p>
     </div>
@@ -1946,7 +1946,7 @@ async function handleUserAction(){
     await putOnlineRecord(newRecord, true);
 
     document.body.innerHTML = `
-      <div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
+      <div style="font-family:Myriad Pro,Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
         <h2 style="color:#0b5cab">Response recorded</h2>
         <p>Status: <b>${status}</b></p>
         <p>User: ${email}</p>
@@ -1957,7 +1957,7 @@ async function handleUserAction(){
   }catch(e){
     console.error(e);
     document.body.innerHTML = `
-      <div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
+      <div style="font-family:Myriad Pro,Segoe UI,Arial;padding:40px;max-width:760px;margin:auto">
         <h2 style="color:#dc2626">Could not record response</h2>
         <p>${String(e.message || e)}</p>
         <p>Please contact admin to check the confirmation link.</p>
@@ -2283,7 +2283,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     const status = action === "confirm" ? "Confirmed" : "Declined";
 
     document.body.innerHTML = [
-      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
       '<h2 style="margin-top:0;color:#0b5cab">License Confirmation</h2>',
       '<p><b>Software:</b> ' + escapeHtml(tool) + '</p>',
       '<p><b>Response:</b> ' + escapeHtml(status) + '</p>',
@@ -2383,7 +2383,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       history.replaceState({}, "", location.href.split("?")[0].split("#")[0] + "?result=success");
 
       document.body.innerHTML = [
-        '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+        '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
         '<h2 style="margin-top:0;color:#0b5cab">Response Recorded Successfully</h2>',
         '<p><b>Status:</b> ' + escapeHtml(already ? oldStatus : status) + '</p>',
         '<p><b>User:</b> ' + escapeHtml(displayName || email) + '</p>',
@@ -3626,7 +3626,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 
   function showForm(action, toolName, cid, emailFromUrl){
     document.body.innerHTML = [
-      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
       '<h2 style="margin-top:0;color:#0b5cab">License Confirmation</h2>',
       '<p><b>Software:</b> ' + htmlEsc(toolName) + '</p>',
       '<p><b>Response:</b> ' + htmlEsc(statusFromAction(action)) + '</p>',
@@ -3664,7 +3664,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     try{ history.replaceState({}, "", pageUrl() + "?result=success"); }catch(e){}
 
     document.body.innerHTML = [
-      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
       '<h2 style="margin-top:0;color:#0b5cab">Response Recorded Successfully</h2>',
       '<p><b>Status:</b> ' + htmlEsc(result.status) + '</p>',
       '<p><b>Email:</b> ' + htmlEsc(result.email) + '</p>',
@@ -3687,9 +3687,9 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     // Re-render after the old confirm page, so old internal submitResponse cannot be used.
     setTimeout(function(){
       if(email){
-        document.body.innerHTML = '<div style="font-family:Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#0b5cab">Recording response...</h2><p>Please wait.</p></div>';
+        document.body.innerHTML = '<div style="font-family:Myriad Pro,Segoe UI,Arial;padding:40px;max-width:760px;margin:auto"><h2 style="color:#0b5cab">Recording response...</h2><p>Please wait.</p></div>';
         recordResponse(action, tool, email, cid).then(showSuccess).catch(function(e){
-          document.body.innerHTML = '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)"><h2 style="color:#dc2626">Update failed</h2><p>' + htmlEsc(e.message || e) + '</p></div>';
+          document.body.innerHTML = '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)"><h2 style="color:#dc2626">Update failed</h2><p>' + htmlEsc(e.message || e) + '</p></div>';
         });
       }else{
         showForm(action, tool, cid, email);
@@ -4342,7 +4342,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.";
 
     return [
-      '<div style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#172033">',
+      '<div style="font-family:Myriad Pro,Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#172033">',
       '<p>Kính gửi Anh/Chị,</p>',
       '<p>' + mainLine + '</p>',
       '<p><b>Thông tin phần mềm:</b><br>',
@@ -4495,7 +4495,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       clearAppLocalData();
       history.replaceState({}, "", PUBLIC_URL + "?result=success");
       document.body.innerHTML = [
-        '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
+        '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
         '<h2 style="margin-top:0;color:#0b5cab">Ghi nhận phản hồi thành công</h2>',
         '<p><b>Trạng thái:</b> ' + htmlEsc(already ? oldStatus : status) + '</p>',
         '<p><b>Người dùng:</b> ' + htmlEsc(displayName || email) + '</p>',
@@ -4521,7 +4521,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     const color = actionColor(action);
     document.body.innerHTML = [
       '<div style="min-height:100vh;background:#f4f7fb;padding:24px;box-sizing:border-box">',
-      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:18px;font-family:Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08);border:1px solid #dfe7f3">',
+      '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:18px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08);border:1px solid #dfe7f3">',
       '<h2 style="margin:0 0 10px;color:#0b5cab">' + htmlEsc(label) + ' license/phần mềm</h2>',
       '<p style="margin:0 0 18px;color:#667085">Vui lòng nhập email VIB để ghi nhận lựa chọn <b style="color:' + color + '">' + htmlEsc(label) + '</b>.</p>',
       '<p><b>Phần mềm:</b> ' + htmlEsc(tool) + '</p>',
@@ -4667,7 +4667,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.";
 
     return [
-      '<div style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#172033">',
+      '<div style="font-family:Myriad Pro,Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#172033">',
       '<p>Kính gửi Anh/Chị,</p>',
       '<p>' + mainLine + '</p>',
       '<p><b>Thông tin phần mềm:</b><br>',
@@ -5186,6 +5186,270 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 })();
 </script>
 
+
+
+<script>
+// ===== HOTFIX V7: BEAUTIFUL OUTLOOK .EML TEMPLATE =====
+// Uses table-based HTML for better Outlook desktop rendering. Keeps short hyperlinks: Xác nhận / Từ chối.
+(function(){
+  const PUBLIC_URL = location.href.split("?")[0].split("#")[0];
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+
+  function safe(v){ return String(v == null ? "" : v); }
+  function escHtml(v){
+    return safe(v).replace(/[&<>\"']/g, function(m){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#039;"}[m];
+    });
+  }
+  function headerSafe(v){ return safe(v).replace(/[\r\n]+/g," ").trim(); }
+  function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function typeNow(){
+    const el = document.getElementById("reviewEmailType");
+    return (el && el.value) || (typeof currentTemplate !== "undefined" ? currentTemplate : "renew") || "renew";
+  }
+  function getRecipientsBeautiful(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u,ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){
+      try{ const r = reviewRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    if(typeof emailRecipients === "function"){
+      try{ const r = emailRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    return [];
+  }
+  function actionUrl(action, tool, campaignId){
+    const p = new URLSearchParams({ action: action, tool: safe(tool && tool.name), cid: safe(campaignId || "") });
+    return PUBLIC_URL + "?" + p.toString();
+  }
+  function subjectFor(tool){
+    const label = typeNow() === "usage" ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn license";
+    return "[VIB] " + label + " - " + safe(tool && tool.name);
+  }
+  function getSignatureHtml(){
+    if(typeof state !== "undefined" && state.emailConfig && state.emailConfig.signatureHtml) return state.emailConfig.signatureHtml;
+    try{ return localStorage.getItem("vib_email_signature_html_v1") || ""; }catch(e){ return ""; }
+  }
+  function niceDate(d){
+    const raw = safe(d);
+    if(!raw) return "-";
+    try{
+      if(typeof formatDateVN === "function") return formatDateVN(raw);
+    }catch(e){}
+    return raw;
+  }
+  function mailHtmlBeautiful(tool, campaignId){
+    const isUsage = typeNow() === "usage";
+    const headline = isUsage ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn license";
+    const intro = isUsage
+      ? "Vui lòng xác nhận Anh/Chị đã nhận và vẫn cần sử dụng phần mềm dưới đây."
+      : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.";
+    const confirmUrl = escHtml(actionUrl("confirm", tool, campaignId));
+    const declineUrl = escHtml(actionUrl("decline", tool, campaignId));
+    const sig = getSignatureHtml();
+    const defaultSig = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;border-top:1px solid #e6edf7"><tr><td style="padding-top:16px;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#344054;font-size:13px;line-height:1.55"><b>IT Software Asset Management</b><br>Vietnam International Bank (VIB)</td></tr></table>';
+
+    return `<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f7fb;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#172033">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;margin:0;padding:24px 0">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="680" cellpadding="0" cellspacing="0" style="width:680px;max-width:680px;background:#ffffff;border:1px solid #dfe7f3;border-radius:18px;overflow:hidden">
+          <tr>
+            <td style="background:#0b5cab;padding:22px 28px;color:#ffffff">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#ffffff">
+                    <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.9;font-weight:700">VIB Software License Manager</div>
+                    <div style="font-size:22px;line-height:1.25;font-weight:800;margin-top:6px">${escHtml(headline)}</div>
+                  </td>
+                  <td align="right" style="font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#ffffff;font-size:13px;white-space:nowrap">Campaign<br><b>${escHtml(campaignId)}</b></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:28px">
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#172033">Kính gửi Anh/Chị,</p>
+              <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#172033">${escHtml(intro)}</p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5edf7;border-radius:14px;background:#fbfdff;margin:0 0 22px">
+                <tr>
+                  <td style="padding:16px 18px;border-bottom:1px solid #e5edf7;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;font-size:13px;color:#667085;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Thông tin phần mềm</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 18px">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="width:150px;padding:8px 0;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#667085;font-size:13px">Phần mềm</td>
+                        <td style="padding:8px 0;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#172033;font-size:14px;font-weight:700">${escHtml(tool && tool.name)}</td>
+                      </tr>
+                      <tr>
+                        <td style="width:150px;padding:8px 0;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#667085;font-size:13px">Nhà cung cấp</td>
+                        <td style="padding:8px 0;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#172033;font-size:14px">${escHtml(tool && tool.vendor)}</td>
+                      </tr>
+                      <tr>
+                        <td style="width:150px;padding:8px 0;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#667085;font-size:13px">Ngày gia hạn</td>
+                        <td style="padding:8px 0;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#172033;font-size:14px">${escHtml(niceDate(tool && tool.renewal))}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;margin:0 0 22px">
+                <tr>
+                  <td style="padding:14px 16px;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#9a3412;font-size:13px;line-height:1.55">
+                    Vui lòng chọn một trong hai lựa chọn bên dưới. Sau khi bấm, hệ thống sẽ yêu cầu nhập email VIB để ghi nhận phản hồi.
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px">
+                <tr>
+                  <td style="padding-right:12px">
+                    <a href="${confirmUrl}" style="background:#16a34a;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;font-weight:800;font-size:14px;display:inline-block">Xác nhận</a>
+                  </td>
+                  <td>
+                    <a href="${declineUrl}" style="background:#dc2626;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;font-weight:800;font-size:14px;display:inline-block">Từ chối</a>
+                  </td>
+                </tr>
+              </table>
+
+              ${sig ? '<div style="margin-top:10px">' + sig + '</div>' : defaultSig}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+<!-- V14 Myriad Pro Luxury: regenerated file with Outlook-friendly email typography. -->
+</body>
+</html>`;
+  }
+  function mailTextBeautiful(tool, campaignId){
+    return [
+      "Kính gửi Anh/Chị,", "",
+      typeNow()==="usage" ? "Vui lòng xác nhận Anh/Chị đã nhận và vẫn cần sử dụng phần mềm dưới đây." : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.", "",
+      "Thông tin phần mềm:",
+      "- Phần mềm: " + safe(tool && tool.name),
+      "- Nhà cung cấp: " + safe(tool && tool.vendor),
+      "- Ngày gia hạn: " + niceDate(tool && tool.renewal), "",
+      "Xác nhận: " + actionUrl("confirm", tool, campaignId), "",
+      "Từ chối: " + actionUrl("decline", tool, campaignId), "",
+      "Sau khi bấm link, hệ thống sẽ yêu cầu nhập email VIB để ghi nhận phản hồi.", "",
+      "Trân trọng,", "IT Software Asset Management"
+    ].filter(Boolean).join("\r\n");
+  }
+  function buildEml(to,bcc,subject,html,text){
+    const boundary = "----=_VIB_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return [
+      "X-Unsent: 1",
+      "To: " + headerSafe(to),
+      "Bcc: " + headerSafe(bcc),
+      "Subject: " + headerSafe(subject),
+      "MIME-Version: 1.0",
+      'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+      "",
+      "--" + boundary,
+      'Content-Type: text/plain; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      text,
+      "",
+      "--" + boundary,
+      'Content-Type: text/html; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      html,
+      "",
+      "--" + boundary + "--",
+      ""
+    ].join("\r\n");
+  }
+  function downloadEml(subject, eml){
+    const blob = new Blob([eml], {type:"message/rfc822;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = headerSafe(subject).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80) + ".eml";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2500);
+  }
+
+  const priorOpenReview = window.openEmailReview;
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof priorOpenReview === "function") priorOpenReview.apply(this, arguments);
+    setTimeout(function(){
+      let tool = null;
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      else { const r = getRecipientsBeautiful(); if(r.length) tool = r[0].tool; }
+      if(!tool) return;
+      const subject = subjectFor(tool);
+      const body = mailHtmlBeautiful(tool, "PREVIEW");
+      const subjectEl = document.getElementById("modalSubject");
+      const bodyEl = document.getElementById("modalBody");
+      const emailSubject = document.getElementById("emailSubject");
+      const emailBody = document.getElementById("emailBody");
+      const recipientEl = document.getElementById("modalRecipient");
+      if(subjectEl) subjectEl.textContent = subject;
+      if(bodyEl) bodyEl.innerHTML = body;
+      if(emailSubject) emailSubject.value = subject;
+      if(emailBody) emailBody.value = body;
+      if(recipientEl) recipientEl.textContent = "BCC recipients";
+    }, 500);
+  };
+
+  window.queueEmails = function(fromModal){
+    const recipients = getRecipientsBeautiful();
+    if(!recipients.length){ alert("No recipients found."); return; }
+    const tool = recipients[0].tool || {};
+    const campaignId = makeCampaignId();
+    const subject = subjectFor(tool);
+    const bcc = recipients.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join("; ");
+    const html = mailHtmlBeautiful(tool, campaignId);
+    const text = mailTextBeautiful(tool, campaignId);
+    downloadEml(subject, buildEml(OUTLOOK_TO, bcc, subject, html, text));
+
+    const sentTime = new Date().toLocaleString();
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.campaignId = campaignId;
+      }
+    });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: sentTime,
+        type: "Mail Sent",
+        tool: safe(tool.name),
+        count: recipients.length,
+        sender: OUTLOOK_TO,
+        status: "Outlook Draft",
+        campaignId: campaignId,
+        recipients: recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean)
+      });
+      emailLogs = emailLogs.slice(0, 100);
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof toast === "function") toast("Created beautiful Outlook .eml draft and logged campaign");
+  };
+})();
+</script>
+
 </body></html>
 
 <script>
@@ -5381,7 +5645,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     const declineUrl = actionUrl("decline", tool, campaignId);
     return `<!doctype html>
 <html><head><meta charset="utf-8"></head>
-<body style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#172033">
+<body style="font-family:Myriad Pro,Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#172033">
   <p>Kính gửi Anh/Chị,</p>
   <p>${htmlEsc(mainLine)}</p>
   <p><b>Thông tin phần mềm:</b><br>
@@ -5512,5 +5776,1743 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof renderModalSendList === "function") renderModalSendList();
     if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
   };
+})();
+</script>
+
+<script>
+// ===== HOTFIX V6: CAMPAIGNS SENT + MANUAL OUTLOOK SIGNATURE FOR .EML =====
+// Browser pages cannot read the user's current Outlook signature from the local computer.
+// This adds a signature field inside the app; paste the Outlook signature once and it will be appended to generated .eml drafts.
+(function(){
+  const PUBLIC_URL = location.href.split("?")[0].split("#")[0];
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+  const SIG_KEY = "vib_email_signature_html_v1";
+
+  function safe(v){ return String(v == null ? "" : v); }
+  function escHtml(v){ return safe(v).replace(/[&<>\"']/g, function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#039;"}[m]; }); }
+  function headerSafe(v){ return safe(v).replace(/[\r\n]+/g," ").trim(); }
+  function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function typeNow(){ const el=document.getElementById("reviewEmailType"); return (el&&el.value)||(typeof currentTemplate!=="undefined"?currentTemplate:"renew")||"renew"; }
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u,ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){ try{ const r=reviewRecipients(); if(r&&r.length) return r; }catch(e){} }
+    if(typeof emailRecipients === "function"){ try{ const r=emailRecipients(); if(r&&r.length) return r; }catch(e){} }
+    return [];
+  }
+  function actionUrl(action, tool, campaignId){
+    const p = new URLSearchParams({ action: action, tool: safe(tool && tool.name), cid: safe(campaignId || "") });
+    return PUBLIC_URL + "?" + p.toString();
+  }
+  function subjectFor(tool){
+    const label = typeNow() === "usage" ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn license";
+    return "[VIB] " + label + " - " + safe(tool && tool.name);
+  }
+  function getSignatureHtml(){
+    if(typeof state !== "undefined" && state.emailConfig && state.emailConfig.signatureHtml) return state.emailConfig.signatureHtml;
+    return localStorage.getItem(SIG_KEY) || "";
+  }
+  function setSignatureHtml(html){
+    if(typeof state !== "undefined"){
+      state.emailConfig = state.emailConfig || {};
+      state.emailConfig.signatureHtml = html;
+    }
+    try{ localStorage.setItem(SIG_KEY, html); }catch(e){}
+    if(typeof saveState === "function") saveState();
+  }
+  function mailHtml(tool, campaignId){
+    const isUsage = typeNow() === "usage";
+    const line = isUsage ? "Vui lòng xác nhận Anh/Chị đã nhận và vẫn cần sử dụng phần mềm dưới đây." : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.";
+    const confirmUrl = actionUrl("confirm", tool, campaignId);
+    const declineUrl = actionUrl("decline", tool, campaignId);
+    const sig = getSignatureHtml();
+    return `<!doctype html><html><head><meta charset="utf-8"></head><body style="font-family:Myriad Pro,Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#172033">
+<p>Kính gửi Anh/Chị,</p>
+<p>${escHtml(line)}</p>
+<p><b>Thông tin phần mềm:</b><br>- Phần mềm: ${escHtml(tool && tool.name)}<br>- Nhà cung cấp: ${escHtml(tool && tool.vendor)}<br>${safe(tool && tool.renewal) ? "- Ngày gia hạn: " + escHtml(tool.renewal) + "<br>" : ""}</p>
+<p>Vui lòng chọn một trong hai lựa chọn bên dưới:</p>
+<p style="margin:20px 0"><a href="${escHtml(confirmUrl)}" style="background:#16a34a;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:700;display:inline-block">Xác nhận</a>&nbsp;&nbsp;<a href="${escHtml(declineUrl)}" style="background:#dc2626;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:700;display:inline-block">Từ chối</a></p>
+<p style="color:#667085;font-size:12px">Sau khi bấm, hệ thống sẽ yêu cầu nhập email VIB để ghi nhận phản hồi.</p>
+${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>IT Software Asset Management</p>'}
+</body></html>`;
+  }
+  function mailText(tool, campaignId){
+    return [
+      "Kính gửi Anh/Chị,", "",
+      typeNow()==="usage" ? "Vui lòng xác nhận Anh/Chị đã nhận và vẫn cần sử dụng phần mềm dưới đây." : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.", "",
+      "Thông tin phần mềm:",
+      "- Phần mềm: " + safe(tool && tool.name),
+      "- Nhà cung cấp: " + safe(tool && tool.vendor),
+      safe(tool && tool.renewal) ? "- Ngày gia hạn: " + safe(tool.renewal) : "", "",
+      "Xác nhận: " + actionUrl("confirm", tool, campaignId), "",
+      "Từ chối: " + actionUrl("decline", tool, campaignId), "",
+      "Sau khi bấm link, hệ thống sẽ yêu cầu nhập email VIB để ghi nhận phản hồi.", "",
+      "Trân trọng,", "IT Software Asset Management"
+    ].filter(Boolean).join("\r\n");
+  }
+  function buildEml(to,bcc,subject,html,text){
+    const boundary = "----=_VIB_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return [
+      "X-Unsent: 1",
+      "To: " + headerSafe(to),
+      "Bcc: " + headerSafe(bcc),
+      "Subject: " + headerSafe(subject),
+      "MIME-Version: 1.0",
+      'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+      "",
+      "--" + boundary,
+      'Content-Type: text/plain; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      text,
+      "",
+      "--" + boundary,
+      'Content-Type: text/html; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      html,
+      "",
+      "--" + boundary + "--",
+      ""
+    ].join("\r\n");
+  }
+  function downloadEml(subject, eml){
+    const blob = new Blob([eml], {type:"message/rfc822;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = headerSafe(subject).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80) + ".eml";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  }
+  function addSignatureUi(){
+    const tab = document.getElementById("tab-email");
+    const campaigns = document.getElementById("emailCampaignRows");
+    if(!tab || document.getElementById("emailSignatureHtml")) return;
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = '<div class="head"><div><h2>Email Signature</h2><p>Dán chữ ký Outlook HTML tại đây. Trình duyệt không thể tự đọc chữ ký Outlook đang có trên máy.</p></div><div class="actions"><button class="btn-primary admin-only" onclick="saveEmailSignatureHtml()">Save Signature</button></div></div><textarea id="emailSignatureHtml" style="min-height:120px" placeholder="Paste Outlook signature HTML here, or leave blank to use default IT signature."></textarea>';
+    const campaignCard = campaigns ? campaigns.closest(".card") : null;
+    if(campaignCard && campaignCard.parentNode) campaignCard.parentNode.insertBefore(card, campaignCard);
+    else tab.appendChild(card);
+    const ta = document.getElementById("emailSignatureHtml");
+    if(ta) ta.value = getSignatureHtml();
+  }
+  window.saveEmailSignatureHtml = function(){
+    const el = document.getElementById("emailSignatureHtml");
+    setSignatureHtml(el ? el.value : "");
+    if(typeof toast === "function") toast("Email signature saved"); else alert("Email signature saved");
+  };
+
+  const oldOpenReview = window.openEmailReview;
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof oldOpenReview === "function") oldOpenReview.apply(this, arguments);
+    setTimeout(function(){
+      let tool = null;
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      else { const r = getRecipients(); if(r.length) tool = r[0].tool; }
+      if(!tool) return;
+      const subject = subjectFor(tool);
+      const body = mailHtml(tool, "PREVIEW");
+      const subjectEl = document.getElementById("modalSubject");
+      const bodyEl = document.getElementById("modalBody");
+      const emailSubject = document.getElementById("emailSubject");
+      const emailBody = document.getElementById("emailBody");
+      const recipientEl = document.getElementById("modalRecipient");
+      if(subjectEl) subjectEl.textContent = subject;
+      if(bodyEl) bodyEl.innerHTML = body;
+      if(emailSubject) emailSubject.value = subject;
+      if(emailBody) emailBody.value = body;
+      if(recipientEl) recipientEl.textContent = "BCC recipients";
+    }, 350);
+  };
+
+  window.queueEmails = function(fromModal){
+    const recipients = getRecipients();
+    if(!recipients.length){ alert("No recipients found."); return; }
+    const tool = recipients[0].tool || {};
+    const campaignId = makeCampaignId();
+    const subject = subjectFor(tool);
+    const bcc = recipients.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join("; ");
+    const html = mailHtml(tool, campaignId);
+    const text = mailText(tool, campaignId);
+    downloadEml(subject, buildEml(OUTLOOK_TO, bcc, subject, html, text));
+
+    const sentTime = new Date().toLocaleString();
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.campaignId = campaignId;
+      }
+    });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: sentTime,
+        type: "Mail Sent",
+        tool: safe(tool.name),
+        count: recipients.length,
+        sender: OUTLOOK_TO,
+        status: "Outlook Draft",
+        campaignId: campaignId,
+        recipients: recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean)
+      });
+      emailLogs = emailLogs.slice(0, 100);
+      try{ localStorage.setItem(typeof LOG_KEY !== "undefined" ? LOG_KEY : "vib_lm_logs_v2", JSON.stringify(emailLogs)); }catch(e){}
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof toast === "function") toast("Created Outlook .eml draft and logged campaign");
+  };
+
+  const oldRenderEmail = window.renderEmail;
+  window.renderEmail = function(){
+    if(typeof oldRenderEmail === "function") oldRenderEmail.apply(this, arguments);
+    setTimeout(addSignatureUi, 50);
+  };
+  document.addEventListener("DOMContentLoaded", function(){ setTimeout(addSignatureUi, 500); });
+  window.addEventListener("load", function(){ setTimeout(addSignatureUi, 800); });
+})();
+</script>
+
+<script>
+// ===== V9 FINAL PREMIUM EML OVERRIDE - NO SIGNATURE UI =====
+(function(){
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+  const PUBLIC_URL = location.href.split("?")[0].split("#")[0];
+
+  function safe(v){ return String(v == null ? "" : v); }
+  function esc(v){ return safe(v).replace(/[&<>"']/g, function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]; }); }
+  function headerSafe(v){ return safe(v).replace(/[\r\n]+/g," ").trim(); }
+  function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function formatDateDisplay(d){
+    if(!d) return "-";
+    try{
+      if(typeof formatDateVN === "function") return formatDateVN(d);
+      const x = new Date(d); if(isNaN(x)) return d;
+      return String(x.getDate()).padStart(2,"0") + "-" + String(x.getMonth()+1).padStart(2,"0") + "-" + x.getFullYear();
+    }catch(e){ return d; }
+  }
+  function actionUrl(action, tool, campaignId){
+    const p = new URLSearchParams({ action: action, tool: safe(tool && tool.name), cid: campaignId || "" });
+    return PUBLIC_URL + "?" + p.toString();
+  }
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u,ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){
+      try{ const r = reviewRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    if(typeof emailRecipients === "function"){
+      try{ const r = emailRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    return [];
+  }
+  function subjectFor(tool){ return "[VIB] Xác nhận gia hạn phần mềm - " + safe(tool && tool.name); }
+
+  function premiumMailHtml(tool, campaignId){
+    const name = esc(tool && tool.name);
+    const vendor = esc(tool && tool.vendor || "-");
+    const renewal = esc(formatDateDisplay(tool && tool.renewal));
+    const confirm = esc(actionUrl("confirm", tool, campaignId));
+    const decline = esc(actionUrl("decline", tool, campaignId));
+    return `<!doctype html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f3f6fb;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#172033">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3f6fb;margin:0;padding:28px 0">
+    <tr>
+      <td align="center" style="padding:0 14px">
+        <table role="presentation" width="680" cellspacing="0" cellpadding="0" border="0" style="width:680px;max-width:100%;background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #e1e9f5;box-shadow:0 10px 28px rgba(15,23,42,.10)">
+          <tr>
+            <td style="background:linear-gradient(135deg,#0b5cab,#083f88);padding:26px 30px;color:#ffffff">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="font-size:26px;font-weight:800;letter-spacing:.2px">VIB</td>
+                  <td align="right" style="font-size:12px;line-height:1.4;opacity:.9">Software Asset Management<br><b style="font-size:13px">License Confirmation</b></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px">
+              <div style="font-size:18px;font-weight:750;margin-bottom:12px;color:#0f172a">Kính gửi Anh/Chị,</div>
+              <div style="font-size:14.5px;line-height:1.7;color:#344054;margin-bottom:22px">
+                Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây để IT ghi nhận và xử lý đúng hạn.
+              </div>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #dfe7f3;border-radius:16px;overflow:hidden;margin:0 0 24px;background:#fbfdff">
+                <tr>
+                  <td colspan="2" style="background:#eef4ff;padding:13px 18px;font-size:13px;font-weight:800;color:#0b5cab;text-transform:uppercase;letter-spacing:.04em">Thông tin phần mềm</td>
+                </tr>
+                <tr>
+                  <td style="width:170px;padding:15px 18px;border-top:1px solid #edf2f7;color:#667085;font-size:13px">Phần mềm</td>
+                  <td style="padding:15px 18px;border-top:1px solid #edf2f7;color:#172033;font-size:14px;font-weight:800">${name}</td>
+                </tr>
+                <tr>
+                  <td style="padding:15px 18px;border-top:1px solid #edf2f7;color:#667085;font-size:13px">Nhà cung cấp</td>
+                  <td style="padding:15px 18px;border-top:1px solid #edf2f7;color:#172033;font-size:14px;font-weight:700">${vendor}</td>
+                </tr>
+                <tr>
+                  <td style="padding:15px 18px;border-top:1px solid #edf2f7;color:#667085;font-size:13px">Ngày gia hạn</td>
+                  <td style="padding:15px 18px;border-top:1px solid #edf2f7;color:#172033;font-size:14px;font-weight:700">${renewal}</td>
+                </tr>
+              </table>
+
+              <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:14px 16px;color:#9a3412;font-size:13.5px;line-height:1.6;margin-bottom:24px">
+                Vui lòng chọn một trong hai lựa chọn bên dưới. Sau khi bấm, hệ thống sẽ yêu cầu nhập email VIB để ghi nhận phản hồi.
+              </div>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:8px 0 28px">
+                <tr>
+                  <td style="border-radius:12px;background:#16a34a">
+                    <a href="${confirm}" style="display:inline-block;padding:13px 24px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;border-radius:12px">Xác nhận</a>
+                  </td>
+                  <td style="width:14px"></td>
+                  <td style="border-radius:12px;background:#dc2626">
+                    <a href="${decline}" style="display:inline-block;padding:13px 24px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;border-radius:12px">Từ chối</a>
+                  </td>
+                </tr>
+              </table>
+
+              <div style="border-top:1px solid #edf2f7;padding-top:18px;color:#475467;font-size:14px;line-height:1.7">
+                Trân trọng,<br>
+                <b style="color:#172033">IT Software Asset Management</b>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#f8fafc;padding:14px 30px;color:#98a2b3;font-size:11.5px;line-height:1.5">
+              Đây là email tự động từ hệ thống quản lý license nội bộ. Campaign: ${esc(campaignId || "")}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body></html>`;
+  }
+
+  function plainText(tool, campaignId){
+    return [
+      "Kính gửi Anh/Chị,",
+      "",
+      "Vui lòng xác nhận nhu cầu tiếp tục sử dụng/gia hạn phần mềm dưới đây.",
+      "",
+      "Thông tin phần mềm:",
+      "- Phần mềm: " + safe(tool && tool.name),
+      "- Nhà cung cấp: " + safe(tool && tool.vendor || "-"),
+      "- Ngày gia hạn: " + formatDateDisplay(tool && tool.renewal),
+      "",
+      "Xác nhận: " + actionUrl("confirm", tool, campaignId),
+      "Từ chối: " + actionUrl("decline", tool, campaignId),
+      "",
+      "Trân trọng,",
+      "IT Software Asset Management"
+    ].join("\r\n");
+  }
+
+  function buildEml(to, bcc, subject, html, text){
+    const boundary = "----=_VIB_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return [
+      "X-Unsent: 1",
+      "To: " + headerSafe(to || ""),
+      bcc ? "Bcc: " + headerSafe(bcc) : "",
+      "Subject: " + headerSafe(subject),
+      "MIME-Version: 1.0",
+      'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+      "",
+      "--" + boundary,
+      'Content-Type: text/plain; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      text || "",
+      "",
+      "--" + boundary,
+      'Content-Type: text/html; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      html || "",
+      "",
+      "--" + boundary + "--",
+      ""
+    ].filter(function(x){ return x !== null && x !== undefined; }).join("\r\n");
+  }
+
+  function downloadEml(subject, eml){
+    const blob = new Blob([eml], {type:"message/rfc822"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = headerSafe(subject).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80) + "_premium.eml";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+  }
+
+  function removeSignatureUi(){
+    const sig = document.getElementById("emailSignatureHtml");
+    if(sig){
+      const card = sig.closest(".card");
+      if(card) card.remove();
+    }
+    try{ localStorage.removeItem("vib_email_signature_html_v1"); }catch(e){}
+  }
+
+  const oldOpenEmailReview = window.openEmailReview;
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof oldOpenEmailReview === "function") oldOpenEmailReview.apply(this, arguments);
+    setTimeout(function(){
+      removeSignatureUi();
+      let tool = null;
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      else { const r = getRecipients(); if(r.length) tool = r[0].tool; }
+      if(!tool) return;
+      const subject = subjectFor(tool);
+      const html = premiumMailHtml(tool, "PREVIEW");
+      const subjectEl = document.getElementById("modalSubject");
+      const bodyEl = document.getElementById("modalBody");
+      const emailSubject = document.getElementById("emailSubject");
+      const emailBody = document.getElementById("emailBody");
+      const recipientEl = document.getElementById("modalRecipient");
+      if(subjectEl) subjectEl.textContent = subject;
+      if(bodyEl) bodyEl.innerHTML = html;
+      if(emailSubject) emailSubject.value = subject;
+      if(emailBody) emailBody.value = html;
+      if(recipientEl) recipientEl.textContent = "BCC recipients";
+    }, 450);
+  };
+
+  window.queueEmails = function(fromModal){
+    removeSignatureUi();
+    const recipients = getRecipients();
+    if(!recipients.length){ alert("No recipients found."); return; }
+    const tool = recipients[0].tool || {};
+    const campaignId = makeCampaignId();
+    const subject = subjectFor(tool);
+    const bcc = recipients.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join("; ");
+    const html = premiumMailHtml(tool, campaignId);
+    const text = plainText(tool, campaignId);
+    downloadEml(subject, buildEml(OUTLOOK_TO, bcc, subject, html, text));
+
+    const sentTime = new Date().toLocaleString();
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.campaignId = campaignId;
+        r.user.lastCampaignId = campaignId;
+      }
+    });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: sentTime,
+        type: "Mail Sent",
+        tool: safe(tool.name),
+        count: recipients.length,
+        sender: OUTLOOK_TO,
+        status: "Outlook Draft",
+        campaignId: campaignId,
+        recipients: recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean)
+      });
+      emailLogs = emailLogs.slice(0, 100);
+      try{ localStorage.setItem(typeof LOG_KEY !== "undefined" ? LOG_KEY : "vib_lm_logs_v2", JSON.stringify(emailLogs)); }catch(e){}
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof toast === "function") toast("Created premium Outlook .eml draft and logged campaign");
+  };
+
+  const oldRenderEmail = window.renderEmail;
+  window.renderEmail = function(){
+    if(typeof oldRenderEmail === "function") oldRenderEmail.apply(this, arguments);
+    setTimeout(removeSignatureUi, 50);
+  };
+  document.addEventListener("DOMContentLoaded", function(){ setTimeout(removeSignatureUi, 800); });
+  window.addEventListener("load", function(){ setTimeout(removeSignatureUi, 1000); });
+})();
+</script>
+
+<script>
+// ===== ULTRA PREMIUM EML TEMPLATE V10 =====
+// Better Outlook-compatible HTML. Note: Outlook requires Ctrl+Click only while the sender is editing a draft.
+// After the email is sent and opened by recipients in reading mode, the buttons are clickable normally.
+(function(){
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+
+  function safe(v){ return String(v == null ? "" : v); }
+  function esc(v){
+    return safe(v).replace(/[&<>"']/g, function(m){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
+    });
+  }
+  function headerSafe(v){ return safe(v).replace(/[\r\n]+/g," ").trim(); }
+  function currentType(){
+    const el = document.getElementById("reviewEmailType");
+    return (el && el.value) || (typeof currentTemplate !== "undefined" ? currentTemplate : "renew") || "renew";
+  }
+  function formatVNDate(v){
+    if(!v) return "-";
+    try{
+      if(typeof formatDateVN === "function") return formatDateVN(v);
+      const d = new Date(v);
+      if(isNaN(d)) return v;
+      return String(d.getDate()).padStart(2,"0") + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + d.getFullYear();
+    }catch(e){ return v; }
+  }
+  function pageBase(){ return location.href.split("?")[0].split("#")[0]; }
+  function makeCampaignId(){ return "Cmp" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function actionUrl(action, tool, campaignId){
+    const p = new URLSearchParams({
+      action: action,
+      tool: safe(tool && tool.name),
+      cid: safe(campaignId || "")
+    });
+    return pageBase() + "?" + p.toString();
+  }
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u,ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){
+      try{ const r = reviewRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    if(typeof emailRecipients === "function"){
+      try{ const r = emailRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    return [];
+  }
+  function subjectFor(tool){
+    return currentType() === "usage" ? "[VIB] Xác nhận đã nhận phần mềm - " + safe(tool && tool.name) : "[VIB] Xác nhận gia hạn phần mềm - " + safe(tool && tool.name);
+  }
+  function ultraMailHtml(tool, campaignId){
+    const isUsage = currentType() === "usage";
+    const title = isUsage ? "Xác nhận đã nhận phần mềm" : "Xác nhận tiếp tục sử dụng / gia hạn";
+    const intro = isUsage
+      ? "Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới. Nếu chưa nhận hoặc không còn nhu cầu sử dụng, vui lòng chọn Từ chối để IT ghi nhận và xử lý."
+      : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.";
+    const confirm = esc(actionUrl("confirm", tool, campaignId));
+    const decline = esc(actionUrl("decline", tool, campaignId));
+    const name = esc(tool && tool.name);
+    const vendor = esc((tool && tool.vendor) || "-");
+    const renewal = esc(formatVNDate(tool && tool.renewal));
+
+    return `<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#edf4fb;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#172033">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#edf4fb;margin:0;padding:26px 0">
+    <tr>
+      <td align="center" style="padding:0 12px">
+        <table role="presentation" width="660" cellspacing="0" cellpadding="0" border="0" style="width:660px;max-width:100%;background:#ffffff;border-radius:22px;overflow:hidden;border:1px solid #dfe7f3;box-shadow:0 18px 44px rgba(15,23,42,.14)">
+          <tr>
+            <td style="background:#0b5cab;padding:0">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="padding:24px 28px;background:#0b5cab">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="vertical-align:middle">
+                          <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#dbeafe;font-weight:800">VIB Software License Management</div>
+                          <div style="font-size:25px;line-height:1.25;color:#ffffff;font-weight:900;margin-top:8px">${esc(title)}</div>
+                        </td>
+                        <td align="right" style="vertical-align:middle;width:92px">
+                          <img src="https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png" alt="VIB" width="92" style="display:block;width:92px;height:auto;background:#ffffff;border-radius:16px;padding:9px 11px;border:0;outline:none;text-decoration:none">
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr><td style="height:5px;background:#f37021;font-size:0;line-height:0">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:28px 30px 10px 30px">
+              <p style="margin:0 0 14px 0;font-size:15px;line-height:1.7;color:#172033">Kính gửi Anh/Chị,</p>
+              <p style="margin:0;font-size:15px;line-height:1.7;color:#344054">${esc(intro)}</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:18px 30px 8px 30px">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #dbe7f7;border-radius:18px;background:#fbfdff;overflow:hidden">
+                <tr>
+                  <td style="padding:18px 20px;background:#f8fbff;border-bottom:1px solid #e6eef8">
+                    <div style="font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#667085;font-weight:900">Thông tin phần mềm</div>
+                    <div style="font-size:20px;line-height:1.35;color:#0b5cab;font-weight:900;margin-top:7px">${name}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="padding:15px 18px;border-bottom:1px solid #edf2f7;width:38%;font-size:13px;color:#667085;font-weight:800">Nhà cung cấp</td>
+                        <td style="padding:15px 18px;border-bottom:1px solid #edf2f7;font-size:14px;color:#172033;font-weight:700">${vendor}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:15px 18px;font-size:13px;color:#667085;font-weight:800">Ngày gia hạn</td>
+                        <td style="padding:15px 18px;font-size:14px;color:#172033;font-weight:700">${renewal}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:22px 30px 10px 30px">
+              <div style="font-size:15px;line-height:1.6;color:#344054;margin-bottom:16px">Vui lòng chọn một trong hai lựa chọn bên dưới:</div>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                <tr>
+                  <td align="center" bgcolor="#16a34a" style="border-radius:14px;background:#16a34a;box-shadow:0 6px 14px rgba(22,163,74,.22)">
+                    <a href="${confirm}" target="_blank" style="display:inline-block;padding:14px 30px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:900;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;border-radius:14px">Xác nhận</a>
+                  </td>
+                  <td style="width:14px;font-size:0;line-height:0">&nbsp;</td>
+                  <td align="center" bgcolor="#dc2626" style="border-radius:14px;background:#dc2626;box-shadow:0 6px 14px rgba(220,38,38,.18)">
+                    <a href="${decline}" target="_blank" style="display:inline-block;padding:14px 30px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:900;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;border-radius:14px">Từ chối</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+
+          <tr>
+            <td style="padding:20px 30px 28px 30px;border-top:1px solid #edf2f7;background:#fbfdff">
+              <p style="margin:0;font-size:14px;line-height:1.7;color:#344054">Trân trọng,<br><b>IT Software Asset Management</b></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+<!-- V14 Myriad Pro Luxury: regenerated file with Outlook-friendly email typography. -->
+</body>
+</html>`;
+  }
+  function plainText(tool, campaignId){
+    return [
+      currentType() === "usage" ? "Xác nhận đã nhận phần mềm" : "Xác nhận tiếp tục sử dụng / gia hạn",
+      "",
+      "Kính gửi Anh/Chị,",
+      "",
+      currentType() === "usage"
+        ? "Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới."
+        : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.",
+      "",
+      "Thông tin phần mềm:",
+      "- Phần mềm: " + safe(tool && tool.name),
+      "- Nhà cung cấp: " + safe((tool && tool.vendor) || "-"),
+      "- Ngày gia hạn: " + formatVNDate(tool && tool.renewal),
+      "",
+      "Xác nhận: " + actionUrl("confirm", tool, campaignId),
+      "Từ chối: " + actionUrl("decline", tool, campaignId),
+      "",
+      "Trân trọng,",
+      "IT Software Asset Management"
+    ].join("\r\n");
+  }
+  function buildEml(to, bcc, subject, html, text){
+    const boundary = "----=_VIB_ULTRA_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return [
+      "X-Unsent: 1",
+      "To: " + headerSafe(to || ""),
+      bcc ? "Bcc: " + headerSafe(bcc) : "",
+      "Subject: " + headerSafe(subject),
+      "MIME-Version: 1.0",
+      'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+      "",
+      "--" + boundary,
+      'Content-Type: text/plain; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      text || "",
+      "",
+      "--" + boundary,
+      'Content-Type: text/html; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      html || "",
+      "",
+      "--" + boundary + "--",
+      ""
+    ].filter(function(x){ return x !== null && x !== undefined; }).join("\r\n");
+  }
+  function downloadEml(subject, eml){
+    const blob = new Blob([eml], {type:"message/rfc822;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = headerSafe(subject).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80) + "_vib_ultra.eml";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+  }
+  function removeSignatureUi(){
+    const sig = document.getElementById("emailSignatureHtml");
+    if(sig){ const card = sig.closest(".card"); if(card) card.remove(); }
+    try{ localStorage.removeItem("vib_email_signature_html_v1"); }catch(e){}
+  }
+
+  const prevOpen = window.openEmailReview;
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof prevOpen === "function") prevOpen.apply(this, arguments);
+    setTimeout(function(){
+      removeSignatureUi();
+      let tool = null;
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      else { const r = getRecipients(); if(r.length) tool = r[0].tool; }
+      if(!tool) return;
+      const subject = subjectFor(tool);
+      const html = ultraMailHtml(tool, "PREVIEW");
+      const subjectEl = document.getElementById("modalSubject");
+      const bodyEl = document.getElementById("modalBody");
+      const emailSubject = document.getElementById("emailSubject");
+      const emailBody = document.getElementById("emailBody");
+      const recipientEl = document.getElementById("modalRecipient");
+      if(subjectEl) subjectEl.textContent = subject;
+      if(bodyEl) bodyEl.innerHTML = html;
+      if(emailSubject) emailSubject.value = subject;
+      if(emailBody) emailBody.value = html;
+      if(recipientEl) recipientEl.textContent = "BCC recipients";
+    }, 550);
+  };
+
+  window.queueEmails = function(fromModal){
+    removeSignatureUi();
+    const recipients = getRecipients();
+    if(!recipients.length){ alert("No recipients found."); return; }
+    const tool = recipients[0].tool || {};
+    const campaignId = makeCampaignId();
+    const subject = subjectFor(tool);
+    const bcc = recipients.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join("; ");
+    const html = ultraMailHtml(tool, campaignId);
+    const text = plainText(tool, campaignId);
+    downloadEml(subject, buildEml(OUTLOOK_TO, bcc, subject, html, text));
+
+    const sentTime = new Date().toLocaleString();
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.campaignId = campaignId;
+        r.user.lastCampaignId = campaignId;
+      }
+    });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: sentTime,
+        type: "Mail Sent",
+        tool: safe(tool.name),
+        count: recipients.length,
+        sender: OUTLOOK_TO,
+        status: "Outlook Draft",
+        campaignId: campaignId,
+        recipients: recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean)
+      });
+      emailLogs = emailLogs.slice(0, 100);
+      try{ localStorage.setItem(typeof LOG_KEY !== "undefined" ? LOG_KEY : "vib_lm_logs_v2", JSON.stringify(emailLogs)); }catch(e){}
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof toast === "function") toast("Created ultra premium Outlook .eml draft and logged campaign");
+  };
+
+  const prevRenderEmail = window.renderEmail;
+  window.renderEmail = function(){
+    if(typeof prevRenderEmail === "function") prevRenderEmail.apply(this, arguments);
+    setTimeout(removeSignatureUi, 50);
+  };
+  document.addEventListener("DOMContentLoaded", function(){ setTimeout(removeSignatureUi, 800); });
+  window.addEventListener("load", function(){ setTimeout(removeSignatureUi, 1000); });
+})();
+</script>
+
+<script>
+// ===== LUXURY SOFT EML TEMPLATE V13 =====
+// Softer premium Outlook-compatible HTML. Keeps VIB logo and no extra instruction sentence.
+(function(){
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+  function safe(v){ return String(v == null ? "" : v); }
+  function esc(v){ return safe(v).replace(/[&<>"']/g, function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]; }); }
+  function headerSafe(v){ return safe(v).replace(/[\r\n]+/g," ").trim(); }
+  function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function currentType(){
+    const el = document.getElementById("reviewEmailType");
+    if(el && el.value) return el.value;
+    if(typeof currentTemplate !== "undefined" && currentTemplate) return currentTemplate;
+    return "renew";
+  }
+  function pageUrl(){ return location.href.split("?")[0].split("#")[0]; }
+  function actionUrl(action, tool, campaignId){
+    const p = new URLSearchParams({ action: action, tool: safe(tool && tool.name), cid: campaignId || "" });
+    return pageUrl() + "?" + p.toString();
+  }
+  function formatVNDate(d){
+    if(!d) return "-";
+    try{
+      if(typeof formatDateVN === "function") return formatDateVN(d);
+      const x = new Date(d); if(isNaN(x)) return safe(d);
+      return String(x.getDate()).padStart(2,"0") + "-" + String(x.getMonth()+1).padStart(2,"0") + "-" + x.getFullYear();
+    }catch(e){ return safe(d); }
+  }
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u,ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){
+      try{ const r = reviewRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    if(typeof emailRecipients === "function"){
+      try{ const r = emailRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    return [];
+  }
+  function subjectFor(tool){
+    return currentType() === "usage" ? "[VIB] Xác nhận đã nhận phần mềm - " + safe(tool && tool.name) : "[VIB] Xác nhận gia hạn phần mềm - " + safe(tool && tool.name);
+  }
+  function luxuryMailHtml(tool, campaignId){
+    const isUsage = currentType() === "usage";
+    const title = isUsage ? "Xác nhận đã nhận phần mềm" : "Xác nhận tiếp tục sử dụng / gia hạn";
+    const intro = isUsage
+      ? "Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới. Nếu chưa nhận hoặc không còn nhu cầu sử dụng, vui lòng chọn Từ chối để IT ghi nhận và xử lý."
+      : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.";
+    const confirm = esc(actionUrl("confirm", tool, campaignId));
+    const decline = esc(actionUrl("decline", tool, campaignId));
+    const name = esc(tool && tool.name);
+    const vendor = esc((tool && tool.vendor) || "-");
+    const renewal = esc(formatVNDate(tool && tool.renewal));
+    const cid = esc(campaignId || "");
+    return `<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f7f2ea;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;color:#172033">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f7f2ea;margin:0;padding:34px 0">
+    <tr>
+      <td align="center" style="padding:0 14px">
+        <table role="presentation" width="690" cellspacing="0" cellpadding="0" border="0" style="width:690px;max-width:100%;background:#fffdf9;border-radius:28px;overflow:hidden;border:1px solid #eadfcd;box-shadow:0 22px 60px rgba(64,52,38,.16)">
+          <tr>
+            <td style="padding:0;background:#0b5cab">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0b5cab">
+                <tr>
+                  <td style="padding:30px 34px 28px 34px;background:#0b5cab">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="vertical-align:middle;padding-right:18px">
+                          <div style="font-size:11px;letter-spacing:.17em;text-transform:uppercase;color:#f6d7bd;font-weight:900">VIB Software License Management</div>
+                          <div style="font-size:28px;line-height:1.22;color:#ffffff;font-weight:900;margin-top:10px;letter-spacing:-.02em">${esc(title)}</div>
+                          <div style="width:64px;height:3px;background:#f37021;border-radius:999px;margin-top:16px;font-size:0;line-height:0">&nbsp;</div>
+                        </td>
+                        <td align="right" style="vertical-align:middle;width:112px">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border-radius:22px;box-shadow:0 10px 26px rgba(0,0,0,.12)">
+                            <tr><td style="padding:11px 13px"><img src="https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png" alt="VIB" width="92" style="display:block;width:92px;height:auto;border:0;outline:none;text-decoration:none"></td></tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr><td style="height:6px;background:#f37021;font-size:0;line-height:0">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:32px 38px 8px 38px;background:#fffdf9">
+              <p style="margin:0 0 14px 0;font-size:15.5px;line-height:1.75;color:#172033">Kính gửi Anh/Chị,</p>
+              <p style="margin:0;font-size:15px;line-height:1.8;color:#475467">${esc(intro)}</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:22px 38px 8px 38px;background:#fffdf9">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #eee0ca;border-radius:24px;background:#ffffff;overflow:hidden;box-shadow:0 12px 30px rgba(64,52,38,.07)">
+                <tr>
+                  <td style="padding:22px 24px;background:#fffbf5;border-bottom:1px solid #f0e4d4">
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:#9a6b3d;font-weight:900">Thông tin phần mềm</div>
+                    <div style="font-size:22px;line-height:1.35;color:#0b5cab;font-weight:900;margin-top:8px;letter-spacing:-.015em">${name}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 24px">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="padding:17px 0;border-bottom:1px solid #f1e8dc;width:36%;font-size:13px;color:#8a7462;font-weight:800">Nhà cung cấp</td>
+                        <td style="padding:17px 0;border-bottom:1px solid #f1e8dc;font-size:14.5px;color:#172033;font-weight:800">${vendor}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:17px 0;font-size:13px;color:#8a7462;font-weight:800">Ngày gia hạn</td>
+                        <td style="padding:17px 0;font-size:14.5px;color:#172033;font-weight:800">${renewal}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:28px 38px 8px 38px;background:#fffdf9">
+              <div style="font-size:15px;line-height:1.65;color:#475467;margin-bottom:18px">Vui lòng chọn một trong hai lựa chọn bên dưới:</div>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                <tr>
+                  <td align="center" bgcolor="#15803d" style="border-radius:999px;background:#15803d;box-shadow:0 10px 20px rgba(21,128,61,.22)">
+                    <a href="${confirm}" target="_blank" style="display:inline-block;padding:15px 38px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:900;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.015em">Xác nhận</a>
+                  </td>
+                  <td style="width:14px;font-size:0;line-height:0">&nbsp;</td>
+                  <td align="center" bgcolor="#b91c1c" style="border-radius:999px;background:#b91c1c;box-shadow:0 10px 20px rgba(185,28,28,.16)">
+                    <a href="${decline}" target="_blank" style="display:inline-block;padding:15px 38px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:900;font-family:Myriad Pro,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.015em">Từ chối</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:30px 38px 34px 38px;background:#fffdf9">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #f0e4d4">
+                <tr>
+                  <td style="padding-top:20px;font-size:14px;line-height:1.75;color:#475467">
+                    Trân trọng,<br><b style="color:#172033">IT Software Asset Management</b>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#fbf7f0;padding:15px 38px;color:#a58a71;font-size:11px;line-height:1.5;text-align:center;border-top:1px solid #f0e4d4">Campaign: ${cid}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+<!-- V14 Myriad Pro Luxury: regenerated file with Outlook-friendly email typography. -->
+</body>
+</html>`;
+  }
+  function plainText(tool, campaignId){
+    return [
+      currentType() === "usage" ? "Xác nhận đã nhận phần mềm" : "Xác nhận tiếp tục sử dụng / gia hạn",
+      "",
+      "Kính gửi Anh/Chị,",
+      "",
+      currentType() === "usage" ? "Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới." : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.",
+      "",
+      "Thông tin phần mềm:",
+      "- Phần mềm: " + safe(tool && tool.name),
+      "- Nhà cung cấp: " + safe((tool && tool.vendor) || "-"),
+      "- Ngày gia hạn: " + formatVNDate(tool && tool.renewal),
+      "",
+      "Xác nhận: " + actionUrl("confirm", tool, campaignId),
+      "Từ chối: " + actionUrl("decline", tool, campaignId),
+      "",
+      "Trân trọng,",
+      "IT Software Asset Management"
+    ].join("\r\n");
+  }
+  function buildEml(to, bcc, subject, html, text){
+    const boundary = "----=_VIB_LUXURY_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return [
+      "X-Unsent: 1",
+      "To: " + headerSafe(to || ""),
+      bcc ? "Bcc: " + headerSafe(bcc) : "",
+      "Subject: " + headerSafe(subject),
+      "MIME-Version: 1.0",
+      'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+      "",
+      "--" + boundary,
+      'Content-Type: text/plain; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      text || "",
+      "",
+      "--" + boundary,
+      'Content-Type: text/html; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      html || "",
+      "",
+      "--" + boundary + "--",
+      ""
+    ].filter(function(x){ return x !== null && x !== undefined; }).join("\r\n");
+  }
+  function downloadEml(subject, eml){
+    const blob = new Blob([eml], {type:"message/rfc822;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = headerSafe(subject).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80) + "_vib_luxury.eml";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+  }
+  function removeSignatureUi(){
+    const sig = document.getElementById("emailSignatureHtml");
+    if(sig){ const card = sig.closest(".card"); if(card) card.remove(); }
+    try{ localStorage.removeItem("vib_email_signature_html_v1"); }catch(e){}
+  }
+  const previousOpenReview = window.openEmailReview;
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof previousOpenReview === "function") previousOpenReview.apply(this, arguments);
+    setTimeout(function(){
+      removeSignatureUi();
+      let tool = null;
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      else { const r = getRecipients(); if(r.length) tool = r[0].tool; }
+      if(!tool) return;
+      const subject = subjectFor(tool);
+      const html = luxuryMailHtml(tool, "PREVIEW");
+      const subjectEl = document.getElementById("modalSubject");
+      const bodyEl = document.getElementById("modalBody");
+      const emailSubject = document.getElementById("emailSubject");
+      const emailBody = document.getElementById("emailBody");
+      const recipientEl = document.getElementById("modalRecipient");
+      if(subjectEl) subjectEl.textContent = subject;
+      if(bodyEl) bodyEl.innerHTML = html;
+      if(emailSubject) emailSubject.value = subject;
+      if(emailBody) emailBody.value = html;
+      if(recipientEl) recipientEl.textContent = "BCC recipients";
+    }, 700);
+  };
+  window.queueEmails = function(fromModal){
+    removeSignatureUi();
+    const recipients = getRecipients();
+    if(!recipients.length){ alert("No recipients found."); return; }
+    const tool = recipients[0].tool || {};
+    const campaignId = makeCampaignId();
+    const subject = subjectFor(tool);
+    const bcc = recipients.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join("; ");
+    const html = luxuryMailHtml(tool, campaignId);
+    const text = plainText(tool, campaignId);
+    downloadEml(subject, buildEml(OUTLOOK_TO, bcc, subject, html, text));
+    const sentTime = new Date().toLocaleString();
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.campaignId = campaignId;
+        r.user.lastCampaignId = campaignId;
+      }
+    });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: sentTime,
+        type: "Mail Sent",
+        tool: safe(tool.name),
+        count: recipients.length,
+        sender: OUTLOOK_TO,
+        status: "Outlook Draft",
+        campaignId: campaignId,
+        recipients: recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean)
+      });
+      emailLogs = emailLogs.slice(0, 100);
+      try{ localStorage.setItem(typeof LOG_KEY !== "undefined" ? LOG_KEY : "vib_lm_logs_v2", JSON.stringify(emailLogs)); }catch(e){}
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof toast === "function") toast("Created luxury Outlook .eml draft and logged campaign");
+  };
+  const previousRenderEmail = window.renderEmail;
+  window.renderEmail = function(){
+    if(typeof previousRenderEmail === "function") previousRenderEmail.apply(this, arguments);
+    setTimeout(removeSignatureUi, 50);
+  };
+  document.addEventListener("DOMContentLoaded", function(){ setTimeout(removeSignatureUi, 800); });
+  window.addEventListener("load", function(){ setTimeout(removeSignatureUi, 1000); });
+})();
+</script>
+
+<style>
+/* ===== V15: Review modal fix + hide campaign blocks under mail ===== */
+#emailModal .modal-card{
+  width:min(960px, calc(100vw - 32px)) !important;
+  max-height:88vh !important;
+  overflow:auto !important;
+  border-radius:30px !important;
+  padding:22px !important;
+}
+#emailModal .paper{
+  max-width:100% !important;
+  overflow:hidden !important;
+  border-radius:24px !important;
+  background:linear-gradient(180deg,#ffffff,#fbfdff) !important;
+}
+#emailModal #modalBody{
+  max-width:100% !important;
+  overflow-x:auto !important;
+  word-break:normal !important;
+}
+#emailModal #modalBody table{
+  max-width:100% !important;
+}
+#emailModal #modalBody img{
+  max-width:100% !important;
+  height:auto !important;
+}
+#emailModal .meta{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+#emailModal .meta-box strong{
+  word-break:break-word !important;
+}
+#emailModal .review-send-list{
+  display:none !important;
+}
+#emailCampaignRows{
+  display:none !important;
+}
+#emailCampaignRows.closest-hidden-placeholder{display:none!important;}
+@media(max-width:760px){
+  #emailModal .modal-card{width:calc(100vw - 18px)!important;padding:14px!important;border-radius:22px!important}
+  #emailModal .meta{grid-template-columns:1fr!important}
+}
+</style>
+<script>
+// ===== V15: softer luxury EML + no campaign section in email/review =====
+(function(){
+  const OUTLOOK_TO_V15 = "quang.phamvan@vib.com.vn";
+  const LOGO_URL_V15 = "https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png";
+
+  function safe(v){ return String(v == null ? "" : v); }
+  function esc(v){ return safe(v).replace(/[&<>\"']/g, function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#039;"}[m]; }); }
+  function headerSafe(v){ return safe(v).replace(/[\r\n]+/g," ").trim(); }
+  function pageUrl(){ return location.href.split("?")[0].split("#")[0]; }
+  function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function currentType(){
+    const el = document.getElementById("reviewEmailType");
+    if(el && el.value) return el.value;
+    if(typeof currentTemplate !== "undefined" && currentTemplate) return currentTemplate;
+    return "renew";
+  }
+  function actionUrl(action, tool, campaignId){
+    const p = new URLSearchParams({action: action, tool: safe(tool && tool.name), cid: safe(campaignId || "")});
+    return pageUrl() + "?" + p.toString();
+  }
+  function formatVNDateV15(d){
+    if(!d) return "-";
+    try{
+      if(typeof formatDateVN === "function") return formatDateVN(d);
+      const x = new Date(d); if(isNaN(x)) return safe(d);
+      return String(x.getDate()).padStart(2,"0") + "-" + String(x.getMonth()+1).padStart(2,"0") + "-" + x.getFullYear();
+    }catch(e){ return safe(d); }
+  }
+  function subjectFor(tool){
+    return currentType() === "usage" ? "[VIB] Xác nhận đã nhận phần mềm - " + safe(tool && tool.name) : "[VIB] Xác nhận gia hạn phần mềm - " + safe(tool && tool.name);
+  }
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u,ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
+    }
+    if(typeof reviewRecipients === "function"){
+      try{ const r = reviewRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    if(typeof emailRecipients === "function"){
+      try{ const r = emailRecipients(); if(r && r.length) return r; }catch(e){}
+    }
+    return [];
+  }
+  function luxuryHtmlV15(tool, campaignId){
+    const isUsage = currentType() === "usage";
+    const title = isUsage ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn phần mềm";
+    const intro = isUsage
+      ? "Vui lòng xác nhận Anh/Chị đã nhận và vẫn cần sử dụng phần mềm bên dưới."
+      : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.";
+    const name = esc(tool && tool.name);
+    const vendor = esc((tool && tool.vendor) || "-");
+    const renewal = esc(formatVNDateV15(tool && tool.renewal));
+    const confirm = esc(actionUrl("confirm", tool, campaignId));
+    const decline = esc(actionUrl("decline", tool, campaignId));
+    return `<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f4efe7;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;color:#172033">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;padding:42px 0;background:linear-gradient(180deg,#f8f2ea 0%,#efe5d8 100%)">
+    <tr>
+      <td align="center" style="padding:0 16px">
+        <table role="presentation" width="700" cellspacing="0" cellpadding="0" border="0" style="width:700px;max-width:100%;border-collapse:separate;background:#fffaf3;border-radius:34px;overflow:hidden;border:1px solid #eadac6;box-shadow:0 28px 70px rgba(74,58,38,.18)">
+          <tr>
+            <td style="padding:0;background:#083f88">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#083f88 0%,#0b5cab 55%,#1c70bf 100%)">
+                <tr>
+                  <td style="padding:34px 38px 30px 38px">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="vertical-align:middle;padding-right:20px">
+                          <div style="font-size:11px;line-height:1.4;letter-spacing:.20em;text-transform:uppercase;color:#f7c7a0;font-weight:900">VIB Software License Management</div>
+                          <div style="font-size:31px;line-height:1.18;color:#ffffff;font-weight:900;margin-top:10px;letter-spacing:-.025em">${esc(title)}</div>
+                          <div style="font-size:14px;line-height:1.7;color:#e8f1ff;margin-top:12px;max-width:470px">${esc(intro)}</div>
+                        </td>
+                        <td align="right" style="width:132px;vertical-align:top">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background:rgba(255,255,255,.96);border-radius:26px;box-shadow:0 14px 34px rgba(0,0,0,.16)">
+                            <tr><td style="padding:13px 15px"><img src="${LOGO_URL_V15}" alt="VIB" width="96" style="display:block;width:96px;height:auto;border:0;outline:none;text-decoration:none"></td></tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr><td style="height:7px;background:linear-gradient(90deg,#f37021,#ffb26b,#f37021);font-size:0;line-height:0">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:34px 40px 12px 40px;background:#fffaf3">
+              <p style="margin:0 0 14px 0;font-size:16px;line-height:1.75;color:#172033">Kính gửi Anh/Chị,</p>
+              <p style="margin:0;font-size:15.5px;line-height:1.85;color:#536072">Thông tin phần mềm cần xác nhận được trình bày bên dưới.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 40px 10px 40px;background:#fffaf3">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #eadcc8;border-radius:28px;overflow:hidden;box-shadow:0 16px 36px rgba(74,58,38,.08)">
+                <tr>
+                  <td style="padding:24px 26px;background:linear-gradient(180deg,#fffdf9,#fff5e9);border-bottom:1px solid #efe1cf">
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#a06d3e;font-weight:900">Software details</div>
+                    <div style="font-size:24px;line-height:1.3;color:#083f88;font-weight:900;margin-top:9px;letter-spacing:-.018em">${name}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:2px 26px 4px 26px">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="padding:18px 0;border-bottom:1px solid #f1e6d8;width:34%;font-size:13px;color:#947965;font-weight:900">Nhà cung cấp</td>
+                        <td style="padding:18px 0;border-bottom:1px solid #f1e6d8;font-size:15px;color:#172033;font-weight:800">${vendor}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:18px 0;font-size:13px;color:#947965;font-weight:900">Ngày gia hạn</td>
+                        <td style="padding:18px 0;font-size:15px;color:#172033;font-weight:800">${renewal}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:30px 40px 16px 40px;background:#fffaf3">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                <tr>
+                  <td align="center" bgcolor="#138a43" style="border-radius:999px;background:linear-gradient(135deg,#16a34a,#087b35);box-shadow:0 12px 26px rgba(22,163,74,.28)">
+                    <a href="${confirm}" target="_blank" style="display:inline-block;padding:16px 44px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Xác nhận</a>
+                  </td>
+                  <td style="width:16px;font-size:0;line-height:0">&nbsp;</td>
+                  <td align="center" bgcolor="#b42318" style="border-radius:999px;background:linear-gradient(135deg,#dc2626,#9f1717);box-shadow:0 12px 26px rgba(180,35,24,.22)">
+                    <a href="${decline}" target="_blank" style="display:inline-block;padding:16px 44px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Từ chối</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 40px 36px 40px;background:#fffaf3">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #eadcc8">
+                <tr>
+                  <td style="padding-top:22px;font-size:14.5px;line-height:1.75;color:#536072">
+                    Trân trọng,<br><b style="color:#172033">IT Software Asset Management</b>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  }
+  function plainText(tool, campaignId){
+    return [
+      currentType() === "usage" ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn phần mềm",
+      "",
+      "Kính gửi Anh/Chị,",
+      "",
+      "Vui lòng xác nhận thông tin phần mềm bên dưới.",
+      "",
+      "Thông tin phần mềm:",
+      "- Phần mềm: " + safe(tool && tool.name),
+      "- Nhà cung cấp: " + safe((tool && tool.vendor) || "-"),
+      "- Ngày gia hạn: " + formatVNDateV15(tool && tool.renewal),
+      "",
+      "Xác nhận: " + actionUrl("confirm", tool, campaignId),
+      "Từ chối: " + actionUrl("decline", tool, campaignId),
+      "",
+      "Trân trọng,",
+      "IT Software Asset Management"
+    ].join("\r\n");
+  }
+  function buildEml(to, bcc, subject, html, text){
+    const boundary = "----=_VIB_SOFT_LUX_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return [
+      "X-Unsent: 1",
+      "To: " + headerSafe(to || ""),
+      bcc ? "Bcc: " + headerSafe(bcc) : "",
+      "Subject: " + headerSafe(subject),
+      "MIME-Version: 1.0",
+      'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+      "",
+      "--" + boundary,
+      'Content-Type: text/plain; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      text || "",
+      "",
+      "--" + boundary,
+      'Content-Type: text/html; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      html || "",
+      "",
+      "--" + boundary + "--",
+      ""
+    ].filter(function(x){ return x !== null && x !== undefined; }).join("\r\n");
+  }
+  function downloadEml(subject, eml){
+    const blob = new Blob([eml], {type:"message/rfc822;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = headerSafe(subject).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80) + "_vib_soft_luxury.eml";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+  }
+  function hideCampaignUi(){
+    const rows = document.getElementById("emailCampaignRows");
+    if(rows){
+      const card = rows.closest(".card");
+      if(card) card.style.display = "none";
+    }
+    document.querySelectorAll(".review-send-list").forEach(function(el){ el.style.display = "none"; });
+  }
+  const previousOpenReview = window.openEmailReview;
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof previousOpenReview === "function") previousOpenReview.apply(this, arguments);
+    setTimeout(function(){
+      hideCampaignUi();
+      let tool = null;
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      else { const r = getRecipients(); if(r.length) tool = r[0].tool; }
+      if(!tool) return;
+      const subject = subjectFor(tool);
+      const html = luxuryHtmlV15(tool, "PREVIEW");
+      const subjectEl = document.getElementById("modalSubject");
+      const bodyEl = document.getElementById("modalBody");
+      const emailSubject = document.getElementById("emailSubject");
+      const emailBody = document.getElementById("emailBody");
+      const recipientEl = document.getElementById("modalRecipient");
+      if(subjectEl) subjectEl.textContent = subject;
+      if(bodyEl) bodyEl.innerHTML = html;
+      if(emailSubject) emailSubject.value = subject;
+      if(emailBody) emailBody.value = html;
+      if(recipientEl) recipientEl.textContent = "BCC recipients";
+    }, 900);
+  };
+  window.queueEmails = function(fromModal){
+    hideCampaignUi();
+    const recipients = getRecipients();
+    if(!recipients.length){ alert("No recipients found."); return; }
+    const tool = recipients[0].tool || {};
+    const campaignId = makeCampaignId();
+    const subject = subjectFor(tool);
+    const bcc = recipients.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join("; ");
+    const html = luxuryHtmlV15(tool, campaignId);
+    const text = plainText(tool, campaignId);
+    downloadEml(subject, buildEml(OUTLOOK_TO_V15, bcc, subject, html, text));
+    const sentTime = new Date().toLocaleString();
+    recipients.forEach(function(r){
+      if(r.user){
+        r.user.lastEmailSent = sentTime;
+        r.user.emailSendStatus = "Outlook Draft";
+        r.user.campaignId = campaignId;
+        r.user.lastCampaignId = campaignId;
+      }
+    });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({
+        time: sentTime,
+        type: "Mail Sent",
+        tool: safe(tool.name),
+        count: recipients.length,
+        sender: OUTLOOK_TO_V15,
+        status: "Outlook Draft",
+        campaignId: campaignId,
+        recipients: recipients.map(function(r){ return r.user && r.user.email ? r.user.email : ""; }).filter(Boolean)
+      });
+      emailLogs = emailLogs.slice(0, 100);
+      try{ localStorage.setItem(typeof LOG_KEY !== "undefined" ? LOG_KEY : "vib_lm_logs_v2", JSON.stringify(emailLogs)); }catch(e){}
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof toast === "function") toast("Created Outlook .eml draft");
+  };
+  const prevRenderEmail = window.renderEmail;
+  window.renderEmail = function(){
+    if(typeof prevRenderEmail === "function") prevRenderEmail.apply(this, arguments);
+    setTimeout(hideCampaignUi, 80);
+  };
+  document.addEventListener("DOMContentLoaded", function(){ setTimeout(hideCampaignUi, 900); });
+  window.addEventListener("load", function(){ setTimeout(hideCampaignUi, 1100); });
+})();
+</script>
+
+<style>
+/* ===== V24 stable fixes: send review layout + logout position ===== */
+#emailModal.modal.show{display:flex!important;align-items:center!important;justify-content:center!important;padding:18px!important;}
+#emailModal .modal-card{width:min(1040px,calc(100vw - 36px))!important;max-height:92vh!important;overflow:auto!important;padding:22px!important;border-radius:28px!important;}
+#emailModal .head{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:14px!important;flex-wrap:wrap!important;}
+#emailModal .head .actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important;overflow:visible!important;max-width:100%!important;}
+#emailModal .head .actions button{flex:0 0 auto!important;white-space:nowrap!important;}
+#emailModal .meta{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
+#emailModal .meta-box{min-width:0!important;overflow:hidden!important;}
+#emailModal .meta-box strong{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:normal!important;word-break:break-word!important;}
+#emailModal .paper{width:100%!important;max-width:100%!important;min-height:0!important;overflow:hidden!important;border-radius:24px!important;padding:0!important;background:#f7f3ed!important;}
+#emailModal #modalSubject{padding:14px 18px 0!important;word-break:break-word!important;}
+#emailModal #modalBody{width:100%!important;max-width:100%!important;overflow-x:auto!important;padding:16px!important;box-sizing:border-box!important;}
+#emailModal #modalBody .vib-review-preview{width:100%!important;max-width:760px!important;margin:0 auto!important;}
+#emailModal #modalBody table{max-width:100%!important;}
+#emailModal #modalBody img{max-width:100%!important;height:auto!important;}
+#emailModal .review-send-list{display:none!important;}
+#emailCampaignRows{display:none!important;}
+#tab-email .card:has(#emailCampaignRows){display:none!important;}
+.top .actions{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;overflow:visible!important;}
+@media(max-width:720px){
+  #emailModal .modal-card{width:calc(100vw - 16px)!important;padding:14px!important;border-radius:22px!important;}
+  #emailModal .meta{grid-template-columns:1fr!important;}
+  #emailModal #modalBody{padding:10px!important;}
+}
+</style>
+<script>
+// ===== V24 stable: rebuild only review/email preview, keep app UI intact =====
+(function(){
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+  const LOGO_URL = "https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png";
+  function s(v){return String(v==null?"":v);} 
+  function h(v){return s(v).replace(/[&<>\"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m];});}
+  function header(v){return s(v).replace(/[\r\n]+/g," ").trim();}
+  function page(){return location.href.split("?")[0].split("#")[0];}
+  function typeNow(){const el=document.getElementById("reviewEmailType");return (el&&el.value)||window.currentTemplate||"renew";}
+  function dateVN(d){if(!d)return "-";const x=new Date(d);if(isNaN(x))return h(d);return String(x.getDate()).padStart(2,"0")+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+x.getFullYear();}
+  function cid(){return "C"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);}
+  function actionUrl(action,tool,campaignId){return page()+"?action="+encodeURIComponent(action)+"&tool="+encodeURIComponent(s(tool&&tool.name))+"&cid="+encodeURIComponent(campaignId||"");}
+  function subject(tool){return typeNow()==="usage" ? "[VIB] Xác nhận đã nhận phần mềm - "+s(tool&&tool.name) : "[VIB] Xác nhận gia hạn license - "+s(tool&&tool.name);}
+  function recipients(){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
+      const tool=state.tools[currentReviewToolScope];
+      return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
+    }
+    try{ if(typeof reviewRecipients==="function"){const r=reviewRecipients(); if(r&&r.length)return r;} }catch(e){}
+    try{ if(typeof emailRecipients==="function"){const r=emailRecipients(); if(r&&r.length)return r;} }catch(e){}
+    return [];
+  }
+  function emailMarkup(tool,campaignId){
+    const isUsage=typeNow()==="usage";
+    const title=isUsage?"Xác nhận đã nhận phần mềm":"License";
+    const name=h(s(tool&&tool.name)||"-");
+    const vendor=h(s((tool&&tool.vendor)||"-"));
+    const renewal=dateVN(tool&&tool.renewal);
+    const confirm=actionUrl("confirm",tool,campaignId);
+    const decline=actionUrl("decline",tool,campaignId);
+    const intro=isUsage?"Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới để IT ghi nhận và xử lý đúng hạn.":"Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.";
+    return `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;background:#f6efe6;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;color:#172033">
+  <tr><td align="center" style="padding:26px 12px">
+    <table role="presentation" width="720" cellspacing="0" cellpadding="0" border="0" style="width:720px;max-width:100%;background:#fffaf3;border-radius:34px;overflow:hidden;border:1px solid #ead8c2;box-shadow:0 24px 70px rgba(68,49,28,.16)">
+      <tr><td style="padding:0;background:#082f6b">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#06285d,#0b5cab 58%,#125f9d)">
+          <tr><td style="padding:30px 36px 28px 36px">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+              <td style="vertical-align:top;padding-right:18px">
+                <div style="font-size:11px;line-height:1.4;letter-spacing:.20em;text-transform:uppercase;color:#f7c7a0;font-weight:900">VIB Software License Management</div>
+                <div style="font-size:34px;line-height:1.12;color:#ffffff;font-weight:900;margin-top:12px;letter-spacing:-.03em">${h(title)}</div>
+              </td>
+              <td align="right" style="width:126px;vertical-align:top">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background:rgba(255,255,255,.96);border-radius:24px;box-shadow:0 14px 34px rgba(0,0,0,.16)"><tr><td style="padding:13px 15px"><img src="${LOGO_URL}" alt="VIB" width="96" style="display:block;width:96px;height:auto;border:0"></td></tr></table>
+              </td>
+            </tr></table>
+          </td></tr>
+          <tr><td style="height:7px;background:linear-gradient(90deg,#f37021,#ffbd7b,#f37021);font-size:0;line-height:0">&nbsp;</td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:34px 40px 12px 40px;background:#fffaf3">
+        <p style="margin:0 0 13px 0;font-size:16px;line-height:1.75;color:#172033">Kính gửi Anh/Chị,</p>
+        <p style="margin:0;font-size:15.5px;line-height:1.85;color:#536072">${h(intro)}</p>
+      </td></tr>
+      <tr><td style="padding:18px 40px 10px 40px;background:#fffaf3">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #eadcc8;border-radius:28px;overflow:hidden;box-shadow:0 16px 36px rgba(74,58,38,.08)">
+          <tr><td style="padding:24px 26px;background:linear-gradient(180deg,#fffdf9,#fff5e9);border-bottom:1px solid #efe1cf">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#a06d3e;font-weight:900">Software details</div>
+            <div style="font-size:24px;line-height:1.3;color:#083f88;font-weight:900;margin-top:9px;letter-spacing:-.018em">${name}</div>
+          </td></tr>
+          <tr><td style="padding:2px 26px 4px 26px">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr><td style="padding:18px 0;border-bottom:1px solid #f1e6d8;width:34%;font-size:13px;color:#947965;font-weight:900">Nhà cung cấp</td><td style="padding:18px 0;border-bottom:1px solid #f1e6d8;font-size:15px;color:#172033;font-weight:800">${vendor}</td></tr>
+              <tr><td style="padding:18px 0;font-size:13px;color:#947965;font-weight:900">Ngày gia hạn</td><td style="padding:18px 0;font-size:15px;color:#172033;font-weight:800">${renewal}</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td align="center" style="padding:30px 40px 16px 40px;background:#fffaf3">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center"><tr>
+          <td align="center" bgcolor="#138a43" style="border-radius:999px;background:linear-gradient(135deg,#17ad52,#087b35);box-shadow:0 12px 26px rgba(22,163,74,.28)"><a href="${confirm}" target="_blank" style="display:inline-block;padding:16px 44px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Xác nhận</a></td>
+          <td style="width:16px;font-size:0;line-height:0">&nbsp;</td>
+          <td align="center" bgcolor="#b42318" style="border-radius:999px;background:linear-gradient(135deg,#dc2626,#9f1717);box-shadow:0 12px 26px rgba(180,35,24,.22)"><a href="${decline}" target="_blank" style="display:inline-block;padding:16px 44px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Từ chối</a></td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:28px 40px 36px 40px;background:#fffaf3"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #eadcc8"><tr><td style="padding-top:22px;font-size:14.5px;line-height:1.75;color:#536072">Trân trọng,<br><b style="color:#172033">IT Software Asset Management</b></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+</table>`;
+  }
+  function fullHtml(tool,campaignId){return '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f6efe6">'+emailMarkup(tool,campaignId)+'</body></html>';}
+  function plain(tool,campaignId){return [subject(tool),"","Kính gửi Anh/Chị,","",typeNow()==="usage"?"Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới để IT ghi nhận và xử lý đúng hạn.":"Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.","","Thông tin phần mềm:","- Phần mềm: "+s(tool&&tool.name),"- Nhà cung cấp: "+s((tool&&tool.vendor)||"-"),"- Ngày gia hạn: "+dateVN(tool&&tool.renewal),"","Xác nhận: "+actionUrl("confirm",tool,campaignId),"Từ chối: "+actionUrl("decline",tool,campaignId),"","Trân trọng,","IT Software Asset Management"].join("\r\n");}
+  function eml(to,bcc,sub,html,text){const b="----=_VIB_V24_"+Date.now().toString(36)+Math.random().toString(36).slice(2);return ["X-Unsent: 1","To: "+header(to),bcc?"Bcc: "+header(bcc):"","Subject: "+header(sub),"MIME-Version: 1.0",'Content-Type: multipart/alternative; boundary="'+b+'"',"","--"+b,'Content-Type: text/plain; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",text,"","--"+b,'Content-Type: text/html; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",html,"","--"+b+"--",""] .join("\r\n");}
+  function dl(sub,content){const blob=new Blob([content],{type:"message/rfc822;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=header(sub).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80)+"_vib_license.eml";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},5000);}
+  function hideCampaign(){const rows=document.getElementById("emailCampaignRows");if(rows){const c=rows.closest(".card");if(c)c.style.display="none";}document.querySelectorAll(".review-send-list").forEach(function(x){x.style.display="none";});}
+  function reorderLogout(){const actions=document.querySelector(".top .actions");if(!actions)return;const admin=[...actions.querySelectorAll("button")].find(b=>String(b.getAttribute("onclick")||"").includes("adminLogout"));const user=[...actions.querySelectorAll("button")].find(b=>String(b.getAttribute("onclick")||"").includes("userLogout"));if(admin&&user&&admin.nextSibling!==user)admin.insertAdjacentElement("afterend",user);}
+  const oldOpen=window.openEmailReview;
+  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();reorderLogout();let tool=null;if(toolIndex!=null&&window.state&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-review-preview">'+emailMarkup(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},250);};
+  window.queueEmails=function(fromModal){hideCampaign();const rs=recipients();if(!rs.length){alert("No recipients found.");return;}const tool=rs[0].tool||{};const campaignId=cid();const sub=subject(tool);const bcc=rs.map(function(x){return x&&x.user?x.user.email:"";}).filter(Boolean).join("; ");dl(sub,eml(OUTLOOK_TO,bcc,sub,fullHtml(tool,campaignId),plain(tool,campaignId)));const sentTime=new Date().toLocaleString();rs.forEach(function(r){if(r.user){r.user.lastEmailSent=sentTime;r.user.emailSendStatus="Outlook Draft";r.user.campaignId=campaignId;r.user.lastCampaignId=campaignId;}});if(typeof emailLogs!=="undefined"){emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:campaignId,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});emailLogs=emailLogs.slice(0,100);try{localStorage.setItem(typeof LOG_KEY!=="undefined"?LOG_KEY:"vib_lm_logs_v2",JSON.stringify(emailLogs));}catch(e){}}if(typeof saveState==="function")saveState();if(typeof renderEmail==="function")renderEmail();if(typeof renderEmailLog==="function")renderEmailLog();if(typeof renderModalSendList==="function")renderModalSendList();if(fromModal&&typeof closeEmailModal==="function")closeEmailModal();if(typeof toast==="function")toast("Created Outlook .eml draft");};
+  const oldRender=window.renderEmail;
+  window.renderEmail=function(){if(typeof oldRender==="function")oldRender.apply(this,arguments);setTimeout(function(){hideCampaign();reorderLogout();},100);};
+  document.addEventListener("DOMContentLoaded",function(){setTimeout(function(){hideCampaign();reorderLogout();},800);});
+  window.addEventListener("load",function(){setTimeout(function(){hideCampaign();reorderLogout();},1000);});
+})();
+</script>
+<!-- ===== FINAL REQUEST PATCH: responsive Send Review + no License wording + luxury EML ===== -->
+<style>
+/* FINAL: Send Review modal never breaks viewport */
+#emailModal.modal.show{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:14px!important;
+  overflow:hidden!important;
+}
+#emailModal .modal-card{
+  width:min(1120px,calc(100vw - 28px))!important;
+  max-width:calc(100vw - 28px)!important;
+  max-height:calc(100vh - 28px)!important;
+  overflow:auto!important;
+  border-radius:28px!important;
+  padding:20px!important;
+  box-sizing:border-box!important;
+}
+#emailModal .head{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:12px!important;
+  align-items:start!important;
+}
+#emailModal .head .actions{
+  display:flex!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+  justify-content:flex-end!important;
+  overflow:visible!important;
+}
+#emailModal .head .actions button{
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+}
+#emailModal .meta{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+#emailModal .meta-box{
+  min-width:0!important;
+}
+#emailModal .meta-box strong{
+  display:block!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#emailModal .paper{
+  width:100%!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  padding:0!important;
+  border-radius:26px!important;
+  background:#f6efe6!important;
+}
+#emailModal #modalSubject{
+  padding:14px 18px 0!important;
+  line-height:1.35!important;
+  word-break:break-word!important;
+}
+#emailModal #modalBody{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:visible!important;
+  padding:14px!important;
+  box-sizing:border-box!important;
+}
+#emailModal #modalBody .vib-final-preview{
+  width:100%!important;
+  max-width:760px!important;
+  margin:0 auto!important;
+  overflow:hidden!important;
+}
+#emailModal #modalBody table{
+  max-width:100%!important;
+}
+#emailModal #modalBody img{
+  max-width:100%!important;
+  height:auto!important;
+}
+#emailModal .review-send-list{display:none!important;}
+@media(max-width:900px){
+  #emailModal .head{grid-template-columns:1fr!important;}
+  #emailModal .head .actions{justify-content:flex-start!important;}
+  #emailModal .meta{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media(max-width:560px){
+  #emailModal.modal.show{padding:8px!important;}
+  #emailModal .modal-card{width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;max-height:calc(100vh - 16px)!important;padding:12px!important;border-radius:20px!important;}
+  #emailModal .meta{grid-template-columns:1fr!important;}
+  #emailModal #modalBody{padding:8px!important;}
+}
+</style>
+<script>
+(function(){
+  const OUTLOOK_TO="quang.phamvan@vib.com.vn";
+  const LOGO_URL="https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png";
+  function s(v){return String(v==null?"":v);} 
+  function h(v){return s(v).replace(/[&<>\"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m];});}
+  function header(v){return s(v).replace(/[\r\n]+/g," ").trim();}
+  function page(){return location.href.split("?")[0].split("#")[0];}
+  function typeNow(){const el=document.getElementById("reviewEmailType");return (el&&el.value)||window.currentTemplate||"renew";}
+  function dateVN(d){if(!d)return "-";const x=new Date(d);if(isNaN(x))return h(d);return String(x.getDate()).padStart(2,"0")+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+x.getFullYear();}
+  function cid(){return "C"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);}
+  function actionUrl(action,tool,campaignId){return page()+"?action="+encodeURIComponent(action)+"&tool="+encodeURIComponent(s(tool&&tool.name))+"&cid="+encodeURIComponent(campaignId||"");}
+  function subject(tool){return typeNow()==="usage" ? "[VIB] Xác nhận đã nhận phần mềm - "+s(tool&&tool.name) : "[VIB] Xác nhận gia hạn phần mềm - "+s(tool&&tool.name);}
+  function recipients(){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
+      const tool=state.tools[currentReviewToolScope];
+      return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
+    }
+    try{ if(typeof reviewRecipients==="function"){const r=reviewRecipients(); if(r&&r.length)return r;} }catch(e){}
+    try{ if(typeof emailRecipients==="function"){const r=emailRecipients(); if(r&&r.length)return r;} }catch(e){}
+    return [];
+  }
+  function mailHtml(tool,campaignId){
+    const isUsage=typeNow()==="usage";
+    const title=isUsage?"Xác nhận đã nhận phần mềm":"Xác nhận gia hạn phần mềm";
+    const name=h(s(tool&&tool.name)||"-");
+    const vendor=h(s((tool&&tool.vendor)||"-"));
+    const renewal=dateVN(tool&&tool.renewal);
+    const confirm=actionUrl("confirm",tool,campaignId);
+    const decline=actionUrl("decline",tool,campaignId);
+    const intro=isUsage?"Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới để IT ghi nhận và xử lý đúng hạn.":"Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.";
+    return `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;background:#f4eadf;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;color:#172033">
+  <tr><td align="center" style="padding:28px 12px">
+    <table role="presentation" width="720" cellspacing="0" cellpadding="0" border="0" style="width:720px;max-width:100%;background:#fffaf3;border-radius:36px;overflow:hidden;border:1px solid #e7d0b6;box-shadow:0 26px 80px rgba(63,45,24,.18)">
+      <tr><td style="padding:0;background:#06285d">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#051f4d,#0b5cab 60%,#0f73b7)">
+          <tr><td style="padding:32px 38px 28px 38px">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+              <td style="vertical-align:top;padding-right:18px">
+                <div style="font-size:11px;line-height:1.4;letter-spacing:.22em;text-transform:uppercase;color:#ffc79b;font-weight:900">VIB Software Management</div>
+                <div style="font-size:33px;line-height:1.14;color:#ffffff;font-weight:900;margin-top:12px;letter-spacing:-.03em">${h(title)}</div>
+                <div style="width:86px;height:4px;background:#f37021;border-radius:999px;margin-top:18px;font-size:0;line-height:0">&nbsp;</div>
+              </td>
+              <td align="right" style="width:128px;vertical-align:top">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background:rgba(255,255,255,.96);border-radius:24px;box-shadow:0 14px 34px rgba(0,0,0,.16)"><tr><td style="padding:13px 15px"><img src="${LOGO_URL}" alt="VIB" width="96" style="display:block;width:96px;height:auto;border:0"></td></tr></table>
+              </td>
+            </tr></table>
+          </td></tr>
+          <tr><td style="height:7px;background:linear-gradient(90deg,#f37021,#ffd0a8,#f37021);font-size:0;line-height:0">&nbsp;</td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:34px 40px 12px 40px;background:#fffaf3">
+        <p style="margin:0 0 13px 0;font-size:16px;line-height:1.75;color:#172033">Kính gửi Anh/Chị,</p>
+        <p style="margin:0;font-size:15.5px;line-height:1.85;color:#536072">${h(intro)}</p>
+      </td></tr>
+      <tr><td style="padding:18px 40px 10px 40px;background:#fffaf3">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #eadcc8;border-radius:28px;overflow:hidden;box-shadow:0 16px 36px rgba(74,58,38,.08)">
+          <tr><td style="padding:24px 26px;background:linear-gradient(180deg,#fffdf9,#fff5e9);border-bottom:1px solid #efe1cf">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#a06d3e;font-weight:900">Thông tin phần mềm</div>
+            <div style="font-size:24px;line-height:1.3;color:#083f88;font-weight:900;margin-top:9px;letter-spacing:-.018em">${name}</div>
+          </td></tr>
+          <tr><td style="padding:2px 26px 4px 26px">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr><td style="padding:18px 0;border-bottom:1px solid #f1e6d8;width:34%;font-size:13px;color:#947965;font-weight:900">Nhà cung cấp</td><td style="padding:18px 0;border-bottom:1px solid #f1e6d8;font-size:15px;color:#172033;font-weight:800">${vendor}</td></tr>
+              <tr><td style="padding:18px 0;font-size:13px;color:#947965;font-weight:900">Ngày gia hạn</td><td style="padding:18px 0;font-size:15px;color:#172033;font-weight:800">${renewal}</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:22px 40px 0 40px;background:#fffaf3">
+        <div style="background:#fff6eb;border:1px solid #f1d3b4;border-radius:18px;padding:14px 18px;color:#835534;font-size:13.5px;line-height:1.65">Anh/Chị vui lòng chọn một trong hai lựa chọn bên dưới. Hệ thống sẽ ghi nhận phản hồi theo email VIB của Anh/Chị.</div>
+      </td></tr>
+      <tr><td align="center" style="padding:28px 40px 16px 40px;background:#fffaf3">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center"><tr>
+          <td align="center" bgcolor="#138a43" style="border-radius:999px;background:linear-gradient(135deg,#17ad52,#087b35);box-shadow:0 12px 26px rgba(22,163,74,.28)"><a href="${confirm}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Xác nhận</a></td>
+          <td style="width:16px;font-size:0;line-height:0">&nbsp;</td>
+          <td align="center" bgcolor="#b42318" style="border-radius:999px;background:linear-gradient(135deg,#dc2626,#9f1717);box-shadow:0 12px 26px rgba(180,35,24,.22)"><a href="${decline}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Từ chối</a></td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:28px 40px 36px 40px;background:#fffaf3"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #eadcc8"><tr><td style="padding-top:22px;font-size:14.5px;line-height:1.75;color:#536072">Trân trọng,<br><b style="color:#172033">IT Software Asset Management</b></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+</table>`;
+  }
+  function fullHtml(tool,campaignId){return '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4eadf">'+mailHtml(tool,campaignId)+'</body></html>';}
+  function plain(tool,campaignId){return [subject(tool),"","Kính gửi Anh/Chị,","",typeNow()==="usage"?"Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới để IT ghi nhận và xử lý đúng hạn.":"Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.","","Thông tin phần mềm:","- Phần mềm: "+s(tool&&tool.name),"- Nhà cung cấp: "+s((tool&&tool.vendor)||"-"),"- Ngày gia hạn: "+dateVN(tool&&tool.renewal),"","Xác nhận: "+actionUrl("confirm",tool,campaignId),"Từ chối: "+actionUrl("decline",tool,campaignId),"","Trân trọng,","IT Software Asset Management"].join("\r\n");}
+  function eml(to,bcc,sub,html,text){const b="----=_VIB_FINAL_"+Date.now().toString(36)+Math.random().toString(36).slice(2);return ["X-Unsent: 1","To: "+header(to),bcc?"Bcc: "+header(bcc):"","Subject: "+header(sub),"MIME-Version: 1.0",'Content-Type: multipart/alternative; boundary="'+b+'"',"","--"+b,'Content-Type: text/plain; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",text,"","--"+b,'Content-Type: text/html; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",html,"","--"+b+"--",""] .join("\r\n");}
+  function dl(sub,content){const blob=new Blob([content],{type:"message/rfc822;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=header(sub).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80)+"_vib_review.eml";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},5000);}
+  function hideCampaign(){const rows=document.getElementById("emailCampaignRows");if(rows){const c=rows.closest(".card");if(c)c.style.display="none";}document.querySelectorAll(".review-send-list").forEach(function(x){x.style.display="none";});}
+  const oldOpen=window.openEmailReview;
+  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();let tool=null;if(toolIndex!=null&&window.state&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-final-preview">'+mailHtml(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},120);};
+  window.queueEmails=function(fromModal){hideCampaign();const rs=recipients();if(!rs.length){alert("No recipients found.");return;}const tool=rs[0].tool||{};const campaignId=cid();const sub=subject(tool);const bcc=rs.map(function(x){return x&&x.user?x.user.email:"";}).filter(Boolean).join("; ");dl(sub,eml(OUTLOOK_TO,bcc,sub,fullHtml(tool,campaignId),plain(tool,campaignId)));const sentTime=new Date().toLocaleString();rs.forEach(function(r){if(r.user){r.user.lastEmailSent=sentTime;r.user.emailSendStatus="Outlook Draft";r.user.campaignId=campaignId;r.user.lastCampaignId=campaignId;}});if(typeof emailLogs!=="undefined"){emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:campaignId,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});emailLogs=emailLogs.slice(0,100);try{localStorage.setItem(typeof LOG_KEY!=="undefined"?LOG_KEY:"vib_lm_logs_v2",JSON.stringify(emailLogs));}catch(e){}}if(typeof saveState==="function")saveState();if(typeof renderEmail==="function")renderEmail();if(typeof renderEmailLog==="function")renderEmailLog();if(typeof renderModalSendList==="function")renderModalSendList();if(fromModal&&typeof closeEmailModal==="function")closeEmailModal();if(typeof toast==="function")toast("Created premium Outlook .eml draft");};
+  const oldRender=window.renderEmail;
+  window.renderEmail=function(){if(typeof oldRender==="function")oldRender.apply(this,arguments);setTimeout(hideCampaign,80);};
+  document.addEventListener("DOMContentLoaded",function(){setTimeout(hideCampaign,800);});
+  window.addEventListener("load",function(){setTimeout(hideCampaign,1000);});
 })();
 </script>
