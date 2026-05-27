@@ -5535,6 +5535,194 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 })();
 </script>
 
+
+
+<!-- ===== FINAL PATCH: Campaigns Sent status sync by Campaign ID ===== -->
+<style>
+/* Re-enable and stabilize Campaigns Sent table. */
+#emailCampaignRows{
+  display:block!important;
+}
+#tab-email .card:has(#emailCampaignRows){
+  display:block!important;
+}
+#emailCampaignRows .email-campaign-table{
+  table-layout:fixed!important;
+  width:100%!important;
+  min-width:980px!important;
+}
+#emailCampaignRows .email-campaign-table th:nth-child(1),
+#emailCampaignRows .email-campaign-table td:nth-child(1){width:31%!important;}
+#emailCampaignRows .email-campaign-table th:nth-child(2),
+#emailCampaignRows .email-campaign-table td:nth-child(2){width:13%!important;}
+#emailCampaignRows .email-campaign-table th:nth-child(3),
+#emailCampaignRows .email-campaign-table td:nth-child(3){width:13%!important;}
+#emailCampaignRows .email-campaign-table th:nth-child(4),
+#emailCampaignRows .email-campaign-table td:nth-child(4){width:16%!important;}
+#emailCampaignRows .email-campaign-table th:nth-child(5),
+#emailCampaignRows .email-campaign-table td:nth-child(5){width:16%!important;}
+#emailCampaignRows .email-campaign-table th:nth-child(6),
+#emailCampaignRows .email-campaign-table td:nth-child(6){width:11%!important;}
+#emailCampaignRows .campaign-email-text{
+  display:block!important;
+  max-width:40ch!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+</style>
+<script>
+(function(){
+  function s(v){ return String(v == null ? "" : v); }
+  function esc(v){
+    return s(v).replace(/[&<>\"']/g,function(m){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m];
+    });
+  }
+  function chip(status){
+    if(status === "Confirmed") return "active-chip";
+    if(status === "Declined") return "bad-chip";
+    if(status === "Outlook Draft" || status === "Sent" || status === "Sent via Outlook") return "info-chip";
+    if(status === "Not Sent") return "bad-chip";
+    return "warn-chip";
+  }
+  function shortEmail40(email){
+    email = s(email);
+    return email.length > 40 ? email.slice(0,37) + "..." : email;
+  }
+  function allLogs(){
+    return (typeof emailLogs !== "undefined" && Array.isArray(emailLogs)) ? emailLogs : [];
+  }
+  function sentCampaigns(){
+    return allLogs().filter(function(l){
+      return (l && l.campaignId && Array.isArray(l.recipients)) || l.type === "Mail Sent";
+    });
+  }
+  function isResponseLog(l){
+    const t = s(l && l.type).toLowerCase();
+    return !!(l && l.campaignId && l.status && (
+      t.indexOf("user response") >= 0 ||
+      t.indexOf("user confirmation") >= 0 ||
+      t.indexOf("response updated") >= 0 ||
+      t.indexOf("confirmation updated") >= 0
+    ));
+  }
+  function responseLogs(){
+    return allLogs().filter(isResponseLog);
+  }
+  function userByEmail(email){
+    let found = null;
+    try{
+      (state.tools || []).forEach(function(t){
+        (t.users || []).forEach(function(u){
+          if(s(u.email).toLowerCase() === s(email).toLowerCase()) found = u;
+        });
+      });
+    }catch(e){}
+    return found;
+  }
+  function userResponseFromState(email, cid){
+    const u = userByEmail(email);
+    if(!u) return null;
+    if(u.campaignResponses && u.campaignResponses[cid]){
+      return {status:u.campaignResponses[cid].status || "Pending", time:u.campaignResponses[cid].replyDate || u.replyDate || "-"};
+    }
+    let found = null;
+    (u.responseHistory || []).forEach(function(r){
+      if(s(r.campaignId) === s(cid)) found = {status:r.status || "Pending", time:r.time || r.replyDate || "-"};
+    });
+    if(found) return found;
+    if(s(u.lastResponseCampaignId) === s(cid) && u.renewalStatus){
+      return {status:u.renewalStatus, time:u.replyDate || "-"};
+    }
+    return null;
+  }
+  function latestResponseFor(email, cid){
+    const emailLower = s(email).toLowerCase();
+    const list = responseLogs().filter(function(l){
+      return s(l.campaignId) === s(cid) && s(l.sender || l.email || l.userEmail).toLowerCase() === emailLower;
+    });
+    if(list.length){
+      const l = list[0];
+      return {status:l.status || "Pending", time:l.time || l.replyDate || l.updatedAt || "-"};
+    }
+    return userResponseFromState(email, cid);
+  }
+  function renderCampaignRowsSynced(){
+    const box = document.getElementById("emailCampaignRows");
+    if(!box) return;
+    const card = box.closest(".card");
+    if(card) card.style.display = "block";
+    box.style.display = "block";
+
+    const campaigns = sentCampaigns();
+    if(!campaigns.length){
+      box.innerHTML = '<div class="empty">No sent mail records yet.</div>';
+      return;
+    }
+
+    box.innerHTML = campaigns.map(function(c){
+      const cid = s(c.campaignId || "");
+      const recipients = Array.isArray(c.recipients) ? c.recipients.filter(Boolean) : [];
+      const details = recipients.map(function(email){
+        const u = userByEmail(email) || {name:"", email:email};
+        const r = latestResponseFor(email, cid);
+        const status = r ? r.status : "Pending";
+        const responseTime = r ? (r.time || "-") : "-";
+        return {email:email, user:u, status:status, responseTime:responseTime};
+      });
+      const confirmed = details.filter(function(x){ return x.status === "Confirmed"; }).length;
+      const declined = details.filter(function(x){ return x.status === "Declined"; }).length;
+      const pending = Math.max(0, (Number(c.count || recipients.length || 0) - confirmed - declined));
+      const detailRows = details.length ? details.map(function(d){
+        const initialsText = (typeof initials === "function") ? initials(d.user.name || d.email) : s(d.user.name || d.email).slice(0,2).toUpperCase();
+        return '<tr>' +
+          '<td><div class="user-cell"><div class="avatar">' + esc(initialsText) + '</div><div><strong>' + esc(d.user.name || d.email) + '</strong><div class="muted campaign-email-text" title="' + esc(d.email) + '">' + esc(shortEmail40(d.email)) + '</div></div></div></td>' +
+          '<td><span class="chip ' + chip(c.status || "Outlook Draft") + '">' + esc(c.status || "Outlook Draft") + '</span></td>' +
+          '<td><span class="chip ' + chip(d.status) + '">' + esc(d.status) + '</span></td>' +
+          '<td>' + esc(c.time || "-") + '</td>' +
+          '<td>' + esc(d.responseTime || "-") + '</td>' +
+          '<td>' + esc(cid || "-") + '</td>' +
+        '</tr>';
+      }).join("") : '<tr><td colspan="6" class="muted">No recipient list stored for this campaign.</td></tr>';
+
+      return '<div class="email-campaign-card">' +
+        '<div class="email-campaign-head">' +
+          '<div><h3>' + esc(c.tool || "Unknown Software") + '</h3><div class="muted">' + esc(c.time || "") + ' · ' + esc(cid) + '</div></div>' +
+          '<div class="email-campaign-actions">' +
+            '<span class="chip info-chip">Sent ' + esc(c.count || recipients.length || 0) + '</span>' +
+            '<span class="chip warn-chip">Pending ' + pending + '</span>' +
+            '<span class="chip active-chip">Confirmed ' + confirmed + '</span>' +
+            '<span class="chip bad-chip">Declined ' + declined + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="table-wrap"><table class="email-campaign-table"><thead><tr><th>User</th><th>Mail Status</th><th>Response</th><th>Sent Time</th><th>Response Time</th><th>Campaign</th></tr></thead><tbody>' + detailRows + '</tbody></table></div>' +
+      '</div>';
+    }).join("");
+  }
+
+  // Update status immediately after online data loads or Email tab renders.
+  const oldRenderEmail = window.renderEmail;
+  window.renderEmail = function(){
+    if(typeof oldRenderEmail === "function") oldRenderEmail.apply(this, arguments);
+    setTimeout(renderCampaignRowsSynced, 80);
+    setTimeout(renderCampaignRowsSynced, 400);
+  };
+  const oldApplyOnlinePayload = window.applyOnlinePayload;
+  if(typeof oldApplyOnlinePayload === "function"){
+    window.applyOnlinePayload = function(){
+      const result = oldApplyOnlinePayload.apply(this, arguments);
+      setTimeout(renderCampaignRowsSynced, 100);
+      setTimeout(renderCampaignRowsSynced, 500);
+      return result;
+    };
+  }
+  window.renderCampaignRowsSynced = renderCampaignRowsSynced;
+  document.addEventListener("DOMContentLoaded", function(){ setTimeout(renderCampaignRowsSynced, 900); });
+  window.addEventListener("load", function(){ setTimeout(renderCampaignRowsSynced, 1200); });
+})();
+</script>
+
 </body></html>
 
 <script>
