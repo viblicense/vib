@@ -807,16 +807,6 @@ body.login-locked > #toast{
   .email-campaign-table{min-width:980px!important}
 }
 
-/* ===== CAMPAIGN EMAIL 40 CHARACTER DISPLAY ===== */
-.email-campaign-table .campaign-email-text{
-  max-width:40ch!important;
-  width:40ch!important;
-  display:block!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  white-space:nowrap!important;
-}
-
 </style>
 </head>
 <body class="login-locked">
@@ -3046,10 +3036,6 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
 
   function safe(v){ return String(v == null ? "" : v); }
-  function shortEmail40(v){
-    const s = safe(v);
-    return s.length > 40 ? s.slice(0, 40) + "..." : s;
-  }
   function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
   function logs(){ return (typeof emailLogs !== "undefined" && Array.isArray(emailLogs)) ? emailLogs : []; }
 
@@ -3288,7 +3274,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
         const time = r ? (r.time || "-") : "-";
         return `
           <tr>
-            <td><div class="user-cell"><div class="avatar">${initials(u.name || email)}</div><div><strong>${esc(u.name || email)}</strong><div class="muted campaign-email-text" title="${esc(email)}">${esc(shortEmail40(email))}</div></div></div></td>
+            <td><div class="user-cell"><div class="avatar">${initials(u.name || email)}</div><div><strong>${esc(u.name || email)}</strong><div class="muted">${esc(email)}</div></div></div></td>
             <td><span class="chip info-chip">${esc(c.status || "Outlook Draft")}</span></td>
             <td><span class="chip ${chip(status)}">${esc(status)}</span></td>
             <td>${esc(c.time || "-")}</td>
