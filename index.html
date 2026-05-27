@@ -755,6 +755,68 @@ body.login-locked > #toast{
   transform:translateX(24px);
 }
 
+
+
+/* ===== CAMPAIGNS SENT FIXED COLUMN LAYOUT ===== */
+.email-campaign-table{
+  width:100%!important;
+  min-width:980px!important;
+  table-layout:fixed!important;
+}
+.email-campaign-table th,
+.email-campaign-table td{
+  box-sizing:border-box!important;
+  vertical-align:middle!important;
+  overflow:hidden!important;
+}
+.email-campaign-table th:nth-child(1),
+.email-campaign-table td:nth-child(1){width:30%!important}
+.email-campaign-table th:nth-child(2),
+.email-campaign-table td:nth-child(2){width:13%!important}
+.email-campaign-table th:nth-child(3),
+.email-campaign-table td:nth-child(3){width:12%!important}
+.email-campaign-table th:nth-child(4),
+.email-campaign-table td:nth-child(4){width:16%!important}
+.email-campaign-table th:nth-child(5),
+.email-campaign-table td:nth-child(5){width:16%!important}
+.email-campaign-table th:nth-child(6),
+.email-campaign-table td:nth-child(6){width:13%!important}
+.email-campaign-table .user-cell{
+  min-width:0!important;
+  width:100%!important;
+}
+.email-campaign-table .user-cell > div:last-child{
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.email-campaign-table .user-cell strong,
+.email-campaign-table .user-cell .muted{
+  display:block!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.email-campaign-table td:nth-child(4),
+.email-campaign-table td:nth-child(5),
+.email-campaign-table td:nth-child(6){
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important;
+}
+@media(max-width:900px){
+  .email-campaign-table{min-width:980px!important}
+}
+
+/* ===== CAMPAIGN EMAIL 40 CHARACTER DISPLAY ===== */
+.email-campaign-table .campaign-email-text{
+  max-width:40ch!important;
+  width:40ch!important;
+  display:block!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
 </style>
 </head>
 <body class="login-locked">
@@ -2984,6 +3046,10 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
 
   function safe(v){ return String(v == null ? "" : v); }
+  function shortEmail40(v){
+    const s = safe(v);
+    return s.length > 40 ? s.slice(0, 40) + "..." : s;
+  }
   function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
   function logs(){ return (typeof emailLogs !== "undefined" && Array.isArray(emailLogs)) ? emailLogs : []; }
 
@@ -3222,7 +3288,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
         const time = r ? (r.time || "-") : "-";
         return `
           <tr>
-            <td><div class="user-cell"><div class="avatar">${initials(u.name || email)}</div><div><strong>${esc(u.name || email)}</strong><div class="muted">${esc(email)}</div></div></div></td>
+            <td><div class="user-cell"><div class="avatar">${initials(u.name || email)}</div><div><strong>${esc(u.name || email)}</strong><div class="muted campaign-email-text" title="${esc(email)}">${esc(shortEmail40(email))}</div></div></div></td>
             <td><span class="chip info-chip">${esc(c.status || "Outlook Draft")}</span></td>
             <td><span class="chip ${chip(status)}">${esc(status)}</span></td>
             <td>${esc(c.time || "-")}</td>
@@ -7514,5 +7580,1167 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   window.renderEmail=function(){if(typeof oldRender==="function")oldRender.apply(this,arguments);setTimeout(hideCampaign,80);};
   document.addEventListener("DOMContentLoaded",function(){setTimeout(hideCampaign,800);});
   window.addEventListener("load",function(){setTimeout(hideCampaign,1000);});
+})();
+</script>
+
+<!-- ===== FINAL SYNC PATCH: Send Review preview = EML content ===== -->
+<style>
+#emailModal #modalBody .vib-synced-preview{width:100%!important;max-width:760px!important;margin:0 auto!important;overflow:hidden!important;}
+#emailModal #modalBody .vib-synced-preview table{max-width:100%!important;}
+#emailModal #modalBody .vib-synced-preview img{max-width:100%!important;height:auto!important;}
+</style>
+<script>
+(function(){
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+  const LOGO_URL = "https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png";
+  function s(v){ return String(v == null ? "" : v); }
+  function escHtml(v){ return s(v).replace(/[&<>\"']/g,function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]; }); }
+  function header(v){ return s(v).replace(/[\r\n]+/g," ").trim(); }
+  function baseUrl(){ return location.href.split("?")[0].split("#")[0]; }
+  function mailType(){
+    const editType = document.getElementById("reviewEmailType");
+    if(editType && editType.value) return editType.value;
+    const type = document.getElementById("emailType");
+    if(type && type.value) return type.value;
+    return window.currentTemplate || "renew";
+  }
+  function dateVN(d){
+    if(!d) return "-";
+    const x = new Date(d);
+    if(isNaN(x)) return escHtml(d);
+    return String(x.getDate()).padStart(2,"0") + "-" + String(x.getMonth()+1).padStart(2,"0") + "-" + x.getFullYear();
+  }
+  function campaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function actionUrl(action, tool, cid){
+    return baseUrl() + "?action=" + encodeURIComponent(action) + "&tool=" + encodeURIComponent(s(tool && tool.name)) + "&cid=" + encodeURIComponent(cid || "");
+  }
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u, i){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:i}; });
+    }
+    try{ if(typeof reviewRecipients === "function"){ const r = reviewRecipients(); if(r && r.length) return r; } }catch(e){}
+    try{ if(typeof emailRecipients === "function"){ const r = emailRecipients(); if(r && r.length) return r; } }catch(e){}
+    return [];
+  }
+  function subjectFor(tool){
+    return mailType() === "usage"
+      ? "[VIB] Xác nhận đã nhận phần mềm - " + s(tool && tool.name)
+      : "[VIB] Xác nhận gia hạn phần mềm - " + s(tool && tool.name);
+  }
+  function bodyContent(tool, cid){
+    const isUsage = mailType() === "usage";
+    const title = isUsage ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn phần mềm";
+    const intro = isUsage
+      ? "Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới để IT ghi nhận và xử lý đúng hạn."
+      : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.";
+    const name = escHtml(s(tool && tool.name) || "-");
+    const vendor = escHtml(s((tool && tool.vendor) || "-"));
+    const renewal = dateVN(tool && tool.renewal);
+    const confirm = actionUrl("confirm", tool, cid);
+    const decline = actionUrl("decline", tool, cid);
+    return `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;background:#f4eadf;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;color:#172033">
+  <tr><td align="center" style="padding:28px 12px">
+    <table role="presentation" width="720" cellspacing="0" cellpadding="0" border="0" style="width:720px;max-width:100%;background:#fffaf3;border-radius:36px;overflow:hidden;border:1px solid #e7d0b6;box-shadow:0 26px 80px rgba(63,45,24,.18)">
+      <tr><td style="padding:0;background:#06285d">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#051f4d,#0b5cab 60%,#0f73b7)">
+          <tr><td style="padding:32px 38px 28px 38px">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+              <td style="vertical-align:top;padding-right:18px">
+                <div style="font-size:11px;line-height:1.4;letter-spacing:.22em;text-transform:uppercase;color:#ffc79b;font-weight:900">VIB Software Management</div>
+                <div style="font-size:33px;line-height:1.14;color:#ffffff;font-weight:900;margin-top:12px;letter-spacing:-.03em">${escHtml(title)}</div>
+                <div style="width:86px;height:4px;background:#f37021;border-radius:999px;margin-top:18px;font-size:0;line-height:0">&nbsp;</div>
+              </td>
+              <td align="right" style="width:128px;vertical-align:top"><table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background:rgba(255,255,255,.96);border-radius:24px;box-shadow:0 14px 34px rgba(0,0,0,.16)"><tr><td style="padding:13px 15px"><img src="${LOGO_URL}" alt="VIB" width="96" style="display:block;width:96px;height:auto;border:0"></td></tr></table></td>
+            </tr></table>
+          </td></tr>
+          <tr><td style="height:7px;background:linear-gradient(90deg,#f37021,#ffd0a8,#f37021);font-size:0;line-height:0">&nbsp;</td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:34px 40px 12px 40px;background:#fffaf3">
+        <p style="margin:0 0 13px 0;font-size:16px;line-height:1.75;color:#172033">Kính gửi Anh/Chị,</p>
+        <p style="margin:0;font-size:15.5px;line-height:1.85;color:#536072">${escHtml(intro)}</p>
+      </td></tr>
+      <tr><td style="padding:18px 40px 10px 40px;background:#fffaf3">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #eadcc8;border-radius:28px;overflow:hidden;box-shadow:0 16px 36px rgba(74,58,38,.08)">
+          <tr><td style="padding:24px 26px;background:linear-gradient(180deg,#fffdf9,#fff5e9);border-bottom:1px solid #efe1cf">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#a06d3e;font-weight:900">Thông tin phần mềm</div>
+            <div style="font-size:24px;line-height:1.3;color:#083f88;font-weight:900;margin-top:9px;letter-spacing:-.018em">${name}</div>
+          </td></tr>
+          <tr><td style="padding:2px 26px 4px 26px">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr><td style="padding:18px 0;border-bottom:1px solid #f1e6d8;width:34%;font-size:13px;color:#947965;font-weight:900">Nhà cung cấp</td><td style="padding:18px 0;border-bottom:1px solid #f1e6d8;font-size:15px;color:#172033;font-weight:800">${vendor}</td></tr>
+              <tr><td style="padding:18px 0;font-size:13px;color:#947965;font-weight:900">Ngày gia hạn</td><td style="padding:18px 0;font-size:15px;color:#172033;font-weight:800">${renewal}</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:22px 40px 0 40px;background:#fffaf3"><div style="background:#fff6eb;border:1px solid #f1d3b4;border-radius:18px;padding:14px 18px;color:#835534;font-size:13.5px;line-height:1.65">Anh/Chị vui lòng chọn một trong hai lựa chọn bên dưới. Hệ thống sẽ ghi nhận phản hồi theo email VIB của Anh/Chị.</div></td></tr>
+      <tr><td align="center" style="padding:28px 40px 16px 40px;background:#fffaf3"><table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center"><tr>
+        <td align="center" bgcolor="#138a43" style="border-radius:999px;background:linear-gradient(135deg,#17ad52,#087b35);box-shadow:0 12px 26px rgba(22,163,74,.28)"><a href="${confirm}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Xác nhận</a></td>
+        <td style="width:16px;font-size:0;line-height:0">&nbsp;</td>
+        <td align="center" bgcolor="#b42318" style="border-radius:999px;background:linear-gradient(135deg,#dc2626,#9f1717);box-shadow:0 12px 26px rgba(180,35,24,.22)"><a href="${decline}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Từ chối</a></td>
+      </tr></table></td></tr>
+      <tr><td style="padding:28px 40px 36px 40px;background:#fffaf3"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #eadcc8"><tr><td style="padding-top:22px;font-size:14.5px;line-height:1.75;color:#536072">Trân trọng,<br><b style="color:#172033">IT Software Asset Management</b></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+</table>`;
+  }
+  function compose(tool, cid){
+    const body = bodyContent(tool, cid);
+    return {
+      subject: subjectFor(tool),
+      body: body,
+      html: '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4eadf">' + body + '</body></html>',
+      text: [subjectFor(tool),"","Kính gửi Anh/Chị,","",mailType()==="usage"?"Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới để IT ghi nhận và xử lý đúng hạn.":"Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.","","Thông tin phần mềm:","- Phần mềm: "+s(tool&&tool.name),"- Nhà cung cấp: "+s((tool&&tool.vendor)||"-"),"- Ngày gia hạn: "+dateVN(tool&&tool.renewal),"","Xác nhận: "+actionUrl("confirm",tool,cid),"Từ chối: "+actionUrl("decline",tool,cid),"","Trân trọng,","IT Software Asset Management"].join("\r\n")
+    };
+  }
+  function eml(to,bcc,mail){
+    const b = "----=_VIB_SYNC_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return ["X-Unsent: 1","To: "+header(to),bcc?"Bcc: "+header(bcc):"","Subject: "+header(mail.subject),"MIME-Version: 1.0",'Content-Type: multipart/alternative; boundary="'+b+'"',"","--"+b,'Content-Type: text/plain; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",mail.text,"","--"+b,'Content-Type: text/html; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",mail.html,"","--"+b+"--",""] .join("\r\n");
+  }
+  function download(name, content){
+    const blob = new Blob([content], {type:"message/rfc822;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = header(name).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80) + "_vib_review.eml";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+  }
+  function hideCampaign(){
+    const rows = document.getElementById("emailCampaignRows");
+    if(rows){ const card = rows.closest(".card"); if(card) card.style.display = "none"; }
+    document.querySelectorAll(".review-send-list").forEach(function(x){ x.style.display = "none"; });
+  }
+  function toolFromArgs(toolIndex){
+    if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    const rs = getRecipients();
+    return rs.length ? rs[0].tool : null;
+  }
+  window.buildMail = function(tool, cid){ return compose(tool || {}, cid || "PREVIEW"); };
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof currentReviewToolScope !== "undefined") currentReviewToolScope = toolIndex == null ? null : toolIndex;
+    const tool = toolFromArgs(toolIndex);
+    const user = tool && userIndex != null && tool.users ? tool.users[userIndex] : (getRecipients()[0] ? getRecipients()[0].user : {});
+    if(typeof currentReviewTarget !== "undefined") currentReviewTarget = {tool:tool || {}, toolIndex:toolIndex, user:user || {}, userIndex:userIndex};
+    const mail = compose(tool || {}, "PREVIEW");
+    const subj = document.getElementById("modalSubject");
+    const body = document.getElementById("modalBody");
+    const es = document.getElementById("emailSubject");
+    const eb = document.getElementById("emailBody");
+    const rec = document.getElementById("modalRecipient");
+    const mt = document.getElementById("modalTool");
+    const ms = document.getElementById("modalSender");
+    const ty = document.getElementById("modalType");
+    if(subj) subj.textContent = mail.subject;
+    if(body) body.innerHTML = '<div class="vib-synced-preview">' + mail.body + '</div>';
+    if(es) es.value = mail.subject;
+    if(eb) eb.value = mail.html;
+    if(rec) rec.textContent = "BCC recipients";
+    if(mt) mt.textContent = s(tool && tool.name);
+    if(ms) ms.textContent = OUTLOOK_TO;
+    if(ty) ty.textContent = mailType() === "usage" ? "Usage Confirmation" : "Renewal Confirmation";
+    const rs = getRecipients();
+    const list = document.getElementById("modalSendList");
+    if(list && rs.length){
+      list.innerHTML = rs.map(function(r){ return '<div class="row"><div class="user-cell"><div class="avatar">'+(typeof initials==="function"?initials(r.user.name):"U")+'</div><div><strong>'+escHtml(r.user.name||"")+'</strong><div class="muted">'+escHtml(r.user.email||"")+' · '+escHtml(r.tool.name||"")+'</div></div></div><span class="chip warn-chip">Pending</span></div>'; }).join("");
+    }
+    hideCampaign();
+    const modal = document.getElementById("emailModal");
+    if(modal) modal.classList.add("show");
+  };
+  window.queueEmails = function(fromModal){
+    hideCampaign();
+    const rs = getRecipients();
+    if(!rs.length){ alert("No recipients found."); return; }
+    const tool = rs[0].tool || {};
+    const cid = campaignId();
+    const mail = compose(tool, cid);
+    const bcc = rs.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join("; ");
+    download(mail.subject, eml(OUTLOOK_TO, bcc, mail));
+    const sentTime = new Date().toLocaleString();
+    rs.forEach(function(r){ if(r.user){ r.user.lastEmailSent = sentTime; r.user.emailSendStatus = "Outlook Draft"; r.user.campaignId = cid; r.user.lastCampaignId = cid; } });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:cid,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});
+      emailLogs = emailLogs.slice(0,100);
+      try{ localStorage.setItem(typeof LOG_KEY !== "undefined" ? LOG_KEY : "vib_lm_logs_v2", JSON.stringify(emailLogs)); }catch(e){}
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof toast === "function") toast("Created Outlook .eml same as Send Review");
+  };
+  const oldRender = window.renderEmail;
+  window.renderEmail = function(){ if(typeof oldRender === "function") oldRender.apply(this, arguments); setTimeout(hideCampaign, 80); };
+})();
+</script>
+
+<!-- ===== V25 FINAL: no-break Send Review + restore Campaigns Sent ===== -->
+<style>
+/* Restore Email Confirm campaigns that earlier hotfixes accidentally hid */
+#emailCampaignRows{display:block!important;visibility:visible!important;opacity:1!important;}
+#tab-email .card:has(#emailCampaignRows){display:block!important;visibility:visible!important;opacity:1!important;}
+/* Keep Send Review stable without affecting Campaigns Sent */
+#emailModal.modal.show{display:flex!important;align-items:center!important;justify-content:center!important;padding:18px!important;}
+#emailModal .modal-card{width:min(1040px,calc(100vw - 36px))!important;max-width:1040px!important;max-height:92vh!important;overflow:auto!important;box-sizing:border-box!important;}
+#emailModal .paper{width:100%!important;max-width:100%!important;overflow:hidden!important;box-sizing:border-box!important;padding:0!important;}
+#emailModal #modalBody{width:100%!important;max-width:100%!important;overflow-x:auto!important;box-sizing:border-box!important;padding:14px!important;}
+#emailModal #modalBody .vib-synced-preview{width:100%!important;max-width:760px!important;margin:0 auto!important;overflow:hidden!important;box-sizing:border-box!important;}
+#emailModal #modalBody .vib-synced-preview table{max-width:100%!important;}
+#emailModal #modalBody .vib-synced-preview img{max-width:100%!important;height:auto!important;}
+#emailModal .review-send-list{display:block!important;}
+@media(max-width:720px){#emailModal .modal-card{width:calc(100vw - 16px)!important;padding:14px!important}#emailModal .meta{grid-template-columns:1fr!important}#emailModal #modalBody{padding:10px!important}}
+</style>
+<script>
+(function(){
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+  function s(v){return String(v==null?"":v);} 
+  function e(v){return s(v).replace(/[&<>\"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m];});}
+  function header(v){return s(v).replace(/[\r\n]+/g," ").trim();}
+  function showCampaignUi(){
+    const rows=document.getElementById("emailCampaignRows");
+    if(rows){rows.style.display="block";rows.style.visibility="visible";rows.style.opacity="1";const card=rows.closest(".card");if(card){card.style.display="block";card.style.visibility="visible";card.style.opacity="1";}}
+  }
+  function getRecipients(){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
+      const tool=state.tools[currentReviewToolScope];
+      return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
+    }
+    if(typeof reviewRecipients==="function"){try{const r=reviewRecipients();if(r&&r.length)return r;}catch(_){}}
+    if(typeof emailRecipients==="function"){try{const r=emailRecipients();if(r&&r.length)return r;}catch(_){}}
+    return [];
+  }
+  function toolFromArgs(toolIndex){
+    if(toolIndex!=null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    const rs=getRecipients(); return rs.length?rs[0].tool:null;
+  }
+  function mailFor(tool,cid){
+    if(typeof window.buildMail==="function"){
+      const m=window.buildMail(tool||{},cid||"PREVIEW");
+      if(m && m.subject){
+        m.subject=s(m.subject).replace(/gia hạn license/ig,"gia hạn phần mềm").replace(/License Confirmation/ig,"Software Confirmation");
+        return m;
+      }
+    }
+    return {subject:"[VIB] Xác nhận gia hạn phần mềm - "+s(tool&&tool.name),body:"",html:"",text:""};
+  }
+  function boundary(){return "----=_VIB_REVIEW_"+Date.now().toString(36)+Math.random().toString(36).slice(2);} 
+  function eml(to,bcc,mail){const b=boundary();return ["X-Unsent: 1","To: "+header(to),bcc?"Bcc: "+header(bcc):"","Subject: "+header(mail.subject),"MIME-Version: 1.0",'Content-Type: multipart/alternative; boundary="'+b+'"',"","--"+b,'Content-Type: text/plain; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",mail.text||mail.subject,"","--"+b,'Content-Type: text/html; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",mail.html||mail.body||"","","--"+b+"--",""] .join("\r\n");}
+  function download(name,content){const blob=new Blob([content],{type:"message/rfc822;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=header(name).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80)+"_vib_review.eml";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},5000);}
+  window.openEmailReview=function(toolIndex,userIndex){
+    if(typeof currentReviewToolScope!=="undefined") currentReviewToolScope=toolIndex==null?null:toolIndex;
+    const tool=toolFromArgs(toolIndex)||{};
+    const rs=getRecipients();
+    const user=(tool&&userIndex!=null&&tool.users)?tool.users[userIndex]:(rs[0]?rs[0].user:{});
+    if(typeof currentReviewTarget!=="undefined") currentReviewTarget={tool:tool,toolIndex:toolIndex,user:user||{},userIndex:userIndex};
+    const mail=mailFor(tool,"PREVIEW");
+    const subj=document.getElementById("modalSubject"), body=document.getElementById("modalBody"), es=document.getElementById("emailSubject"), eb=document.getElementById("emailBody");
+    const rec=document.getElementById("modalRecipient"), mt=document.getElementById("modalTool"), ms=document.getElementById("modalSender"), ty=document.getElementById("modalType"), list=document.getElementById("modalSendList");
+    if(subj)subj.textContent=mail.subject;
+    if(body)body.innerHTML='<div class="vib-synced-preview">'+(mail.body||mail.html||"")+'</div>';
+    if(es)es.value=mail.subject;
+    if(eb)eb.value=mail.html||mail.body||"";
+    if(rec)rec.textContent="BCC recipients";
+    if(mt)mt.textContent=s(tool.name);
+    if(ms)ms.textContent=OUTLOOK_TO;
+    if(ty)ty.textContent=(document.getElementById("reviewEmailType")&&document.getElementById("reviewEmailType").value)==="usage"?"Usage Confirmation":"Renewal Confirmation";
+    if(list){list.innerHTML=rs.length?rs.map(function(r){return '<div class="row"><div class="user-cell"><div class="avatar">'+(typeof initials==="function"?initials(r.user.name):"U")+'</div><div><strong>'+e(r.user.name||"")+'</strong><div class="muted">'+e(r.user.email||"")+' · '+e(r.tool.name||"")+'</div></div></div><span class="chip warn-chip">Pending</span></div>';}).join(""):'<div class="empty">No recipients.</div>';}
+    showCampaignUi();
+    const modal=document.getElementById("emailModal"); if(modal)modal.classList.add("show");
+    setTimeout(showCampaignUi,180);
+  };
+  window.queueEmails=function(fromModal){
+    const rs=getRecipients(); if(!rs.length){alert("No recipients found.");return;}
+    const tool=rs[0].tool||{}; const cid="C"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8); const mail=mailFor(tool,cid);
+    const bcc=rs.map(function(x){return x&&x.user?x.user.email:"";}).filter(Boolean).join("; ");
+    download(mail.subject,eml(OUTLOOK_TO,bcc,mail));
+    const sentTime=new Date().toLocaleString();
+    rs.forEach(function(r){if(r.user){r.user.lastEmailSent=sentTime;r.user.emailSendStatus="Outlook Draft";r.user.campaignId=cid;r.user.lastCampaignId=cid;}});
+    if(typeof emailLogs!=="undefined"){emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:cid,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});emailLogs=emailLogs.slice(0,100);try{localStorage.setItem(typeof LOG_KEY!=="undefined"?LOG_KEY:"vib_lm_logs_v2",JSON.stringify(emailLogs));}catch(_){}}
+    if(typeof saveState==="function")saveState();
+    if(typeof renderEmail==="function")renderEmail();
+    if(typeof renderEmailLog==="function")renderEmailLog();
+    if(typeof renderModalSendList==="function")renderModalSendList();
+    showCampaignUi(); setTimeout(showCampaignUi,250);
+    if(fromModal&&typeof closeEmailModal==="function")closeEmailModal();
+    if(typeof toast==="function")toast("Created Outlook .eml same as Send Review");
+  };
+  const oldRender=window.renderEmail;
+  window.renderEmail=function(){if(typeof oldRender==="function")oldRender.apply(this,arguments);showCampaignUi();setTimeout(showCampaignUi,120);setTimeout(showCampaignUi,350);};
+  document.addEventListener("DOMContentLoaded",function(){setTimeout(showCampaignUi,1300);});
+  window.addEventListener("load",function(){setTimeout(showCampaignUi,1500);});
+})();
+</script>
+
+<!-- ===== V26 HOTFIX: Send Review full viewport preview, do not touch campaigns ===== -->
+<style>
+/* Make Send Review a full, stable modal instead of a narrow centered box */
+#emailModal.modal.show{
+  display:flex!important;
+  align-items:stretch!important;
+  justify-content:center!important;
+  padding:10px!important;
+  overflow:hidden!important;
+}
+#emailModal .modal-card{
+  width:calc(100vw - 20px)!important;
+  max-width:1280px!important;
+  height:calc(100vh - 20px)!important;
+  max-height:calc(100vh - 20px)!important;
+  overflow:auto!important;
+  box-sizing:border-box!important;
+  padding:18px!important;
+  border-radius:24px!important;
+}
+#emailModal .head{
+  position:sticky!important;
+  top:0!important;
+  z-index:20!important;
+  background:#fff!important;
+  padding-bottom:12px!important;
+  border-bottom:1px solid #edf2f7!important;
+  margin-bottom:12px!important;
+}
+#emailModal .head .actions{
+  overflow:visible!important;
+  flex-wrap:wrap!important;
+}
+#emailModal .meta{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+#emailModal .meta-box,
+#emailModal .meta-box strong{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#emailModal .paper{
+  width:100%!important;
+  max-width:100%!important;
+  overflow:visible!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  background:#f4eadf!important;
+  border-radius:24px!important;
+}
+#emailModal #modalSubject{
+  padding:14px 18px 0!important;
+  word-break:break-word!important;
+}
+#emailModal #modalBody{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:visible!important;
+  padding:14px!important;
+  box-sizing:border-box!important;
+}
+/* Critical: the email preview previously kept Outlook's 720px table width and looked cut in half. */
+#emailModal #modalBody .vib-synced-preview,
+#emailModal #modalBody .vib-final-preview,
+#emailModal #modalBody .vib-review-preview{
+  width:100%!important;
+  max-width:900px!important;
+  margin:0 auto!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+#emailModal #modalBody .vib-synced-preview table,
+#emailModal #modalBody .vib-final-preview table,
+#emailModal #modalBody .vib-review-preview table{
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+#emailModal #modalBody .vib-synced-preview table[width="720"],
+#emailModal #modalBody .vib-final-preview table[width="720"],
+#emailModal #modalBody .vib-review-preview table[width="720"],
+#emailModal #modalBody .vib-synced-preview table[width="700"],
+#emailModal #modalBody .vib-final-preview table[width="700"],
+#emailModal #modalBody .vib-review-preview table[width="700"]{
+  width:100%!important;
+  max-width:720px!important;
+}
+#emailModal #modalBody img{
+  max-width:100%!important;
+  height:auto!important;
+}
+#emailModal .review-send-list{
+  display:block!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+#emailModal #modalSendList{
+  max-height:180px!important;
+  overflow:auto!important;
+}
+@media(max-width:780px){
+  #emailModal.modal.show{padding:6px!important;}
+  #emailModal .modal-card{width:calc(100vw - 12px)!important;height:calc(100vh - 12px)!important;max-height:calc(100vh - 12px)!important;padding:12px!important;border-radius:18px!important;}
+  #emailModal .head{display:block!important;}
+  #emailModal .head .actions{justify-content:flex-start!important;margin-top:10px!important;}
+  #emailModal .head .actions button{font-size:12px!important;padding:8px 10px!important;}
+  #emailModal .meta{grid-template-columns:1fr!important;}
+  #emailModal #modalBody{padding:8px!important;}
+  #emailModal #modalBody .vib-synced-preview,
+  #emailModal #modalBody .vib-final-preview,
+  #emailModal #modalBody .vib-review-preview{max-width:100%!important;}
+}
+</style>
+<script>
+(function(){
+  function restoreCampaigns(){
+    var rows=document.getElementById("emailCampaignRows");
+    if(rows){
+      rows.style.display="block"; rows.style.visibility="visible"; rows.style.opacity="1";
+      var card=rows.closest(".card");
+      if(card){card.style.display="block"; card.style.visibility="visible"; card.style.opacity="1";}
+    }
+  }
+  function normalizeSendReviewPreview(){
+    var body=document.getElementById("modalBody");
+    if(!body) return;
+    var wrappers=body.querySelectorAll(".vib-synced-preview,.vib-final-preview,.vib-review-preview");
+    wrappers.forEach(function(w){
+      w.style.width="100%"; w.style.maxWidth="900px"; w.style.margin="0 auto"; w.style.overflow="visible";
+      w.querySelectorAll('table[width="720"],table[width="700"]').forEach(function(t){
+        t.style.width="100%";
+        t.style.maxWidth="720px";
+      });
+      w.querySelectorAll("img").forEach(function(img){img.style.maxWidth="100%"; img.style.height="auto";});
+    });
+  }
+  var oldOpen=window.openEmailReview;
+  window.openEmailReview=function(){
+    if(typeof oldOpen==="function") oldOpen.apply(this, arguments);
+    setTimeout(function(){restoreCampaigns(); normalizeSendReviewPreview();}, 60);
+    setTimeout(function(){restoreCampaigns(); normalizeSendReviewPreview();}, 260);
+  };
+  var oldRender=window.renderEmail;
+  window.renderEmail=function(){
+    if(typeof oldRender==="function") oldRender.apply(this, arguments);
+    setTimeout(restoreCampaigns,80);
+    setTimeout(restoreCampaigns,300);
+  };
+  document.addEventListener("DOMContentLoaded",function(){setTimeout(restoreCampaigns,1000);});
+  window.addEventListener("load",function(){setTimeout(restoreCampaigns,1200);});
+})();
+</script>
+
+<!-- ===== FINAL PATCH: SEND REVIEW PREVIEW 60%, EML 100% ===== -->
+<style>
+/* Only affects Send Review modal preview. The generated EML/mail HTML remains full size. */
+#emailModal .paper{
+  overflow:hidden!important;
+}
+#emailModal #modalBody{
+  overflow:auto!important;
+  background:#f8fafc!important;
+  max-height:calc(100vh - 360px)!important;
+  min-height:360px!important;
+  padding:18px!important;
+}
+#emailModal #modalBody .vib-preview-scale-shell{
+  width:100%!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  overflow:visible!important;
+}
+#emailModal #modalBody .vib-preview-scale-inner{
+  transform:scale(.6)!important;
+  transform-origin:top center!important;
+  width:760px!important;
+  max-width:760px!important;
+  min-width:760px!important;
+  pointer-events:auto!important;
+}
+#emailModal #modalBody .vib-preview-scale-inner .vib-synced-preview,
+#emailModal #modalBody .vib-preview-scale-inner .vib-final-preview,
+#emailModal #modalBody .vib-preview-scale-inner .vib-review-preview{
+  width:760px!important;
+  max-width:760px!important;
+  min-width:760px!important;
+  margin:0 auto!important;
+  transform:none!important;
+}
+#emailModal #modalBody .vib-preview-scale-inner table{
+  max-width:none!important;
+}
+@media(max-width:720px){
+  #emailModal #modalBody{
+    max-height:calc(100vh - 330px)!important;
+    min-height:320px!important;
+    padding:10px!important;
+  }
+  #emailModal #modalBody .vib-preview-scale-inner{
+    transform:scale(.52)!important;
+  }
+}
+</style>
+<script>
+(function(){
+  const PREVIEW_SCALE = 0.6;
+
+  function scaleSendReviewPreview(){
+    const body = document.getElementById("modalBody");
+    if(!body || !document.getElementById("emailModal")?.classList.contains("show")) return;
+    if(body.querySelector(".vib-preview-scale-shell")) return;
+
+    const html = body.innerHTML;
+    if(!html || html.trim() === "-" || !/(vib-synced-preview|vib-final-preview|vib-review-preview|<table)/i.test(html)) return;
+
+    body.innerHTML = '<div class="vib-preview-scale-shell"><div class="vib-preview-scale-inner">' + html + '</div></div>';
+
+    requestAnimationFrame(function(){
+      const inner = body.querySelector(".vib-preview-scale-inner");
+      const shell = body.querySelector(".vib-preview-scale-shell");
+      if(inner && shell){
+        const h = Math.ceil(inner.scrollHeight * PREVIEW_SCALE) + 24;
+        shell.style.height = h + "px";
+      }
+    });
+  }
+
+  const oldOpen = window.openEmailReview;
+  window.openEmailReview = function(){
+    if(typeof oldOpen === "function") oldOpen.apply(this, arguments);
+    setTimeout(scaleSendReviewPreview, 180);
+    setTimeout(scaleSendReviewPreview, 450);
+  };
+
+  document.addEventListener("click", function(e){
+    if(e.target && String(e.target.textContent || "").toLowerCase().includes("send review")){
+      setTimeout(scaleSendReviewPreview, 300);
+    }
+  });
+})();
+</script>
+
+<!-- ===== V27 PATCH: Send Review 70% preview + editable safe fields, EML stays 100% ===== -->
+<style>
+/* Send Review preview at 70%; generated EML is untouched at 100%. */
+#emailModal #modalBody .vib-preview-scale-inner{
+  transform:scale(.7)!important;
+}
+@media(max-width:720px){
+  #emailModal #modalBody .vib-preview-scale-inner{transform:scale(.6)!important;}
+}
+#emailModal .review-edit.show{
+  display:block!important;
+  background:#f8fafc!important;
+  border:1px solid #dfe7f3!important;
+  border-radius:18px!important;
+  padding:14px!important;
+}
+#emailModal .vib-edit-help{
+  margin:0 0 12px 0;
+  padding:10px 12px;
+  border-radius:14px;
+  background:#fff7ed;
+  color:#9a3412;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.5;
+}
+#emailModal .vib-locked-preview{
+  border:1px dashed #cbd5e1;
+  background:#fff;
+  border-radius:14px;
+  padding:11px 12px;
+  font-size:12px;
+  color:#64748b;
+  line-height:1.55;
+}
+#emailModal .vib-locked-preview b{color:#172033;}
+#emailModal .vib-edit-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+#emailModal .vib-edit-grid .full{grid-column:1/-1;}
+#emailModal .vib-edit-grid textarea{min-height:86px!important;}
+@media(max-width:760px){#emailModal .vib-edit-grid{grid-template-columns:1fr;}}
+</style>
+<script>
+(function(){
+  const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
+  const LOGO_URL = "https://inviva.vn/wp-content/uploads/2026/04/logo-vib-vector-02.png";
+  const EDIT_KEY = "vib_review_safe_edit_v27";
+  const PREVIEW_SCALE = 0.7;
+
+  function s(v){ return String(v == null ? "" : v); }
+  function esc(v){ return s(v).replace(/[&<>\"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m];}); }
+  function header(v){ return s(v).replace(/[\r\n]+/g," ").trim(); }
+  function baseUrl(){ return location.href.split("?")[0].split("#")[0]; }
+  function safeDateVN(d){
+    if(!d) return "-";
+    const x = new Date(d);
+    if(isNaN(x)) return esc(d);
+    return String(x.getDate()).padStart(2,"0") + "-" + String(x.getMonth()+1).padStart(2,"0") + "-" + x.getFullYear();
+  }
+  function mailType(){
+    const editType = document.getElementById("reviewEmailType");
+    if(editType && editType.value) return editType.value;
+    const type = document.getElementById("emailType");
+    if(type && type.value) return type.value;
+    return window.currentTemplate || "renew";
+  }
+  function defaults(type){
+    const usage = type === "usage";
+    return {
+      subjectPrefix: usage ? "[VIB] Xác nhận đã nhận phần mềm" : "[VIB] Xác nhận gia hạn phần mềm",
+      heading: usage ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn phần mềm",
+      intro: usage ? "Vui lòng xác nhận Anh/Chị đã nhận được phần mềm bên dưới để IT ghi nhận và xử lý đúng hạn." : "Vui lòng xác nhận nhu cầu tiếp tục sử dụng hoặc gia hạn phần mềm bên dưới để IT thực hiện đúng hạn.",
+      note: "Anh/Chị vui lòng chọn một trong hai lựa chọn bên dưới. Hệ thống sẽ ghi nhận phản hồi theo email VIB của Anh/Chị.",
+      signature: "IT Software Asset Management"
+    };
+  }
+  function loadEdit(){
+    try{ return JSON.parse(localStorage.getItem(EDIT_KEY) || "{}"); }catch(e){ return {}; }
+  }
+  function saveEdit(x){
+    try{ localStorage.setItem(EDIT_KEY, JSON.stringify(x || {})); }catch(e){}
+  }
+  function currentEdit(){
+    const type = mailType();
+    const d = defaults(type);
+    const all = loadEdit();
+    const saved = all[type] || {};
+    return Object.assign({}, d, saved);
+  }
+  function writeCurrentEdit(next){
+    const type = mailType();
+    const all = loadEdit();
+    all[type] = Object.assign({}, all[type] || {}, next || {});
+    saveEdit(all);
+  }
+  function campaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+  function actionUrl(action, tool, cid){
+    return baseUrl() + "?action=" + encodeURIComponent(action) + "&tool=" + encodeURIComponent(s(tool && tool.name)) + "&cid=" + encodeURIComponent(cid || "");
+  }
+  function getRecipients(){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+      const tool = state.tools[currentReviewToolScope];
+      return (tool.users || []).map(function(u,i){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:i}; });
+    }
+    try{ if(typeof reviewRecipients === "function"){ const r = reviewRecipients(); if(r && r.length) return r; } }catch(e){}
+    try{ if(typeof emailRecipients === "function"){ const r = emailRecipients(); if(r && r.length) return r; } }catch(e){}
+    return [];
+  }
+  function subjectFor(tool){
+    const e = currentEdit();
+    return header((e.subjectPrefix || defaults(mailType()).subjectPrefix) + " - " + s(tool && tool.name));
+  }
+  function mailBody(tool, cid){
+    const e = currentEdit();
+    const title = e.heading || defaults(mailType()).heading;
+    const intro = e.intro || defaults(mailType()).intro;
+    const note = e.note || defaults(mailType()).note;
+    const signature = e.signature || defaults(mailType()).signature;
+    const name = esc(s(tool && tool.name) || "-");
+    const vendor = esc(s((tool && tool.vendor) || "-"));
+    const renewal = safeDateVN(tool && tool.renewal);
+    const confirm = actionUrl("confirm", tool, cid);
+    const decline = actionUrl("decline", tool, cid);
+    return `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;background:#f4eadf;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;color:#172033">
+  <tr><td align="center" style="padding:28px 12px">
+    <table role="presentation" width="720" cellspacing="0" cellpadding="0" border="0" style="width:720px;max-width:100%;background:#fffaf3;border-radius:36px;overflow:hidden;border:1px solid #e7d0b6;box-shadow:0 26px 80px rgba(63,45,24,.18)">
+      <tr><td style="padding:0;background:#06285d">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#051f4d,#0b5cab 60%,#0f73b7)">
+          <tr><td style="padding:32px 38px 28px 38px">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+              <td style="vertical-align:top;padding-right:18px">
+                <div style="font-size:11px;line-height:1.4;letter-spacing:.22em;text-transform:uppercase;color:#ffc79b;font-weight:900">VIB Software Management</div>
+                <div style="font-size:33px;line-height:1.14;color:#ffffff;font-weight:900;margin-top:12px;letter-spacing:-.03em">${esc(title)}</div>
+                <div style="width:86px;height:4px;background:#f37021;border-radius:999px;margin-top:18px;font-size:0;line-height:0">&nbsp;</div>
+              </td>
+              <td align="right" style="width:128px;vertical-align:top"><table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background:rgba(255,255,255,.96);border-radius:24px;box-shadow:0 14px 34px rgba(0,0,0,.16)"><tr><td style="padding:13px 15px"><img src="${LOGO_URL}" alt="VIB" width="96" style="display:block;width:96px;height:auto;border:0"></td></tr></table></td>
+            </tr></table>
+          </td></tr>
+          <tr><td style="height:7px;background:linear-gradient(90deg,#f37021,#ffd0a8,#f37021);font-size:0;line-height:0">&nbsp;</td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:34px 40px 12px 40px;background:#fffaf3">
+        <p style="margin:0 0 13px 0;font-size:16px;line-height:1.75;color:#172033">Kính gửi Anh/Chị,</p>
+        <p style="margin:0;font-size:15.5px;line-height:1.85;color:#536072">${esc(intro).replace(/\n/g,"<br>")}</p>
+      </td></tr>
+      <tr><td style="padding:18px 40px 10px 40px;background:#fffaf3">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #eadcc8;border-radius:28px;overflow:hidden;box-shadow:0 16px 36px rgba(74,58,38,.08)">
+          <tr><td style="padding:24px 26px;background:linear-gradient(180deg,#fffdf9,#fff5e9);border-bottom:1px solid #efe1cf">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#a06d3e;font-weight:900">Thông tin phần mềm</div>
+            <div style="font-size:24px;line-height:1.3;color:#083f88;font-weight:900;margin-top:9px;letter-spacing:-.018em">${name}</div>
+          </td></tr>
+          <tr><td style="padding:2px 26px 4px 26px">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tr><td style="padding:18px 0;border-bottom:1px solid #f1e6d8;width:34%;font-size:13px;color:#947965;font-weight:900">Nhà cung cấp</td><td style="padding:18px 0;border-bottom:1px solid #f1e6d8;font-size:15px;color:#172033;font-weight:800">${vendor}</td></tr>
+              <tr><td style="padding:18px 0;font-size:13px;color:#947965;font-weight:900">Ngày gia hạn</td><td style="padding:18px 0;font-size:15px;color:#172033;font-weight:800">${renewal}</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:22px 40px 0 40px;background:#fffaf3"><div style="background:#fff6eb;border:1px solid #f1d3b4;border-radius:18px;padding:14px 18px;color:#835534;font-size:13.5px;line-height:1.65">${esc(note).replace(/\n/g,"<br>")}</div></td></tr>
+      <tr><td align="center" style="padding:28px 40px 16px 40px;background:#fffaf3"><table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center"><tr>
+        <td align="center" bgcolor="#138a43" style="border-radius:999px;background:linear-gradient(135deg,#17ad52,#087b35);box-shadow:0 12px 26px rgba(22,163,74,.28)"><a href="${confirm}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Xác nhận</a></td>
+        <td style="width:16px;font-size:0;line-height:0">&nbsp;</td>
+        <td align="center" bgcolor="#b42318" style="border-radius:999px;background:linear-gradient(135deg,#dc2626,#9f1717);box-shadow:0 12px 26px rgba(180,35,24,.22)"><a href="${decline}" target="_blank" style="display:inline-block;padding:16px 42px;color:#ffffff;text-decoration:none;font-size:15.5px;font-weight:900;font-family:'Myriad Pro',Myriad,Segoe UI,Arial,sans-serif;border-radius:999px;letter-spacing:.02em">Từ chối</a></td>
+      </tr></table></td></tr>
+      <tr><td style="padding:28px 40px 36px 40px;background:#fffaf3"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #eadcc8"><tr><td style="padding-top:22px;font-size:14.5px;line-height:1.75;color:#536072">Trân trọng,<br><b style="color:#172033">${esc(signature)}</b></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+</table>`;
+  }
+  function compose(tool, cid){
+    const body = mailBody(tool || {}, cid || "PREVIEW");
+    const subject = subjectFor(tool || {});
+    const text = [subject,"","Kính gửi Anh/Chị,","",currentEdit().intro,"","Thông tin phần mềm:","- Phần mềm: "+s(tool&&tool.name),"- Nhà cung cấp: "+s((tool&&tool.vendor)||"-"),"- Ngày gia hạn: "+safeDateVN(tool&&tool.renewal),"",currentEdit().note,"","Xác nhận: "+actionUrl("confirm",tool,cid),"Từ chối: "+actionUrl("decline",tool,cid),"","Trân trọng,",currentEdit().signature].join("\r\n");
+    return {subject:subject, body:body, html:'<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4eadf">'+body+'</body></html>', text:text};
+  }
+  function eml(to,bcc,mail){
+    const b = "----=_VIB_EDIT_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return ["X-Unsent: 1","To: "+header(to),bcc?"Bcc: "+header(bcc):"","Subject: "+header(mail.subject),"MIME-Version: 1.0",'Content-Type: multipart/alternative; boundary="'+b+'"',"","--"+b,'Content-Type: text/plain; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",mail.text,"","--"+b,'Content-Type: text/html; charset="UTF-8"',"Content-Transfer-Encoding: 8bit","",mail.html,"","--"+b+"--",""] .join("\r\n");
+  }
+  function download(name, content){
+    const blob = new Blob([content], {type:"message/rfc822;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = header(name).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80) + "_vib_review.eml";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+  }
+  function toolFromArgs(toolIndex){
+    if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    const rs = getRecipients();
+    return rs.length ? rs[0].tool : null;
+  }
+  function resizeScaleShell(){
+    const body = document.getElementById("modalBody");
+    if(!body) return;
+    const inner = body.querySelector(".vib-preview-scale-inner");
+    const shell = body.querySelector(".vib-preview-scale-shell");
+    if(inner && shell){ shell.style.height = (Math.ceil(inner.scrollHeight * PREVIEW_SCALE) + 28) + "px"; }
+  }
+  function setPreview(tool){
+    const body = document.getElementById("modalBody");
+    if(!body) return;
+    const mail = compose(tool || {}, "PREVIEW");
+    body.innerHTML = '<div class="vib-preview-scale-shell"><div class="vib-preview-scale-inner"><div class="vib-synced-preview">' + mail.body + '</div></div></div>';
+    setTimeout(resizeScaleShell, 30);
+    setTimeout(resizeScaleShell, 220);
+  }
+  function renderSafeEditor(tool){
+    const box = document.getElementById("reviewEditBox");
+    if(!box) return;
+    const e = currentEdit();
+    box.innerHTML = `
+      <div class="vib-edit-help">Chỉ các ô bên dưới được sửa. Logo, bố cục luxury, bảng thông tin phần mềm, nút Xác nhận/Từ chối và link tracking được khóa để email không bị bể layout.</div>
+      <div class="vib-edit-grid">
+        <div><label>Email Type</label><select id="reviewEmailType" class="small-input"><option value="renew">Renewal Confirmation</option><option value="usage">Usage Confirmation</option></select></div>
+        <div><label>Subject Prefix</label><input id="reviewSubjectPrefix" class="small-input"></div>
+        <div class="full"><label>Headline</label><input id="reviewHeadingText" class="small-input"></div>
+        <div class="full"><label>Intro / nội dung chính</label><textarea id="reviewIntroText"></textarea></div>
+        <div class="full"><label>Note / hướng dẫn trước nút xác nhận</label><textarea id="reviewNoteText"></textarea></div>
+        <div class="full"><label>Signature</label><input id="reviewSignatureText" class="small-input"></div>
+        <div class="full"><label>Phần cố định</label><div class="vib-locked-preview"><b>Đã khóa:</b> logo VIB, màu sắc/header, software name, vendor, renewal date, 2 nút Xác nhận/Từ chối, confirmation links, tracking campaign.</div></div>
+      </div>`;
+    const typeEl = document.getElementById("reviewEmailType");
+    if(typeEl) typeEl.value = mailType();
+    document.getElementById("reviewSubjectPrefix").value = e.subjectPrefix || "";
+    document.getElementById("reviewHeadingText").value = e.heading || "";
+    document.getElementById("reviewIntroText").value = e.intro || "";
+    document.getElementById("reviewNoteText").value = e.note || "";
+    document.getElementById("reviewSignatureText").value = e.signature || "";
+
+    function liveSave(){
+      if(typeEl && window.currentTemplate !== undefined) window.currentTemplate = typeEl.value;
+      writeCurrentEdit({
+        subjectPrefix:document.getElementById("reviewSubjectPrefix").value,
+        heading:document.getElementById("reviewHeadingText").value,
+        intro:document.getElementById("reviewIntroText").value,
+        note:document.getElementById("reviewNoteText").value,
+        signature:document.getElementById("reviewSignatureText").value
+      });
+      const mail = compose(tool || {}, "PREVIEW");
+      const subj = document.getElementById("modalSubject");
+      const es = document.getElementById("emailSubject");
+      const eb = document.getElementById("emailBody");
+      if(subj) subj.textContent = mail.subject;
+      if(es) es.value = mail.subject;
+      if(eb) eb.value = mail.html;
+      setPreview(tool || {});
+    }
+    ["reviewSubjectPrefix","reviewHeadingText","reviewIntroText","reviewNoteText","reviewSignatureText"].forEach(function(id){
+      const el = document.getElementById(id); if(el) el.addEventListener("input", liveSave);
+    });
+    if(typeEl){
+      typeEl.addEventListener("change", function(){
+        if(window.currentTemplate !== undefined) window.currentTemplate = this.value;
+        const d = currentEdit();
+        document.getElementById("reviewSubjectPrefix").value = d.subjectPrefix || "";
+        document.getElementById("reviewHeadingText").value = d.heading || "";
+        document.getElementById("reviewIntroText").value = d.intro || "";
+        document.getElementById("reviewNoteText").value = d.note || "";
+        document.getElementById("reviewSignatureText").value = d.signature || "";
+        liveSave();
+      });
+    }
+  }
+
+  window.buildMail = function(tool, cid){ return compose(tool || {}, cid || "PREVIEW"); };
+  window.fillReviewEditFields = function(r){ renderSafeEditor(r && r.tool ? r.tool : toolFromArgs(null)); };
+  window.toggleReviewEdit = function(){
+    const box = document.getElementById("reviewEditBox");
+    if(!box) return;
+    const tool = (typeof currentReviewTarget !== "undefined" && currentReviewTarget && currentReviewTarget.tool) ? currentReviewTarget.tool : toolFromArgs(null);
+    renderSafeEditor(tool || {});
+    box.classList.add("show");
+  };
+  window.saveReviewEdits = function(){
+    const box = document.getElementById("reviewEditBox");
+    const tool = (typeof currentReviewTarget !== "undefined" && currentReviewTarget && currentReviewTarget.tool) ? currentReviewTarget.tool : toolFromArgs(null);
+    if(box && box.classList.contains("show")){
+      writeCurrentEdit({
+        subjectPrefix:document.getElementById("reviewSubjectPrefix")?.value || defaults(mailType()).subjectPrefix,
+        heading:document.getElementById("reviewHeadingText")?.value || defaults(mailType()).heading,
+        intro:document.getElementById("reviewIntroText")?.value || defaults(mailType()).intro,
+        note:document.getElementById("reviewNoteText")?.value || defaults(mailType()).note,
+        signature:document.getElementById("reviewSignatureText")?.value || defaults(mailType()).signature
+      });
+    }
+    const mail = compose(tool || {}, "PREVIEW");
+    const subj = document.getElementById("modalSubject");
+    const es = document.getElementById("emailSubject");
+    const eb = document.getElementById("emailBody");
+    if(subj) subj.textContent = mail.subject;
+    if(es) es.value = mail.subject;
+    if(eb) eb.value = mail.html;
+    setPreview(tool || {});
+    if(typeof toast === "function") toast("Review content saved");
+  };
+  window.openEmailReview = function(toolIndex, userIndex){
+    if(typeof currentReviewToolScope !== "undefined") currentReviewToolScope = toolIndex == null ? null : toolIndex;
+    const tool = toolFromArgs(toolIndex) || {};
+    const user = tool && userIndex != null && tool.users ? tool.users[userIndex] : (getRecipients()[0] ? getRecipients()[0].user : {});
+    if(typeof currentReviewTarget !== "undefined") currentReviewTarget = {tool:tool, toolIndex:toolIndex, user:user || {}, userIndex:userIndex};
+    const mail = compose(tool, "PREVIEW");
+    const subj = document.getElementById("modalSubject");
+    const es = document.getElementById("emailSubject");
+    const eb = document.getElementById("emailBody");
+    const rec = document.getElementById("modalRecipient");
+    const mt = document.getElementById("modalTool");
+    const ms = document.getElementById("modalSender");
+    const ty = document.getElementById("modalType");
+    if(subj) subj.textContent = mail.subject;
+    if(es) es.value = mail.subject;
+    if(eb) eb.value = mail.html;
+    if(rec) rec.textContent = "BCC recipients";
+    if(mt) mt.textContent = s(tool && tool.name);
+    if(ms) ms.textContent = OUTLOOK_TO;
+    if(ty) ty.textContent = mailType() === "usage" ? "Usage Confirmation" : "Renewal Confirmation";
+    setPreview(tool);
+    const rs = getRecipients();
+    const list = document.getElementById("modalSendList");
+    if(list && rs.length){
+      list.innerHTML = rs.map(function(r){ return '<div class="row"><div class="user-cell"><div class="avatar">'+(typeof initials==="function"?initials(r.user.name):"U")+'</div><div><strong>'+esc(r.user.name||"")+'</strong><div class="muted">'+esc(r.user.email||"")+' · '+esc(r.tool.name||"")+'</div></div></div><span class="chip warn-chip">Pending</span></div>'; }).join("");
+    }
+    const modal = document.getElementById("emailModal");
+    if(modal) modal.classList.add("show");
+    const editBox = document.getElementById("reviewEditBox");
+    if(editBox) editBox.classList.remove("show");
+  };
+  window.queueEmails = function(fromModal){
+    const rs = getRecipients();
+    if(!rs.length){ alert("No recipients found."); return; }
+    const tool = rs[0].tool || {};
+    const cid = campaignId();
+    const mail = compose(tool, cid);
+    const bcc = rs.map(function(x){ return x && x.user ? x.user.email : ""; }).filter(Boolean).join("; ");
+    download(mail.subject, eml(OUTLOOK_TO, bcc, mail));
+    const sentTime = new Date().toLocaleString();
+    rs.forEach(function(r){ if(r.user){ r.user.lastEmailSent = sentTime; r.user.emailSendStatus = "Outlook Draft"; r.user.campaignId = cid; r.user.lastCampaignId = cid; } });
+    if(typeof emailLogs !== "undefined"){
+      emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:cid,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});
+      emailLogs = emailLogs.slice(0,100);
+      try{ localStorage.setItem(typeof LOG_KEY !== "undefined" ? LOG_KEY : "vib_lm_logs_v2", JSON.stringify(emailLogs)); }catch(e){}
+    }
+    if(typeof saveState === "function") saveState();
+    if(typeof renderEmail === "function") renderEmail();
+    if(typeof renderEmailLog === "function") renderEmailLog();
+    if(typeof renderModalSendList === "function") renderModalSendList();
+    if(fromModal && typeof closeEmailModal === "function") closeEmailModal();
+    if(typeof toast === "function") toast("Created Outlook .eml same as Send Review");
+  };
+})();
+</script>
+
+<!-- ===== FINAL PATCH: Clean edit mode notes + close edit after save ===== -->
+<style>
+#emailModal .vib-edit-help,
+#emailModal .vib-locked-preview,
+#emailModal .vib-edit-grid .full:has(.vib-locked-preview){
+  display:none!important;
+}
+#emailModal .review-edit.show{
+  display:block!important;
+}
+</style>
+<script>
+(function(){
+  function hideEditBox(){
+    var box = document.getElementById("reviewEditBox");
+    if(box) box.classList.remove("show");
+  }
+  var oldSaveReviewEdits = window.saveReviewEdits;
+  window.saveReviewEdits = function(){
+    if(typeof oldSaveReviewEdits === "function"){
+      oldSaveReviewEdits.apply(this, arguments);
+    }
+    setTimeout(hideEditBox, 30);
+  };
+})();
+</script>
+
+<!-- ===== FINAL PATCH: Fix VIB logo layout inside Send Review preview only ===== -->
+<style>
+/* This affects only the Send Review preview in the modal. EML/mail output remains unchanged. */
+#emailModal #modalBody .vib-preview-scale-inner img[src*="logo-vib"],
+#emailModal #modalBody .vib-preview-scale-inner img[alt="VIB"],
+#emailModal #modalBody .vib-preview-scale-inner img[alt="VIB Logo"]{
+  display:block!important;
+  width:96px!important;
+  max-width:96px!important;
+  min-width:96px!important;
+  height:auto!important;
+  max-height:44px!important;
+  object-fit:contain!important;
+  border:0!important;
+}
+#emailModal #modalBody .vib-preview-scale-inner td:has(img[src*="logo-vib"]),
+#emailModal #modalBody .vib-preview-scale-inner td:has(img[alt="VIB"]),
+#emailModal #modalBody .vib-preview-scale-inner td:has(img[alt="VIB Logo"]){
+  width:128px!important;
+  max-width:128px!important;
+  min-width:128px!important;
+  vertical-align:top!important;
+  overflow:hidden!important;
+}
+#emailModal #modalBody .vib-preview-scale-inner table:has(img[src*="logo-vib"]),
+#emailModal #modalBody .vib-preview-scale-inner table:has(img[alt="VIB"]),
+#emailModal #modalBody .vib-preview-scale-inner table:has(img[alt="VIB Logo"]){
+  table-layout:auto!important;
+}
+</style>
+<script>
+(function(){
+  function fixReviewLogo(){
+    var body = document.getElementById("modalBody");
+    var modal = document.getElementById("emailModal");
+    if(!body || !modal || !modal.classList.contains("show")) return;
+
+    body.querySelectorAll('.vib-preview-scale-inner img[src*="logo-vib"], .vib-preview-scale-inner img[alt="VIB"], .vib-preview-scale-inner img[alt="VIB Logo"]').forEach(function(img){
+      img.setAttribute("width", "96");
+      img.removeAttribute("height");
+      img.style.display = "block";
+      img.style.width = "96px";
+      img.style.maxWidth = "96px";
+      img.style.minWidth = "96px";
+      img.style.height = "auto";
+      img.style.maxHeight = "44px";
+      img.style.objectFit = "contain";
+      img.style.border = "0";
+
+      var td = img.closest("td");
+      if(td){
+        td.style.width = "128px";
+        td.style.maxWidth = "128px";
+        td.style.minWidth = "128px";
+        td.style.verticalAlign = "top";
+        td.style.overflow = "hidden";
+      }
+    });
+  }
+
+  var oldOpen = window.openEmailReview;
+  window.openEmailReview = function(){
+    if(typeof oldOpen === "function") oldOpen.apply(this, arguments);
+    setTimeout(fixReviewLogo, 80);
+    setTimeout(fixReviewLogo, 300);
+    setTimeout(fixReviewLogo, 700);
+  };
+
+  var oldSave = window.saveReviewEdits;
+  window.saveReviewEdits = function(){
+    if(typeof oldSave === "function") oldSave.apply(this, arguments);
+    setTimeout(fixReviewLogo, 80);
+    setTimeout(fixReviewLogo, 300);
+  };
+
+  document.addEventListener("click", function(e){
+    if(e.target && /Send Review|Send Mail|Save Edits|Edit Content/i.test(String(e.target.textContent || ""))){
+      setTimeout(fixReviewLogo, 250);
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", function(){
+    var body = document.getElementById("modalBody");
+    if(!body || !window.MutationObserver) return;
+    new MutationObserver(function(){ setTimeout(fixReviewLogo, 20); }).observe(body, {childList:true, subtree:true});
+  });
+})();
+</script>
+
+<!-- ===== FINAL PATCH: Adaptive full-width Send Review preview + safe VIB logo ===== -->
+<style>
+/* Send Review only: fit whole email preview into visible modal width. Mail/EML output is untouched. */
+#emailModal #modalBody{
+  overflow:auto!important;
+  overflow-x:hidden!important;
+  box-sizing:border-box!important;
+  padding:12px!important;
+  background:#f8fafc!important;
+}
+#emailModal #modalBody .vib-preview-scale-shell{
+  width:100%!important;
+  max-width:100%!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  overflow:visible!important;
+}
+#emailModal #modalBody .vib-preview-scale-inner{
+  width:760px!important;
+  min-width:760px!important;
+  max-width:760px!important;
+  transform-origin:top center!important;
+  margin:0 auto!important;
+}
+#emailModal #modalBody .vib-preview-scale-inner table{
+  max-width:none!important;
+}
+/* Cancel old logo cell width forcing because it can crop the email preview. */
+#emailModal #modalBody .vib-preview-scale-inner td:has(img[src*="logo-vib"]),
+#emailModal #modalBody .vib-preview-scale-inner td:has(img[alt="VIB"]),
+#emailModal #modalBody .vib-preview-scale-inner td:has(img[alt="VIB Logo"]){
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  overflow:visible!important;
+  vertical-align:middle!important;
+}
+#emailModal #modalBody .vib-preview-scale-inner img[src*="logo-vib"],
+#emailModal #modalBody .vib-preview-scale-inner img[alt="VIB"],
+#emailModal #modalBody .vib-preview-scale-inner img[alt="VIB Logo"]{
+  display:block!important;
+  width:84px!important;
+  max-width:84px!important;
+  min-width:0!important;
+  height:auto!important;
+  max-height:38px!important;
+  object-fit:contain!important;
+  border:0!important;
+}
+</style>
+<script>
+(function(){
+  const BASE_WIDTH = 760;
+  const MAX_SCALE = 0.70;
+  const MIN_SCALE = 0.42;
+
+  function ensurePreviewWrapped(){
+    const body = document.getElementById("modalBody");
+    const modal = document.getElementById("emailModal");
+    if(!body || !modal || !modal.classList.contains("show")) return false;
+
+    if(!body.querySelector(".vib-preview-scale-shell")){
+      const html = body.innerHTML;
+      if(!html || html.trim() === "-" || !/(vib-synced-preview|vib-final-preview|vib-review-preview|<table)/i.test(html)) return false;
+      body.innerHTML = '<div class="vib-preview-scale-shell"><div class="vib-preview-scale-inner">' + html + '</div></div>';
+    }
+    return true;
+  }
+
+  function fixLogo(){
+    const body = document.getElementById("modalBody");
+    if(!body) return;
+    body.querySelectorAll('.vib-preview-scale-inner img[src*="logo-vib"], .vib-preview-scale-inner img[alt="VIB"], .vib-preview-scale-inner img[alt="VIB Logo"]').forEach(function(img){
+      img.setAttribute("width", "84");
+      img.removeAttribute("height");
+      img.style.display = "block";
+      img.style.width = "84px";
+      img.style.maxWidth = "84px";
+      img.style.minWidth = "0";
+      img.style.height = "auto";
+      img.style.maxHeight = "38px";
+      img.style.objectFit = "contain";
+      img.style.border = "0";
+
+      const td = img.closest("td");
+      if(td){
+        td.style.width = "auto";
+        td.style.minWidth = "0";
+        td.style.maxWidth = "none";
+        td.style.overflow = "visible";
+        td.style.verticalAlign = "middle";
+      }
+    });
+  }
+
+  function fitSendReviewPreview(){
+    if(!ensurePreviewWrapped()) return;
+    const body = document.getElementById("modalBody");
+    const shell = body.querySelector(".vib-preview-scale-shell");
+    const inner = body.querySelector(".vib-preview-scale-inner");
+    if(!shell || !inner) return;
+
+    fixLogo();
+
+    const available = Math.max(260, body.clientWidth - 8);
+    const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, available / BASE_WIDTH));
+    inner.style.transform = "scale(" + scale + ")";
+    inner.style.transformOrigin = "top center";
+
+    requestAnimationFrame(function(){
+      const h = Math.ceil(inner.scrollHeight * scale) + 18;
+      shell.style.height = h + "px";
+      body.scrollLeft = 0;
+    });
+  }
+
+  const previousOpen = window.openEmailReview;
+  window.openEmailReview = function(){
+    if(typeof previousOpen === "function") previousOpen.apply(this, arguments);
+    setTimeout(fitSendReviewPreview, 80);
+    setTimeout(fitSendReviewPreview, 240);
+    setTimeout(fitSendReviewPreview, 650);
+  };
+
+  const previousSave = window.saveReviewEdits;
+  window.saveReviewEdits = function(){
+    if(typeof previousSave === "function") previousSave.apply(this, arguments);
+    setTimeout(fitSendReviewPreview, 80);
+    setTimeout(fitSendReviewPreview, 300);
+  };
+
+  window.addEventListener("resize", function(){ setTimeout(fitSendReviewPreview, 120); });
+  document.addEventListener("click", function(e){
+    if(e.target && /Send Review|Send Mail|Save Edits|Edit Content/i.test(String(e.target.textContent || ""))){
+      setTimeout(fitSendReviewPreview, 220);
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", function(){
+    const body = document.getElementById("modalBody");
+    if(body && window.MutationObserver){
+      new MutationObserver(function(){ setTimeout(fitSendReviewPreview, 30); }).observe(body, {childList:true, subtree:true});
+    }
+  });
 })();
 </script>
