@@ -807,6 +807,16 @@ body.login-locked > #toast{
   .email-campaign-table{min-width:980px!important}
 }
 
+/* ===== CAMPAIGN EMAIL 40 CHARACTER DISPLAY ===== */
+.email-campaign-table .campaign-email-text{
+  max-width:40ch!important;
+  width:40ch!important;
+  display:block!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
 </style>
 </head>
 <body class="login-locked">
@@ -3036,6 +3046,10 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   const OUTLOOK_TO = "quang.phamvan@vib.com.vn";
 
   function safe(v){ return String(v == null ? "" : v); }
+  function shortEmail40(v){
+    const s = safe(v);
+    return s.length > 40 ? s.slice(0, 40) + "..." : s;
+  }
   function makeCampaignId(){ return "C" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
   function logs(){ return (typeof emailLogs !== "undefined" && Array.isArray(emailLogs)) ? emailLogs : []; }
 
@@ -3274,7 +3288,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
         const time = r ? (r.time || "-") : "-";
         return `
           <tr>
-            <td><div class="user-cell"><div class="avatar">${initials(u.name || email)}</div><div><strong>${esc(u.name || email)}</strong><div class="muted">${esc(email)}</div></div></div></td>
+            <td><div class="user-cell"><div class="avatar">${initials(u.name || email)}</div><div><strong>${esc(u.name || email)}</strong><div class="muted campaign-email-text" title="${esc(email)}">${esc(shortEmail40(email))}</div></div></div></td>
             <td><span class="chip info-chip">${esc(c.status || "Outlook Draft")}</span></td>
             <td><span class="chip ${chip(status)}">${esc(status)}</span></td>
             <td>${esc(c.time || "-")}</td>
@@ -4508,6 +4522,8 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     const input = document.getElementById("confirmEmailInput");
     const msg = document.getElementById("confirmMsg");
     const email = (input && input.value ? input.value : "").trim().toLowerCase();
+    const params = new URLSearchParams(location.search);
+    const campaignId = params.get("cid") || params.get("campaignId") || "";
     if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
       msg.style.color = "#dc2626";
       msg.textContent = "Vui lòng nhập email hợp lệ để ghi nhận phản hồi.";
@@ -4515,20 +4531,27 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       return;
     }
     msg.style.color = "#667085";
-    msg.textContent = "Đang ghi nhận phản hồi...";
+    msg.textContent = "Đang cập nhật phản hồi...";
 
     try{
       const record = await fetchOnlineRecord(true);
       const tools = record.tools || [];
-      let found = false, displayName = "", already = false, oldStatus = "";
+      const nowIso = new Date().toISOString();
+      let found = false, displayName = "", oldStatus = "";
       tools.forEach(function(t){
         if(safe(t.name).toLowerCase() === safe(toolName).toLowerCase()){
           (t.users || []).forEach(function(u){
             if(safe(u.email).toLowerCase() === email){
               displayName = u.name || "";
               oldStatus = u.renewalStatus || "";
-              if(u.replyDate && oldStatus && oldStatus !== "Pending") already = true;
-              else { u.renewalStatus = status; u.replyDate = new Date().toISOString(); }
+              u.renewalStatus = status;
+              u.replyDate = nowIso;
+              u.lastResponseCampaignId = campaignId || u.lastResponseCampaignId || "";
+              u.lastCampaignId = campaignId || u.lastCampaignId || "";
+              if(campaignId){
+                u.campaignResponses = u.campaignResponses || {};
+                u.campaignResponses[campaignId] = {status:status, replyDate:nowIso};
+              }
               found = true;
             }
           });
@@ -4539,22 +4562,32 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
         msg.textContent = "Không tìm thấy email này trong danh sách nhận license/phần mềm.";
         return;
       }
-      if(!already){
-        const logs = record.emailLogs || record.logs || [];
-        logs.unshift({time:new Date().toLocaleString(),type:"User Confirmation",count:1,sender:email,status:status,tool:toolName});
-        await putOnlineRecord({tools:tools,emailConfig:record.emailConfig || {},emailLogs:logs.slice(0,100),updatedAt:new Date().toISOString()}, true);
-      }
+      const logs = record.emailLogs || record.logs || [];
+      logs.unshift({
+        time:new Date().toLocaleString(),
+        type:"User Confirmation Updated",
+        count:1,
+        sender:email,
+        status:status,
+        previousStatus:oldStatus || "",
+        tool:toolName,
+        campaignId:campaignId
+      });
+      await putOnlineRecord({tools:tools,emailConfig:record.emailConfig || {},emailLogs:logs.slice(0,100),updatedAt:nowIso}, true);
       clearAppLocalData();
       history.replaceState({}, "", PUBLIC_URL + "?result=success");
       document.body.innerHTML = [
-        '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:16px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08)">',
-        '<h2 style="margin-top:0;color:#0b5cab">Ghi nhận phản hồi thành công</h2>',
-        '<p><b>Trạng thái:</b> ' + htmlEsc(already ? oldStatus : status) + '</p>',
+        '<div style="min-height:100vh;background:#f4f7fb;padding:24px;box-sizing:border-box">',
+        '<div style="max-width:720px;margin:40px auto;background:#fff;padding:32px;border-radius:18px;font-family:Myriad Pro,Segoe UI,Arial;box-shadow:0 12px 28px rgba(15,23,42,.08);border:1px solid #dfe7f3">',
+        '<h2 style="margin-top:0;color:#0b5cab">Đã cập nhật phản hồi thành công</h2>',
+        '<p><b>Trạng thái mới:</b> ' + htmlEsc(status) + '</p>',
+        oldStatus && oldStatus !== status ? '<p><b>Trạng thái trước đó:</b> ' + htmlEsc(oldStatus) + '</p>' : '',
         '<p><b>Người dùng:</b> ' + htmlEsc(displayName || email) + '</p>',
         '<p><b>Email:</b> ' + htmlEsc(email) + '</p>',
         '<p><b>Phần mềm:</b> ' + htmlEsc(toolName) + '</p>',
-        already ? '<p style="color:#92400e">Bạn đã phản hồi trước đó. Hệ thống không ghi đè phản hồi cũ.</p>' : '<p>Bạn có thể đóng tab này.</p>',
-        '</div>'
+        campaignId ? '<p><b>Campaign:</b> ' + htmlEsc(campaignId) + '</p>' : '',
+        '<p>Bạn có thể đóng tab này.</p>',
+        '</div></div>'
       ].join("");
     }catch(e){
       console.error(e);
