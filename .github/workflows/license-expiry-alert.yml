@@ -2,7 +2,7 @@ name: License Expiry Alert
 
 on:
   schedule:
-  - cron: "15 1 * * *"
+    - cron: "15 1 * * *"
   workflow_dispatch:
 
 jobs:
@@ -18,113 +18,135 @@ jobs:
       - name: Install nodemailer
         run: npm install nodemailer
 
-      - name: Check licenses and send email
+      - name: Check licenses from Supabase and send email
         env:
-          JSONBIN_BIN_ID: ${{ secrets.JSONBIN_BIN_ID }}
-          JSONBIN_ACCESS_KEY: ${{ secrets.JSONBIN_ACCESS_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+          # Optional. If not set, the workflow reads table app_state, row id 1.
+          SUPABASE_TABLE: ${{ secrets.SUPABASE_TABLE }}
+          SUPABASE_ROW_ID: ${{ secrets.SUPABASE_ROW_ID }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
 
         run: |
-          cat > alert.js <<'EOF'
-
+          cat > alert.js <<'EOFJS'
           const nodemailer = require("nodemailer");
 
-          async function main() {
+          function requiredEnv(name) {
+            const value = process.env[name];
+            if (!value) throw new Error(`Missing secret/env: ${name}`);
+            return value;
+          }
 
-            const response = await fetch(
-              `https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}/latest`,
-              {
-                headers: {
-                  "X-Access-Key": process.env.JSONBIN_ACCESS_KEY
-                }
+          function moneyVND(value) {
+            return Number(value || 0).toLocaleString("vi-VN") + " VNĐ";
+          }
+
+          function normalizeRecord(rows) {
+            if (!Array.isArray(rows) || !rows.length) return { tools: [] };
+            const row = rows[0] || {};
+
+            // Recommended Supabase table shape:
+            // app_state: id text primary key, data jsonb, updated_at timestamptz
+            if (row.data && typeof row.data === "object") return row.data;
+
+            // Fallback if data is stored directly in columns.
+            return {
+              tools: Array.isArray(row.tools) ? row.tools : [],
+              emailConfig: row.emailConfig || row.email_config || {},
+              emailLogs: Array.isArray(row.emailLogs)
+                ? row.emailLogs
+                : (Array.isArray(row.email_logs) ? row.email_logs : [])
+            };
+          }
+
+          async function fetchSupabaseState() {
+            const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
+            const supabaseKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
+            const table = process.env.SUPABASE_TABLE || "app_state";
+            const rowId = process.env.SUPABASE_ROW_ID || "1";
+
+            const url = `${supabaseUrl}/rest/v1/${encodeURIComponent(table)}?id=eq.${encodeURIComponent(rowId)}&select=*`;
+
+            const response = await fetch(url, {
+              method: "GET",
+              headers: {
+                apikey: supabaseKey,
+                Authorization: `Bearer ${supabaseKey}`,
+                Accept: "application/json"
               }
-            );
+            });
 
             if (!response.ok) {
-              throw new Error(
-                "JSONBin error: " + await response.text()
-              );
+              throw new Error("Supabase error: " + await response.text());
             }
 
-            const data = await response.json();
+            const rows = await response.json();
+            return normalizeRecord(rows);
+          }
 
-            const tools = data.record.tools || [];
+          async function main() {
+            const record = await fetchSupabaseState();
+            const tools = Array.isArray(record.tools) ? record.tools : [];
 
             const today = new Date();
 
             // true = gửi tất cả để test
             // false = chỉ gửi license <= 90 ngày
             const TEST_SEND_ALL = false;
-
             const alertThreshold = 90;
 
             const licenses = tools.map(tool => {
-
               const renewal = new Date(tool.renewal);
-
-              const daysLeft = Math.ceil(
-                (renewal - today) / (1000 * 60 * 60 * 24)
-              );
+              const daysLeft = Number.isNaN(renewal.getTime())
+                ? null
+                : Math.ceil((renewal - today) / (1000 * 60 * 60 * 24));
 
               return {
                 name: tool.name || "",
                 vendor: tool.vendor || "",
                 renewal: tool.renewal || "",
                 daysLeft,
-                users: (tool.users || []).length,
-                seats: tool.seats || 0,
-                cost: tool.cost || 0
+                users: Array.isArray(tool.users) ? tool.users.length : 0,
+                seats: Number(tool.seats || 0),
+                cost: Number(tool.cost || 0)
               };
-
             });
 
             const expiring = TEST_SEND_ALL
               ? licenses
-              : licenses.filter(
-                  t => t.daysLeft <= alertThreshold
-                );
+              : licenses.filter(t => t.daysLeft !== null && t.daysLeft <= alertThreshold);
 
             if (!expiring.length) {
               console.log("No expiring licenses");
               return;
             }
 
-            const body = expiring.map(t => {
+            const body = expiring.map(t => [
+              `Software: ${t.name}`,
+              `Vendor: ${t.vendor}`,
+              `Renewal: ${t.renewal}`,
+              `Days Left: ${t.daysLeft}`,
+              `Users: ${t.users}`,
+              `Seats: ${t.seats}`,
+              `Cost: ${moneyVND(t.cost)}`,
+              "-----------------------------------"
+            ].join("\n")).join("\n\n");
 
-              const costVND =
-                Number(t.cost || 0)
-                  .toLocaleString("vi-VN") + " VNĐ";
-
-              return [
-                `Software: ${t.name}`,
-                `Vendor: ${t.vendor}`,
-                `Renewal: ${t.renewal}`,
-                `Days Left: ${t.daysLeft}`,
-                `Users: ${t.users}`,
-                `Seats: ${t.seats}`,
-                `Cost: ${costVND}`,
-                "-----------------------------------"
-              ].join("\n");
-
-            }).join("\n\n");
-
-            const transporter =
-              nodemailer.createTransport({
-                service: "gmail",
-                auth: {
-                  user: process.env.GMAIL_USER,
-                  pass: process.env.GMAIL_PASS
-                }
-              });
+            const transporter = nodemailer.createTransport({
+              service: "gmail",
+              auth: {
+                user: requiredEnv("GMAIL_USER"),
+                pass: requiredEnv("GMAIL_PASS")
+              }
+            });
 
             await transporter.sendMail({
               from: process.env.GMAIL_USER,
-              to: "quang.phamvan@vib.com.vn",
+              to: process.env.ALERT_TO || "quang.phamvan@vib.com.vn",
               subject: "[VIB] License Expiry Alert",
-              text:
-                "Các license sắp hết hạn (<= 90 ngày):\n\n"
-                + body
+              text: "Các license sắp hết hạn (<= 90 ngày):\n\n" + body
             });
 
             console.log("Email sent");
@@ -134,7 +156,6 @@ jobs:
             console.error(err);
             process.exit(1);
           });
-
-          EOF
+          EOFJS
 
           node alert.js
