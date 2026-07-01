@@ -9199,3 +9199,89 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   setTimeout(function(){ if(typeof renderDashboard === "function") renderDashboard(); }, 100);
 })();
 </script>
+
+<script>
+// ===== FINAL DASHBOARD AUTO-RENEW RISK FIX =====
+(function(){
+  function safe(v){ return String(v == null ? "" : v); }
+  function num(v){ return Number(v || 0) || 0; }
+  function todayStart(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+  function parseDate(v){ if(!v) return null; const d = new Date(v); if(isNaN(d)) return null; d.setHours(0,0,0,0); return d; }
+  function addPeriod(d, cycle){ const n = new Date(d.getTime()); if(safe(cycle).toLowerCase() === "monthly") n.setMonth(n.getMonth()+1); else n.setFullYear(n.getFullYear()+1); return n; }
+  function isAutoRenew(tool){ return !!(tool && (tool.autoRenew === true || tool.autoRenewMonthly === true || tool.renewalMode === "auto" || tool.renewalMode === "auto_monthly")); }
+  function isApp(tool){ if(typeof isAppTool === "function") return isAppTool(tool); return ["AI Tool","AI IDE"].includes(tool && tool.type); }
+  function used(tool){ if(typeof dashboardUsedSeats === "function") return dashboardUsedSeats(tool); const emailUsers = Array.isArray(tool && tool.users) ? tool.users.length : 0; const manualUsed = num(tool && (tool.manualUsedSeats || tool.manualUsed)); return Math.max(emailUsers, manualUsed); }
+  window.getNextRenewalDate = function(tool){ const base = parseDate(tool && tool.renewal); if(!base) return null; const cycle = safe(tool && tool.billingCycle).toLowerCase() === "monthly" ? "monthly" : "yearly"; if(!isAutoRenew(tool)) return base; let next = new Date(base.getTime()); const now = todayStart(); let guard = 0; while(next < now && guard < 240){ next = addPeriod(next, cycle); guard++; } return next; };
+  window.getRiskDays = function(tool){ const next = window.getNextRenewalDate(tool); if(!next) return 999999; return Math.ceil((next - todayStart()) / 86400000); };
+  window.formatDateVNFixed = function(dateOrStr){ const d = dateOrStr instanceof Date ? dateOrStr : parseDate(dateOrStr); if(!d) return "-"; return String(d.getDate()).padStart(2,"0") + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + d.getFullYear(); };
+  window.dashboardFilteredTools = function(){
+    const q = safe(window.__dashboardSearch).toLowerCase().trim();
+    const type = window.__dashboardTypeFilter || "all";
+    const status = window.__dashboardStatusFilter || "all";
+    const tools = (typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : [];
+    return tools.filter(function(t){
+      const seatCount = num(t.seats), usedCount = used(t), risk = window.getRiskDays(t), app = isApp(t), text = JSON.stringify(t || {}).toLowerCase();
+      if(q && !text.includes(q)) return false;
+      if(type === "license" && app) return false;
+      if(type === "app" && !app) return false;
+      if(status === "full" && usedCount < seatCount) return false;
+      if(status === "available" && usedCount >= seatCount) return false;
+      if(status === "expiring30" && !(risk <= 30)) return false;
+      if(status === "expiring90" && !(risk <= 90)) return false;
+      return true;
+    });
+  };
+  function riskChipClass(days){ if(days <= 7) return "bad-chip"; if(days <= 30) return "warn-chip"; return "active-chip"; }
+  function rowHtml(t){
+    const usedCount = used(t), seatCount = num(t.seats), percent = seatCount ? Math.round(usedCount / seatCount * 100) : 0;
+    const risk = window.getRiskDays(t), next = window.getNextRenewalDate(t), app = isApp(t), auto = isAutoRenew(t), typeClass = app ? "type-app" : "type-license";
+    return '<tr>'+
+      '<td><div class="software-cell"><strong>'+esc(t.name || '-')+'</strong><div class="muted">'+esc(t.vendor || '-')+'</div></div></td>'+
+      '<td><span class="dashboard-pill '+typeClass+'">'+(app ? 'Application' : 'License')+'</span></td>'+
+      '<td>'+costLabel(t)+'</td>'+
+      '<td><div class="dash-usage-mini"><div class="dash-usage-track"><div class="dash-usage-fill" style="width:'+Math.min(100,percent)+'%"></div><span class="dash-usage-num">'+usedCount+'/'+seatCount+'</span></div></div></td>'+
+      '<td><span class="chip '+(usedCount < seatCount ? 'active-chip' : 'warn-chip')+'">'+(usedCount < seatCount ? 'Available' : 'Full')+'</span></td>'+
+      '<td><span class="chip '+(auto ? 'active-chip' : 'info-chip')+'">'+(auto ? 'Auto' : 'Manual')+'</span></td>'+
+      '<td><span class="chip '+riskChipClass(risk)+'">'+(risk === 999999 ? '-' : risk + ' days')+'</span></td>'+
+      '<td>'+window.formatDateVNFixed(next || t.renewal)+'</td>'+
+    '</tr>';
+  }
+  function renderDashboardFixed(){
+    const tools = (typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : [];
+    const cost = tools.reduce((s,t)=>s+num(t.cost),0), seats = tools.reduce((s,t)=>s+num(t.seats),0), usedTotal = tools.reduce((s,t)=>s+used(t),0);
+    const apps = tools.filter(isApp).length, licenses = tools.length - apps, fullCount = tools.filter(t=>used(t) >= num(t.seats)).length, availableCount = Math.max(0, tools.length - fullCount);
+    const expiring30 = tools.filter(t=>window.getRiskDays(t) <= 30).length, expiring90 = tools.filter(t=>window.getRiskDays(t) <= 90).length, utilization = seats ? Math.round(usedTotal / seats * 100) : 0;
+    if($("kpiTools")) $("kpiTools").textContent = tools.length; if($("kpiSeats")) $("kpiSeats").textContent = seats; if($("kpiUsers")) $("kpiUsers").textContent = usedTotal; if($("kpiCost")) $("kpiCost").textContent = money(cost);
+    const filtered = window.dashboardFilteredTools();
+    let rows = filtered.map(rowHtml).join('');
+    if(!rows) rows = '<tr><td colspan="8"><div class="dashboard-empty">No software matches current search/filter.</div></td></tr>';
+    const costTable = $("costTable"); if(!costTable) return;
+    costTable.innerHTML = ''+
+      '<div class="dashboard-panel">'+
+        '<div class="dashboard-summary-card"><h3>Portfolio</h3><div class="big">'+tools.length+'</div><div class="sub">'+licenses+' licenses · '+apps+' apps</div></div>'+
+        '<div class="dashboard-summary-card good"><h3>Seat Utilization</h3><div class="big">'+utilization+'%</div><div class="sub">'+usedTotal+'/'+seats+' seats used</div></div>'+
+        '<div class="dashboard-summary-card"><h3>Available</h3><div class="big">'+availableCount+'</div><div class="sub">software still has capacity</div></div>'+
+        '<div class="dashboard-summary-card warn"><h3>Full</h3><div class="big">'+fullCount+'</div><div class="sub">requires review or expansion</div></div>'+
+        '<div class="dashboard-summary-card warn"><h3>≤ 90 Days</h3><div class="big">'+expiring90+'</div><div class="sub">upcoming renewal risk</div></div>'+
+        '<div class="dashboard-summary-card risk"><h3>≤ 30 Days</h3><div class="big">'+expiring30+'</div><div class="sub">urgent renewal risk</div></div>'+
+      '</div>'+
+      '<div class="dashboard-toolbar"><div class="dashboard-toolbar-left">'+
+        '<div class="dashboard-search-wrap"><input id="dashboardSearch" placeholder="Search software, vendor, user..." value="'+esc(window.__dashboardSearch || '')+'"></div>'+
+        '<select id="dashboardTypeFilter"><option value="all">All Types</option><option value="license">License only</option><option value="app">Application only</option></select>'+
+        '<select id="dashboardStatusFilter"><option value="all">All Status</option><option value="available">Available</option><option value="full">Full</option><option value="expiring30">Expiring ≤ 30 days</option><option value="expiring90">Expiring ≤ 90 days</option></select>'+
+      '</div><span class="dashboard-pill">'+filtered.length+'/'+tools.length+' shown</span></div>'+
+      '<div class="dashboard-table"><table><thead><tr><th>Software</th><th>Category</th><th>Cost</th><th>Usage</th><th>Status</th><th>Auto Renew</th><th>Risk</th><th>Next Renewal</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    const searchEl = document.getElementById("dashboardSearch"), typeEl = document.getElementById("dashboardTypeFilter"), statusEl = document.getElementById("dashboardStatusFilter");
+    if(typeEl) typeEl.value = window.__dashboardTypeFilter || "all"; if(statusEl) statusEl.value = window.__dashboardStatusFilter || "all";
+    if(searchEl) searchEl.oninput = function(){ window.__dashboardSearch = this.value; renderDashboardFixed(); };
+    if(typeEl) typeEl.onchange = function(){ window.__dashboardTypeFilter = this.value; renderDashboardFixed(); };
+    if(statusEl) statusEl.onchange = function(){ window.__dashboardStatusFilter = this.value; renderDashboardFixed(); };
+  }
+  window.renderDashboard = renderDashboardFixed;
+  try{ renderDashboard = renderDashboardFixed; }catch(e){}
+  window.renderAll = function(){ renderDashboardFixed(); if(typeof renderLicenseTools === "function") renderLicenseTools(); if(typeof renderAppTools === "function") renderAppTools(); if(typeof renderEmail === "function") renderEmail(); if(typeof applyAdminMode === "function") applyAdminMode(); };
+  try{ renderAll = window.renderAll; }catch(e){}
+  setTimeout(function(){ try{ renderDashboardFixed(); }catch(e){ console.error("Dashboard final fix failed", e); } }, 300);
+  setTimeout(function(){ try{ renderDashboardFixed(); }catch(e){ console.error("Dashboard final fix failed", e); } }, 1200);
+})();
+</script>
