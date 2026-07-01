@@ -2224,7 +2224,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   }
 
   function getReviewRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){
         return { tool: tool, toolIndex: currentReviewToolScope, user: u, userIndex: ui };
@@ -2309,7 +2309,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       setTimeout(function(){
         let tool = null;
 
-        if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]){
+        if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]){
           tool = state.tools[toolIndex];
         }else{
           const recipients = getReviewRecipients();
@@ -4014,7 +4014,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 
   function applyLicenseFirstSort(){
     try{
-      if(!window.state || !Array.isArray(state.tools)) return;
+      if(typeof state === "undefined" || !Array.isArray(state.tools)) return;
 
       state.tools.sort(function(a,b){
 
@@ -4382,7 +4382,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   }
 
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
     }
@@ -4498,7 +4498,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof prevOpenEmailReview === "function") prevOpenEmailReview.apply(this, arguments);
     setTimeout(function(){
       let tool = null;
-      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
       else { const r = getRecipients(); if(r.length) tool = r[0].tool; }
       if(!tool) return;
       const campaignId = "PREVIEW";
@@ -4721,7 +4721,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     return PUBLIC_URL + "?" + p.toString();
   }
   function getRecipientsFinal(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
     }
@@ -4798,7 +4798,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof prevOpenReview === "function") prevOpenReview.apply(this, arguments);
     setTimeout(function(){
       let tool = null;
-      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
       else { const rec = getRecipientsFinal(); if(rec.length) tool = rec[0].tool; }
       if(!tool) return;
 
@@ -4999,15 +4999,15 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 
   window.currentOnlinePayload = function(){
     return {
-      tools: (window.state && state.tools) ? state.tools : [],
-      emailConfig: (window.state && state.emailConfig) ? state.emailConfig : {},
+      tools: (typeof state !== "undefined" && state.tools) ? state.tools : [],
+      emailConfig: (typeof state !== "undefined" && state.emailConfig) ? state.emailConfig : {},
       emailLogs: Array.isArray(window.emailLogs) ? window.emailLogs : [],
       updatedAt: new Date().toISOString()
     };
   };
 
   window.applyOnlinePayload = function(record){
-    window.state = {
+    state = {
       tools: record.tools || [],
       emailConfig: record.emailConfig || {}
     };
@@ -5751,7 +5751,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     return currentType() === "usage" ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn license";
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
     }
@@ -5814,7 +5814,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof prevOpenEmailReview === "function") prevOpenEmailReview.apply(this, arguments);
     setTimeout(function(){
       let tool = null;
-      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
       else { const rec = getRecipients(); if(rec.length) tool = rec[0].tool; }
       if(!tool) return;
       const subject = subjectFor(tool);
@@ -5885,7 +5885,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     return (sel && sel.value) || (typeof currentTemplate !== "undefined" ? currentTemplate : "renew") || "renew";
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
     }
@@ -6000,7 +6000,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof prevOpenEmailReview === "function") prevOpenEmailReview.apply(this, arguments);
     setTimeout(function(){
       let tool = null;
-      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
       else { const rec = getRecipients(); if(rec.length) tool = rec[0].tool; }
       if(!tool) return;
       const subject = subjectFor(tool);
@@ -7510,7 +7510,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   function actionUrl(action,tool,campaignId){return page()+"?action="+encodeURIComponent(action)+"&tool="+encodeURIComponent(s(tool&&tool.name))+"&cid="+encodeURIComponent(campaignId||"");}
   function subject(tool){return typeNow()==="usage" ? "[VIB] Xác nhận đã nhận phần mềm - "+s(tool&&tool.name) : "[VIB] Xác nhận gia hạn license - "+s(tool&&tool.name);}
   function recipients(){
-    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool=state.tools[currentReviewToolScope];
       return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
     }
@@ -7584,7 +7584,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   function hideCampaign(){const rows=document.getElementById("emailCampaignRows");if(rows){const c=rows.closest(".card");if(c)c.style.display="none";}document.querySelectorAll(".review-send-list").forEach(function(x){x.style.display="none";});}
   function reorderLogout(){const actions=document.querySelector(".top .actions");if(!actions)return;const admin=[...actions.querySelectorAll("button")].find(b=>String(b.getAttribute("onclick")||"").includes("adminLogout"));const user=[...actions.querySelectorAll("button")].find(b=>String(b.getAttribute("onclick")||"").includes("userLogout"));if(admin&&user&&admin.nextSibling!==user)admin.insertAdjacentElement("afterend",user);}
   const oldOpen=window.openEmailReview;
-  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();reorderLogout();let tool=null;if(toolIndex!=null&&window.state&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-review-preview">'+emailMarkup(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},250);};
+  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();reorderLogout();let tool=null;if(toolIndex!=null&&typeof state!=="undefined"&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-review-preview">'+emailMarkup(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},250);};
   window.queueEmails=function(fromModal){hideCampaign();const rs=recipients();if(!rs.length){alert("No recipients found.");return;}const tool=rs[0].tool||{};const campaignId=cid();const sub=subject(tool);const bcc=rs.map(function(x){return x&&x.user?x.user.email:"";}).filter(Boolean).join("; ");dl(sub,eml(OUTLOOK_TO,bcc,sub,fullHtml(tool,campaignId),plain(tool,campaignId)));const sentTime=new Date().toLocaleString();rs.forEach(function(r){if(r.user){r.user.lastEmailSent=sentTime;r.user.emailSendStatus="Outlook Draft";r.user.campaignId=campaignId;r.user.lastCampaignId=campaignId;}});if(typeof emailLogs!=="undefined"){emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:campaignId,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});emailLogs=emailLogs.slice(0,100);try{localStorage.setItem(typeof LOG_KEY!=="undefined"?LOG_KEY:"vib_lm_logs_v2",JSON.stringify(emailLogs));}catch(e){}}if(typeof saveState==="function")saveState();if(typeof renderEmail==="function")renderEmail();if(typeof renderEmailLog==="function")renderEmailLog();if(typeof renderModalSendList==="function")renderModalSendList();if(fromModal&&typeof closeEmailModal==="function")closeEmailModal();if(typeof toast==="function")toast("Created Outlook .eml draft");};
   const oldRender=window.renderEmail;
   window.renderEmail=function(){if(typeof oldRender==="function")oldRender.apply(this,arguments);setTimeout(function(){hideCampaign();reorderLogout();},100);};
@@ -7704,7 +7704,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   function actionUrl(action,tool,campaignId){return page()+"?action="+encodeURIComponent(action)+"&tool="+encodeURIComponent(s(tool&&tool.name))+"&cid="+encodeURIComponent(campaignId||"");}
   function subject(tool){return typeNow()==="usage" ? "[VIB] Xác nhận đã nhận phần mềm - "+s(tool&&tool.name) : "[VIB] Xác nhận gia hạn phần mềm - "+s(tool&&tool.name);}
   function recipients(){
-    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool=state.tools[currentReviewToolScope];
       return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
     }
@@ -7781,7 +7781,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   function dl(sub,content){const blob=new Blob([content],{type:"message/rfc822;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=header(sub).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80)+"_vib_review.eml";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},5000);}
   function hideCampaign(){const rows=document.getElementById("emailCampaignRows");if(rows){const c=rows.closest(".card");if(c)c.style.display="none";}document.querySelectorAll(".review-send-list").forEach(function(x){x.style.display="none";});}
   const oldOpen=window.openEmailReview;
-  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();let tool=null;if(toolIndex!=null&&window.state&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-final-preview">'+mailHtml(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},120);};
+  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();let tool=null;if(toolIndex!=null&&typeof state!=="undefined"&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-final-preview">'+mailHtml(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},120);};
   window.queueEmails=function(fromModal){hideCampaign();const rs=recipients();if(!rs.length){alert("No recipients found.");return;}const tool=rs[0].tool||{};const campaignId=cid();const sub=subject(tool);const bcc=rs.map(function(x){return x&&x.user?x.user.email:"";}).filter(Boolean).join("; ");dl(sub,eml(OUTLOOK_TO,bcc,sub,fullHtml(tool,campaignId),plain(tool,campaignId)));const sentTime=new Date().toLocaleString();rs.forEach(function(r){if(r.user){r.user.lastEmailSent=sentTime;r.user.emailSendStatus="Outlook Draft";r.user.campaignId=campaignId;r.user.lastCampaignId=campaignId;}});if(typeof emailLogs!=="undefined"){emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:campaignId,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});emailLogs=emailLogs.slice(0,100);try{localStorage.setItem(typeof LOG_KEY!=="undefined"?LOG_KEY:"vib_lm_logs_v2",JSON.stringify(emailLogs));}catch(e){}}if(typeof saveState==="function")saveState();if(typeof renderEmail==="function")renderEmail();if(typeof renderEmailLog==="function")renderEmailLog();if(typeof renderModalSendList==="function")renderModalSendList();if(fromModal&&typeof closeEmailModal==="function")closeEmailModal();if(typeof toast==="function")toast("Created premium Outlook .eml draft");};
   const oldRender=window.renderEmail;
   window.renderEmail=function(){if(typeof oldRender==="function")oldRender.apply(this,arguments);setTimeout(hideCampaign,80);};
@@ -7822,7 +7822,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     return baseUrl() + "?action=" + encodeURIComponent(action) + "&tool=" + encodeURIComponent(s(tool && tool.name)) + "&cid=" + encodeURIComponent(cid || "");
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, i){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:i}; });
     }
@@ -7922,7 +7922,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     document.querySelectorAll(".review-send-list").forEach(function(x){ x.style.display = "none"; });
   }
   function toolFromArgs(toolIndex){
-    if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
     const rs = getRecipients();
     return rs.length ? rs[0].tool : null;
   }
@@ -8013,7 +8013,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     if(rows){rows.style.display="block";rows.style.visibility="visible";rows.style.opacity="1";const card=rows.closest(".card");if(card){card.style.display="block";card.style.visibility="visible";card.style.opacity="1";}}
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool=state.tools[currentReviewToolScope];
       return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
     }
@@ -8022,7 +8022,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     return [];
   }
   function toolFromArgs(toolIndex){
-    if(toolIndex!=null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    if(toolIndex!=null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
     const rs=getRecipients(); return rs.length?rs[0].tool:null;
   }
   function mailFor(tool,cid){
@@ -8433,7 +8433,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     return baseUrl() + "?action=" + encodeURIComponent(action) + "&tool=" + encodeURIComponent(s(tool && tool.name)) + "&cid=" + encodeURIComponent(cid || "");
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u,i){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:i}; });
     }
@@ -8524,7 +8524,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
   }
   function toolFromArgs(toolIndex){
-    if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
     const rs = getRecipients();
     return rs.length ? rs[0].tool : null;
   }
@@ -9028,11 +9028,11 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
 
   window.getDashboardToolsForRisk = function(){
     if(typeof dashboardFilteredTools === "function") return dashboardFilteredTools();
-    return (window.state && Array.isArray(state.tools)) ? state.tools : [];
+    return (typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : [];
   };
 
   window.renderDashboard = function(){
-    var tools = (window.state && Array.isArray(state.tools)) ? state.tools : [];
+    var tools = (typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : [];
     var cost = tools.reduce(function(s,t){ return s + Number(t.cost || 0); }, 0);
     var seats = tools.reduce(function(s,t){ return s + Number(t.seats || 0); }, 0);
     var usedTotal = tools.reduce(function(s,t){ return s + (typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : usedSeats(t)); }, 0);
@@ -9132,7 +9132,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
 
   var oldDashboardFilteredTools = window.dashboardFilteredTools;
   window.dashboardFilteredTools = function(){
-    var list = typeof oldDashboardFilteredTools === "function" ? oldDashboardFilteredTools() : ((window.state && state.tools) || []);
+    var list = typeof oldDashboardFilteredTools === "function" ? oldDashboardFilteredTools() : ((typeof state !== "undefined" && state.tools) || []);
     var statusEl = document.getElementById("dashboardStatusFilter");
     var status = window.__dashboardStatusFilter || (statusEl ? statusEl.value : "all");
     if(status === "expiring30") return list.filter(function(t){ return window.getRiskDays(t) <= 30; });
@@ -9179,7 +9179,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     var type = window.__dashboardTypeFilter || (typeEl ? typeEl.value : "all");
     var status = window.__dashboardStatusFilter || (statusEl ? statusEl.value : "all");
 
-    return ((window.state && Array.isArray(state.tools)) ? state.tools : []).filter(function(t){
+    return ((typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : []).filter(function(t){
       var used = typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : (typeof usedSeats === "function" ? usedSeats(t) : 0);
       var seats = Number(t.seats || 0);
       var app = typeof isAppTool === "function" ? isAppTool(t) : false;
