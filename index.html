@@ -1062,7 +1062,13 @@ Nếu không còn nhu cầu sử dụng, vui lòng phản hồi để IT thực 
 
 Trân trọng,
 IT Software Asset Management`}};
-function $(id){return document.getElementById(id)}function saveState(){localStorage.setItem(LS_KEY,JSON.stringify(state))}function toast(msg){let t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}function money(v){return Number(v||0).toLocaleString("en-US",{maximumFractionDigits:0})+" VND"}function daysLeft(d){if(!d)return"-";let now=new Date(),end=new Date(d);return Math.ceil((end-now)/(1000*60*60*24))}function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function initials(n){return String(n||"?").split(/\s+/).filter(Boolean).slice(-2).map(x=>x[0]).join("").toUpperCase()}function allUsers(){return state.tools.flatMap((t,ti)=>(t.users||[]).map((u,ui)=>({tool:t,toolIndex:ti,user:u,userIndex:ui})))}function statusClass(s){return s==="Confirmed"?"active-chip":s==="Declined"?"bad-chip":"warn-chip"}function isAppTool(t){return["AI Tool","AI IDE"].includes(t.type)}
+function $(id){return document.getElementById(id)}function saveState(){localStorage.setItem(LS_KEY,JSON.stringify(state))}function toast(msg){let t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}function money(v){return Number(v||0).toLocaleString("en-US",{maximumFractionDigits:0})+" VND"}function daysLeft(d){if(!d)return"-";let now=new Date(),end=new Date(d);return Math.ceil((end-now)/(1000*60*60*24))}
+function isAutoRenewTool(t){return !!(t&&(t.autoRenewMonthly||t.autoRenew||t.renewalMode==="auto_monthly"||t.renewalMode==="auto"));}
+function addMonthsSafe(date,months){const d=new Date(date.getTime());const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+months);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return d;}
+function nextRiskRenewalDate(t){if(!t||!t.renewal)return null;let next=new Date(t.renewal);if(isNaN(next))return null;if(!isAutoRenewTool(t))return next;const cycle=String(t.billingCycle||"").toLowerCase();const today=new Date();today.setHours(0,0,0,0);next.setHours(0,0,0,0);let guard=0;while(next<today&&guard<240){next=cycle==="monthly"?addMonthsSafe(next,1):addMonthsSafe(next,12);guard++;}return next;}
+function riskDaysLeft(t){const next=nextRiskRenewalDate(t);if(!next)return Number(daysLeft(t&&t.renewal));const today=new Date();today.setHours(0,0,0,0);return Math.ceil((next-today)/(1000*60*60*24));}
+function formatRiskRenewal(t){const next=nextRiskRenewalDate(t);return next?formatDateVN(next.toISOString().slice(0,10)):formatDateVN(t&&t.renewal);}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function initials(n){return String(n||"?").split(/\s+/).filter(Boolean).slice(-2).map(x=>x[0]).join("").toUpperCase()}function allUsers(){return state.tools.flatMap((t,ti)=>(t.users||[]).map((u,ui)=>({tool:t,toolIndex:ti,user:u,userIndex:ui})))}function statusClass(s){return s==="Confirmed"?"active-chip":s==="Declined"?"bad-chip":"warn-chip"}function isAppTool(t){return["AI Tool","AI IDE"].includes(t.type)}
 function usedSeats(t){const emailUsers=(t&&Array.isArray(t.users))?t.users.length:0;const manualUsed=Number(t&&(t.manualUsedSeats??t.manualUsed??0))||0;return Math.max(emailUsers,manualUsed)}
 function uniqueVendors(list){
   return [...new Set((list||[]).map(t=>t.vendor).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
@@ -1144,7 +1150,7 @@ function dashboardFilteredTools(){
   return (state.tools || []).filter(function(t){
     const used = dashboardUsedSeats(t);
     const seats = Number(t.seats || 0);
-    const left = typeof daysLeft === "function" ? Number(daysLeft(t.renewal)) : 999999;
+    const left = typeof riskDaysLeft === "function" ? Number(riskDaysLeft(t)) : (typeof daysLeft === "function" ? Number(daysLeft(t.renewal)) : 999999);
     const app = typeof isAppTool === "function" ? isAppTool(t) : false;
     const text = JSON.stringify(t).toLowerCase();
 
@@ -1169,8 +1175,8 @@ function renderDashboard(){
   const licenses = tools.length - apps;
   const fullCount = tools.filter(t=>dashboardUsedSeats(t) >= Number(t.seats || 0)).length;
   const availableCount = Math.max(0, tools.length - fullCount);
-  const expiring30 = tools.filter(t=>Number(daysLeft(t.renewal)) <= 30).length;
-  const expiring90 = tools.filter(t=>Number(daysLeft(t.renewal)) <= 90).length;
+  const expiring30 = tools.filter(t=>Number(riskDaysLeft(t)) <= 30).length;
+  const expiring90 = tools.filter(t=>Number(riskDaysLeft(t)) <= 90).length;
   const utilization = seats ? Math.round(usedTotal / seats * 100) : 0;
 
   $("kpiTools").textContent = tools.length;
@@ -1186,7 +1192,7 @@ function renderDashboard(){
     const manualUsed = Number(t.manualUsedSeats || t.manualUsed || 0);
     const seatCount = Number(t.seats || 0);
     const percent = seatCount ? Math.round(used / seatCount * 100) : 0;
-    const left = Number(daysLeft(t.renewal));
+    const left = Number(riskDaysLeft(t));
     const app = typeof isAppTool === "function" && isAppTool(t);
     const typeClass = app ? "type-app" : "type-license";
 
@@ -1209,7 +1215,7 @@ function renderDashboard(){
       </td>
       <td><span class="chip ${used < seatCount ? "active-chip" : "warn-chip"}">${used < seatCount ? "Available" : "Full"}</span></td>
       <td><span class="chip ${left<=7?'bad-chip':left<=30?'warn-chip':'active-chip'}">${left} days</span></td>
-      <td>${formatDateVN(t.renewal)}</td>
+      <td>${formatRiskRenewal(t)}</td>
     </tr>`;
   }).join("");
 
@@ -1282,7 +1288,7 @@ function renderDashboard(){
             <th>Usage</th>
             <th>Status</th>
             <th>Risk</th>
-            <th>Renewal</th>
+            <th>Next Renewal</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -1328,7 +1334,7 @@ function toolCard(t,i){
       <div class="muted" style="display:flex;justify-content:space-between;margin-top:7px"><span>${used}/${t.seats} users</span><span>${p}%</span></div>
       ${manualUsed>emailUsers?`<div class="muted" style="margin-top:5px">Manual used override: ${manualUsed}</div>`:""}
     </div>
-    <div class="meta"><div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div><div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div><div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div></div>
+    <div class="meta"><div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div><div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div><div class="meta-box"><span>Risk</span><strong>${riskDaysLeft(t)} days</strong></div></div>
     <div class="actions"><button class="btn-secondary" onclick="openUsersModal(${i})">Users</button><button class="btn-orange admin-only" onclick="openEmailReview(${i})">Send Review</button><button class="btn-secondary admin-only" onclick="openToolModal(${i})">Edit</button><button class="btn-danger admin-only" onclick="deleteTool(${i})">Delete</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},-1)">↑</button><button class="btn-secondary admin-only move-btn" onclick="moveTool(${i},1)">↓</button></div>
   </div>`;
 }
@@ -2224,7 +2230,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   }
 
   function getReviewRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){
         return { tool: tool, toolIndex: currentReviewToolScope, user: u, userIndex: ui };
@@ -2309,7 +2315,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
       setTimeout(function(){
         let tool = null;
 
-        if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]){
+        if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]){
           tool = state.tools[toolIndex];
         }else{
           const recipients = getReviewRecipients();
@@ -4014,7 +4020,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 
   function applyLicenseFirstSort(){
     try{
-      if(typeof state === "undefined" || !Array.isArray(state.tools)) return;
+      if(!window.state || !Array.isArray(state.tools)) return;
 
       state.tools.sort(function(a,b){
 
@@ -4204,7 +4210,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
         <div class="meta">
           <div class="meta-box"><span>Cost</span><strong>${costLabel(t)}</strong></div>
           <div class="meta-box"><span>Renewal</span><strong>${formatDateVN(t.renewal)}</strong></div>
-          <div class="meta-box"><span>Days Left</span><strong>${daysLeft(t.renewal)} days</strong></div>
+          <div class="meta-box"><span>Risk</span><strong>${riskDaysLeft(t)} days</strong></div>
         </div>
         ${autoRenewBlock}
         <div class="actions">
@@ -4382,7 +4388,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
   }
 
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
     }
@@ -4498,7 +4504,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof prevOpenEmailReview === "function") prevOpenEmailReview.apply(this, arguments);
     setTimeout(function(){
       let tool = null;
-      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
       else { const r = getRecipients(); if(r.length) tool = r[0].tool; }
       if(!tool) return;
       const campaignId = "PREVIEW";
@@ -4721,7 +4727,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     return PUBLIC_URL + "?" + p.toString();
   }
   function getRecipientsFinal(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
     }
@@ -4798,7 +4804,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof prevOpenReview === "function") prevOpenReview.apply(this, arguments);
     setTimeout(function(){
       let tool = null;
-      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
       else { const rec = getRecipientsFinal(); if(rec.length) tool = rec[0].tool; }
       if(!tool) return;
 
@@ -4999,15 +5005,15 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
 
   window.currentOnlinePayload = function(){
     return {
-      tools: (typeof state !== "undefined" && state.tools) ? state.tools : [],
-      emailConfig: (typeof state !== "undefined" && state.emailConfig) ? state.emailConfig : {},
+      tools: (window.state && state.tools) ? state.tools : [],
+      emailConfig: (window.state && state.emailConfig) ? state.emailConfig : {},
       emailLogs: Array.isArray(window.emailLogs) ? window.emailLogs : [],
       updatedAt: new Date().toISOString()
     };
   };
 
   window.applyOnlinePayload = function(record){
-    state = {
+    window.state = {
       tools: record.tools || [],
       emailConfig: record.emailConfig || {}
     };
@@ -5751,7 +5757,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     return currentType() === "usage" ? "Xác nhận đã nhận phần mềm" : "Xác nhận gia hạn license";
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
     }
@@ -5814,7 +5820,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof prevOpenEmailReview === "function") prevOpenEmailReview.apply(this, arguments);
     setTimeout(function(){
       let tool = null;
-      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
       else { const rec = getRecipients(); if(rec.length) tool = rec[0].tool; }
       if(!tool) return;
       const subject = subjectFor(tool);
@@ -5885,7 +5891,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     return (sel && sel.value) || (typeof currentTemplate !== "undefined" ? currentTemplate : "renew") || "renew";
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, ui){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:ui}; });
     }
@@ -6000,7 +6006,7 @@ if(typeof saveOnlineData === "function" && !saveOnlineData.__stableAutoOnlineWra
     if(typeof prevOpenEmailReview === "function") prevOpenEmailReview.apply(this, arguments);
     setTimeout(function(){
       let tool = null;
-      if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
+      if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) tool = state.tools[toolIndex];
       else { const rec = getRecipients(); if(rec.length) tool = rec[0].tool; }
       if(!tool) return;
       const subject = subjectFor(tool);
@@ -7510,7 +7516,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   function actionUrl(action,tool,campaignId){return page()+"?action="+encodeURIComponent(action)+"&tool="+encodeURIComponent(s(tool&&tool.name))+"&cid="+encodeURIComponent(campaignId||"");}
   function subject(tool){return typeNow()==="usage" ? "[VIB] Xác nhận đã nhận phần mềm - "+s(tool&&tool.name) : "[VIB] Xác nhận gia hạn license - "+s(tool&&tool.name);}
   function recipients(){
-    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool=state.tools[currentReviewToolScope];
       return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
     }
@@ -7584,7 +7590,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   function hideCampaign(){const rows=document.getElementById("emailCampaignRows");if(rows){const c=rows.closest(".card");if(c)c.style.display="none";}document.querySelectorAll(".review-send-list").forEach(function(x){x.style.display="none";});}
   function reorderLogout(){const actions=document.querySelector(".top .actions");if(!actions)return;const admin=[...actions.querySelectorAll("button")].find(b=>String(b.getAttribute("onclick")||"").includes("adminLogout"));const user=[...actions.querySelectorAll("button")].find(b=>String(b.getAttribute("onclick")||"").includes("userLogout"));if(admin&&user&&admin.nextSibling!==user)admin.insertAdjacentElement("afterend",user);}
   const oldOpen=window.openEmailReview;
-  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();reorderLogout();let tool=null;if(toolIndex!=null&&typeof state!=="undefined"&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-review-preview">'+emailMarkup(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},250);};
+  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();reorderLogout();let tool=null;if(toolIndex!=null&&window.state&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-review-preview">'+emailMarkup(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},250);};
   window.queueEmails=function(fromModal){hideCampaign();const rs=recipients();if(!rs.length){alert("No recipients found.");return;}const tool=rs[0].tool||{};const campaignId=cid();const sub=subject(tool);const bcc=rs.map(function(x){return x&&x.user?x.user.email:"";}).filter(Boolean).join("; ");dl(sub,eml(OUTLOOK_TO,bcc,sub,fullHtml(tool,campaignId),plain(tool,campaignId)));const sentTime=new Date().toLocaleString();rs.forEach(function(r){if(r.user){r.user.lastEmailSent=sentTime;r.user.emailSendStatus="Outlook Draft";r.user.campaignId=campaignId;r.user.lastCampaignId=campaignId;}});if(typeof emailLogs!=="undefined"){emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:campaignId,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});emailLogs=emailLogs.slice(0,100);try{localStorage.setItem(typeof LOG_KEY!=="undefined"?LOG_KEY:"vib_lm_logs_v2",JSON.stringify(emailLogs));}catch(e){}}if(typeof saveState==="function")saveState();if(typeof renderEmail==="function")renderEmail();if(typeof renderEmailLog==="function")renderEmailLog();if(typeof renderModalSendList==="function")renderModalSendList();if(fromModal&&typeof closeEmailModal==="function")closeEmailModal();if(typeof toast==="function")toast("Created Outlook .eml draft");};
   const oldRender=window.renderEmail;
   window.renderEmail=function(){if(typeof oldRender==="function")oldRender.apply(this,arguments);setTimeout(function(){hideCampaign();reorderLogout();},100);};
@@ -7704,7 +7710,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   function actionUrl(action,tool,campaignId){return page()+"?action="+encodeURIComponent(action)+"&tool="+encodeURIComponent(s(tool&&tool.name))+"&cid="+encodeURIComponent(campaignId||"");}
   function subject(tool){return typeNow()==="usage" ? "[VIB] Xác nhận đã nhận phần mềm - "+s(tool&&tool.name) : "[VIB] Xác nhận gia hạn phần mềm - "+s(tool&&tool.name);}
   function recipients(){
-    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool=state.tools[currentReviewToolScope];
       return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
     }
@@ -7781,7 +7787,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   function dl(sub,content){const blob=new Blob([content],{type:"message/rfc822;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=header(sub).replace(/[^a-zA-Z0-9_\-]+/g,"_").slice(0,80)+"_vib_review.eml";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},5000);}
   function hideCampaign(){const rows=document.getElementById("emailCampaignRows");if(rows){const c=rows.closest(".card");if(c)c.style.display="none";}document.querySelectorAll(".review-send-list").forEach(function(x){x.style.display="none";});}
   const oldOpen=window.openEmailReview;
-  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();let tool=null;if(toolIndex!=null&&typeof state!=="undefined"&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-final-preview">'+mailHtml(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},120);};
+  window.openEmailReview=function(toolIndex,userIndex){if(typeof oldOpen==="function")oldOpen.apply(this,arguments);setTimeout(function(){hideCampaign();let tool=null;if(toolIndex!=null&&window.state&&state.tools&&state.tools[toolIndex])tool=state.tools[toolIndex];else{const rs=recipients();if(rs.length)tool=rs[0].tool;}if(!tool)return;const sub=subject(tool);const subj=document.getElementById("modalSubject");const body=document.getElementById("modalBody");const es=document.getElementById("emailSubject");const eb=document.getElementById("emailBody");const rec=document.getElementById("modalRecipient");if(subj)subj.textContent=sub;if(body)body.innerHTML='<div class="vib-final-preview">'+mailHtml(tool,"PREVIEW")+'</div>';if(es)es.value=sub;if(eb)eb.value=fullHtml(tool,"PREVIEW");if(rec)rec.textContent="BCC recipients";},120);};
   window.queueEmails=function(fromModal){hideCampaign();const rs=recipients();if(!rs.length){alert("No recipients found.");return;}const tool=rs[0].tool||{};const campaignId=cid();const sub=subject(tool);const bcc=rs.map(function(x){return x&&x.user?x.user.email:"";}).filter(Boolean).join("; ");dl(sub,eml(OUTLOOK_TO,bcc,sub,fullHtml(tool,campaignId),plain(tool,campaignId)));const sentTime=new Date().toLocaleString();rs.forEach(function(r){if(r.user){r.user.lastEmailSent=sentTime;r.user.emailSendStatus="Outlook Draft";r.user.campaignId=campaignId;r.user.lastCampaignId=campaignId;}});if(typeof emailLogs!=="undefined"){emailLogs.unshift({time:sentTime,type:"Mail Sent",tool:s(tool.name),count:rs.length,sender:OUTLOOK_TO,status:"Outlook Draft",campaignId:campaignId,recipients:rs.map(function(r){return r.user&&r.user.email?r.user.email:"";}).filter(Boolean)});emailLogs=emailLogs.slice(0,100);try{localStorage.setItem(typeof LOG_KEY!=="undefined"?LOG_KEY:"vib_lm_logs_v2",JSON.stringify(emailLogs));}catch(e){}}if(typeof saveState==="function")saveState();if(typeof renderEmail==="function")renderEmail();if(typeof renderEmailLog==="function")renderEmailLog();if(typeof renderModalSendList==="function")renderModalSendList();if(fromModal&&typeof closeEmailModal==="function")closeEmailModal();if(typeof toast==="function")toast("Created premium Outlook .eml draft");};
   const oldRender=window.renderEmail;
   window.renderEmail=function(){if(typeof oldRender==="function")oldRender.apply(this,arguments);setTimeout(hideCampaign,80);};
@@ -7822,7 +7828,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     return baseUrl() + "?action=" + encodeURIComponent(action) + "&tool=" + encodeURIComponent(s(tool && tool.name)) + "&cid=" + encodeURIComponent(cid || "");
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u, i){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:i}; });
     }
@@ -7922,7 +7928,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     document.querySelectorAll(".review-send-list").forEach(function(x){ x.style.display = "none"; });
   }
   function toolFromArgs(toolIndex){
-    if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
     const rs = getRecipients();
     return rs.length ? rs[0].tool : null;
   }
@@ -8013,7 +8019,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     if(rows){rows.style.display="block";rows.style.visibility="visible";rows.style.opacity="1";const card=rows.closest(".card");if(card){card.style.display="block";card.style.visibility="visible";card.style.opacity="1";}}
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope!=="undefined" && currentReviewToolScope!==null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool=state.tools[currentReviewToolScope];
       return (tool.users||[]).map(function(u,i){return {tool:tool,toolIndex:currentReviewToolScope,user:u,userIndex:i};});
     }
@@ -8022,7 +8028,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     return [];
   }
   function toolFromArgs(toolIndex){
-    if(toolIndex!=null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    if(toolIndex!=null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
     const rs=getRecipients(); return rs.length?rs[0].tool:null;
   }
   function mailFor(tool,cid){
@@ -8433,7 +8439,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     return baseUrl() + "?action=" + encodeURIComponent(action) + "&tool=" + encodeURIComponent(s(tool && tool.name)) + "&cid=" + encodeURIComponent(cid || "");
   }
   function getRecipients(){
-    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && typeof state !== "undefined" && state.tools && state.tools[currentReviewToolScope]){
+    if(typeof currentReviewToolScope !== "undefined" && currentReviewToolScope !== null && window.state && state.tools && state.tools[currentReviewToolScope]){
       const tool = state.tools[currentReviewToolScope];
       return (tool.users || []).map(function(u,i){ return {tool:tool, toolIndex:currentReviewToolScope, user:u, userIndex:i}; });
     }
@@ -8524,7 +8530,7 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
     setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
   }
   function toolFromArgs(toolIndex){
-    if(toolIndex != null && typeof state !== "undefined" && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
+    if(toolIndex != null && window.state && state.tools && state.tools[toolIndex]) return state.tools[toolIndex];
     const rs = getRecipients();
     return rs.length ? rs[0].tool : null;
   }
@@ -8949,339 +8955,5 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
       new MutationObserver(function(){ setTimeout(fitSendReviewPreview, 30); }).observe(body, {childList:true, subtree:true});
     }
   });
-})();
-</script>
-<script>
-// ===== FINAL FIX: AUTO RENEW RISK COUNTS NEXT RENEWAL DATE =====
-(function(){
-  function toDateOnly(d){
-    if(!d) return null;
-    var x = new Date(d);
-    if(isNaN(x)) return null;
-    return new Date(x.getFullYear(), x.getMonth(), x.getDate());
-  }
-
-  function todayDateOnly(){
-    var n = new Date();
-    return new Date(n.getFullYear(), n.getMonth(), n.getDate());
-  }
-
-  function isMonthly(tool){
-    return String(tool && tool.billingCycle || "").toLowerCase() === "monthly";
-  }
-
-  function isYearly(tool){
-    return String(tool && tool.billingCycle || "").toLowerCase() === "yearly";
-  }
-
-  function isAutoRenew(tool){
-    return !!(tool && (tool.autoRenew === true || tool.autoRenewMonthly === true || tool.renewalMode === "auto_monthly" || tool.renewalMode === "auto"));
-  }
-
-  window.getNextRenewalDate = function(tool){
-    var next = toDateOnly(tool && tool.renewal);
-    var today = todayDateOnly();
-    if(!next) return null;
-
-    if(isAutoRenew(tool)){
-      // Auto renew monthly: count to the nearest upcoming monthly renewal cycle.
-      if(isMonthly(tool)){
-        while(next < today){
-          next.setMonth(next.getMonth() + 1);
-        }
-      }
-      // Auto renew yearly: if the renewal date already passed this year, count to next yearly cycle.
-      else if(isYearly(tool)){
-        while(next < today){
-          next.setFullYear(next.getFullYear() + 1);
-        }
-      }
-    }
-
-    return next;
-  };
-
-  window.getRiskDays = function(tool){
-    var next = window.getNextRenewalDate(tool);
-    if(!next) return 999999;
-    return Math.ceil((next - todayDateOnly()) / 86400000);
-  };
-
-  window.getRiskLabel = function(tool){
-    var days = window.getRiskDays(tool);
-    return days === 999999 ? "-" : (days + " days");
-  };
-
-  window.getRiskClass = function(tool){
-    var left = window.getRiskDays(tool);
-    if(left <= 7) return "bad-chip";
-    if(left <= 30) return "warn-chip";
-    return "active-chip";
-  };
-
-  window.getAutoRenewLabel = function(tool){
-    if(!isAutoRenew(tool)) return "Manual";
-    if(isMonthly(tool)) return "Auto monthly";
-    if(isYearly(tool)) return "Auto yearly";
-    return "Auto renew";
-  };
-
-  window.getDashboardToolsForRisk = function(){
-    if(typeof dashboardFilteredTools === "function") return dashboardFilteredTools();
-    return (typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : [];
-  };
-
-  window.renderDashboard = function(){
-    var tools = (typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : [];
-    var cost = tools.reduce(function(s,t){ return s + Number(t.cost || 0); }, 0);
-    var seats = tools.reduce(function(s,t){ return s + Number(t.seats || 0); }, 0);
-    var usedTotal = tools.reduce(function(s,t){ return s + (typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : usedSeats(t)); }, 0);
-    var apps = tools.filter(function(t){ return typeof isAppTool === "function" && isAppTool(t); }).length;
-    var licenses = tools.length - apps;
-    var fullCount = tools.filter(function(t){ return (typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : usedSeats(t)) >= Number(t.seats || 0); }).length;
-    var availableCount = Math.max(0, tools.length - fullCount);
-    var expiring30 = tools.filter(function(t){ return window.getRiskDays(t) <= 30; }).length;
-    var expiring90 = tools.filter(function(t){ return window.getRiskDays(t) <= 90; }).length;
-    var utilization = seats ? Math.round(usedTotal / seats * 100) : 0;
-
-    if($("kpiTools")) $("kpiTools").textContent = tools.length;
-    if($("kpiSeats")) $("kpiSeats").textContent = seats;
-    if($("kpiUsers")) $("kpiUsers").textContent = usedTotal;
-    if($("kpiCost")) $("kpiCost").textContent = money(cost);
-
-    var filtered = window.getDashboardToolsForRisk();
-    var rows = filtered.map(function(t){
-      var used = typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : usedSeats(t);
-      var seatCount = Number(t.seats || 0);
-      var percent = seatCount ? Math.round(used / seatCount * 100) : 0;
-      var app = typeof isAppTool === "function" && isAppTool(t);
-      var typeClass = app ? "type-app" : "type-license";
-      var nextRenewal = window.getNextRenewalDate(t);
-      var nextRenewalText = nextRenewal ? formatDateVN(nextRenewal.toISOString().slice(0,10)) : formatDateVN(t.renewal);
-      var originalRenewalText = formatDateVN(t.renewal);
-      var autoLabel = window.getAutoRenewLabel(t);
-      var autoClass = isAutoRenew(t) ? "active-chip" : "info-chip";
-
-      return `<tr>
-        <td>
-          <div class="software-cell">
-            <strong>${esc(t.name)}</strong>
-            <div class="muted">${esc(t.vendor || "-")}</div>
-          </div>
-        </td>
-        <td><span class="dashboard-pill ${typeClass}">${app ? "Application" : "License"}</span></td>
-        <td>${costLabel(t)}</td>
-        <td>
-          <div class="dash-usage-mini">
-            <div class="dash-usage-track">
-              <div class="dash-usage-fill" style="width:${Math.min(100,percent)}%"></div>
-              <span class="dash-usage-num">${used}/${seatCount}</span>
-            </div>
-          </div>
-        </td>
-        <td><span class="chip ${used < seatCount ? "active-chip" : "warn-chip"}">${used < seatCount ? "Available" : "Full"}</span></td>
-        <td><span class="chip ${window.getRiskClass(t)}">${window.getRiskLabel(t)}</span></td>
-        <td>
-          <strong>${nextRenewalText}</strong>
-          ${isAutoRenew(t) && nextRenewalText !== originalRenewalText ? `<div class="muted">Base: ${originalRenewalText}</div>` : ""}
-        </td>
-        <td><span class="chip ${autoClass}">${autoLabel}</span></td>
-      </tr>`;
-    }).join("");
-
-    if(!rows){
-      rows = `<tr><td colspan="8"><div class="dashboard-empty">No software matches current search/filter.</div></td></tr>`;
-    }
-
-    if(!$("costTable")) return;
-    $("costTable").innerHTML = `
-      <div class="dashboard-panel">
-        <div class="dashboard-summary-card"><h3>Portfolio</h3><div class="big">${tools.length}</div><div class="sub">${licenses} licenses · ${apps} apps</div></div>
-        <div class="dashboard-summary-card good"><h3>Seat Utilization</h3><div class="big">${utilization}%</div><div class="sub">${usedTotal}/${seats} seats used</div></div>
-        <div class="dashboard-summary-card"><h3>Available</h3><div class="big">${availableCount}</div><div class="sub">software still has capacity</div></div>
-        <div class="dashboard-summary-card warn"><h3>Full</h3><div class="big">${fullCount}</div><div class="sub">requires review or expansion</div></div>
-        <div class="dashboard-summary-card warn"><h3>≤ 90 Days</h3><div class="big">${expiring90}</div><div class="sub">upcoming renewal risk</div></div>
-        <div class="dashboard-summary-card risk"><h3>≤ 30 Days</h3><div class="big">${expiring30}</div><div class="sub">urgent renewal risk</div></div>
-      </div>
-
-      <div class="dashboard-toolbar">
-        <div class="dashboard-toolbar-left">
-          <div class="dashboard-search-wrap"><input id="dashboardSearch" placeholder="Search software, vendor, user..." value="${esc(window.__dashboardSearch || "")}"></div>
-          <select id="dashboardTypeFilter"><option value="all">All Types</option><option value="license">License only</option><option value="app">Application only</option></select>
-          <select id="dashboardStatusFilter"><option value="all">All Status</option><option value="available">Available</option><option value="full">Full</option><option value="expiring30">Risk ≤ 30 days</option><option value="expiring90">Risk ≤ 90 days</option></select>
-        </div>
-        <span class="dashboard-pill">${filtered.length}/${tools.length} shown</span>
-      </div>
-
-      <div class="dashboard-table">
-        <table>
-          <thead><tr><th>Software</th><th>Category</th><th>Cost</th><th>Usage</th><th>Status</th><th>Risk</th><th>Next Renewal</th><th>Auto Renew</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
-
-    var typeEl = document.getElementById("dashboardTypeFilter");
-    var statusEl = document.getElementById("dashboardStatusFilter");
-    var searchEl = document.getElementById("dashboardSearch");
-    if(typeEl) typeEl.value = window.__dashboardTypeFilter || "all";
-    if(statusEl) statusEl.value = window.__dashboardStatusFilter || "all";
-    if(searchEl) searchEl.oninput = function(){ window.__dashboardSearch = this.value; renderDashboard(); };
-    if(typeEl) typeEl.onchange = function(){ window.__dashboardTypeFilter = this.value; renderDashboard(); };
-    if(statusEl) statusEl.onchange = function(){ window.__dashboardStatusFilter = this.value; renderDashboard(); };
-  };
-
-  var oldDashboardFilteredTools = window.dashboardFilteredTools;
-  window.dashboardFilteredTools = function(){
-    var list = typeof oldDashboardFilteredTools === "function" ? oldDashboardFilteredTools() : ((typeof state !== "undefined" && state.tools) || []);
-    var statusEl = document.getElementById("dashboardStatusFilter");
-    var status = window.__dashboardStatusFilter || (statusEl ? statusEl.value : "all");
-    if(status === "expiring30") return list.filter(function(t){ return window.getRiskDays(t) <= 30; });
-    if(status === "expiring90") return list.filter(function(t){ return window.getRiskDays(t) <= 90; });
-    return list;
-  };
-
-  var oldToolCard = window.toolCard;
-  window.toolCard = function(t,i){
-    var html = typeof oldToolCard === "function" ? oldToolCard(t,i) : "";
-    if(!html) return html;
-    html = html.replace(/<div class="meta-box"><span>Days Left<\/span><strong>.*?<\/strong><\/div>/, '<div class="meta-box"><span>Risk</span><strong>' + window.getRiskLabel(t) + '</strong></div>');
-    html = html.replace(/<span>Days Left<\/span>/g, '<span>Risk</span>');
-    return html;
-  };
-
-  // Keep old monthly switch, but make the data compatible with generic autoRenew logic.
-  var oldToggle = window.toggleAutoRenewMonthly;
-  if(typeof oldToggle === "function"){
-    window.toggleAutoRenewMonthly = async function(index){
-      await oldToggle.apply(this, arguments);
-      try{
-        var tool = state.tools[index];
-        if(tool){
-          tool.autoRenew = !!tool.autoRenewMonthly;
-          if(typeof saveState === "function") saveState();
-          if(typeof renderAll === "function") renderAll();
-        }
-      }catch(e){ console.error(e); }
-    };
-  }
-
-  setTimeout(function(){ if(typeof renderAll === "function") renderAll(); }, 300);
-})();
-</script>
-<script>
-// ===== FINAL FIX 2: DASHBOARD FILTER USES AUTO-RENEW RISK ONLY =====
-(function(){
-  window.dashboardFilteredTools = function(){
-    var searchEl = document.getElementById("dashboardSearch");
-    var typeEl = document.getElementById("dashboardTypeFilter");
-    var statusEl = document.getElementById("dashboardStatusFilter");
-    var q = (window.__dashboardSearch !== undefined ? window.__dashboardSearch : (searchEl ? searchEl.value : "")).toLowerCase().trim();
-    var type = window.__dashboardTypeFilter || (typeEl ? typeEl.value : "all");
-    var status = window.__dashboardStatusFilter || (statusEl ? statusEl.value : "all");
-
-    return ((typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : []).filter(function(t){
-      var used = typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : (typeof usedSeats === "function" ? usedSeats(t) : 0);
-      var seats = Number(t.seats || 0);
-      var app = typeof isAppTool === "function" ? isAppTool(t) : false;
-      var text = JSON.stringify(t).toLowerCase();
-      var risk = typeof getRiskDays === "function" ? getRiskDays(t) : 999999;
-
-      if(q && !text.includes(q)) return false;
-      if(type === "license" && app) return false;
-      if(type === "app" && !app) return false;
-      if(status === "full" && used < seats) return false;
-      if(status === "available" && used >= seats) return false;
-      if(status === "expiring30" && !(risk <= 30)) return false;
-      if(status === "expiring90" && !(risk <= 90)) return false;
-      return true;
-    });
-  };
-  setTimeout(function(){ if(typeof renderDashboard === "function") renderDashboard(); }, 100);
-})();
-</script>
-
-<script>
-// ===== FINAL DASHBOARD AUTO-RENEW RISK FIX =====
-(function(){
-  function safe(v){ return String(v == null ? "" : v); }
-  function num(v){ return Number(v || 0) || 0; }
-  function todayStart(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
-  function parseDate(v){ if(!v) return null; const d = new Date(v); if(isNaN(d)) return null; d.setHours(0,0,0,0); return d; }
-  function addPeriod(d, cycle){ const n = new Date(d.getTime()); if(safe(cycle).toLowerCase() === "monthly") n.setMonth(n.getMonth()+1); else n.setFullYear(n.getFullYear()+1); return n; }
-  function isAutoRenew(tool){ return !!(tool && (tool.autoRenew === true || tool.autoRenewMonthly === true || tool.renewalMode === "auto" || tool.renewalMode === "auto_monthly")); }
-  function isApp(tool){ if(typeof isAppTool === "function") return isAppTool(tool); return ["AI Tool","AI IDE"].includes(tool && tool.type); }
-  function used(tool){ if(typeof dashboardUsedSeats === "function") return dashboardUsedSeats(tool); const emailUsers = Array.isArray(tool && tool.users) ? tool.users.length : 0; const manualUsed = num(tool && (tool.manualUsedSeats || tool.manualUsed)); return Math.max(emailUsers, manualUsed); }
-  window.getNextRenewalDate = function(tool){ const base = parseDate(tool && tool.renewal); if(!base) return null; const cycle = safe(tool && tool.billingCycle).toLowerCase() === "monthly" ? "monthly" : "yearly"; if(!isAutoRenew(tool)) return base; let next = new Date(base.getTime()); const now = todayStart(); let guard = 0; while(next < now && guard < 240){ next = addPeriod(next, cycle); guard++; } return next; };
-  window.getRiskDays = function(tool){ const next = window.getNextRenewalDate(tool); if(!next) return 999999; return Math.ceil((next - todayStart()) / 86400000); };
-  window.formatDateVNFixed = function(dateOrStr){ const d = dateOrStr instanceof Date ? dateOrStr : parseDate(dateOrStr); if(!d) return "-"; return String(d.getDate()).padStart(2,"0") + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + d.getFullYear(); };
-  window.dashboardFilteredTools = function(){
-    const q = safe(window.__dashboardSearch).toLowerCase().trim();
-    const type = window.__dashboardTypeFilter || "all";
-    const status = window.__dashboardStatusFilter || "all";
-    const tools = (typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : [];
-    return tools.filter(function(t){
-      const seatCount = num(t.seats), usedCount = used(t), risk = window.getRiskDays(t), app = isApp(t), text = JSON.stringify(t || {}).toLowerCase();
-      if(q && !text.includes(q)) return false;
-      if(type === "license" && app) return false;
-      if(type === "app" && !app) return false;
-      if(status === "full" && usedCount < seatCount) return false;
-      if(status === "available" && usedCount >= seatCount) return false;
-      if(status === "expiring30" && !(risk <= 30)) return false;
-      if(status === "expiring90" && !(risk <= 90)) return false;
-      return true;
-    });
-  };
-  function riskChipClass(days){ if(days <= 7) return "bad-chip"; if(days <= 30) return "warn-chip"; return "active-chip"; }
-  function rowHtml(t){
-    const usedCount = used(t), seatCount = num(t.seats), percent = seatCount ? Math.round(usedCount / seatCount * 100) : 0;
-    const risk = window.getRiskDays(t), next = window.getNextRenewalDate(t), app = isApp(t), auto = isAutoRenew(t), typeClass = app ? "type-app" : "type-license";
-    return '<tr>'+
-      '<td><div class="software-cell"><strong>'+esc(t.name || '-')+'</strong><div class="muted">'+esc(t.vendor || '-')+'</div></div></td>'+
-      '<td><span class="dashboard-pill '+typeClass+'">'+(app ? 'Application' : 'License')+'</span></td>'+
-      '<td>'+costLabel(t)+'</td>'+
-      '<td><div class="dash-usage-mini"><div class="dash-usage-track"><div class="dash-usage-fill" style="width:'+Math.min(100,percent)+'%"></div><span class="dash-usage-num">'+usedCount+'/'+seatCount+'</span></div></div></td>'+
-      '<td><span class="chip '+(usedCount < seatCount ? 'active-chip' : 'warn-chip')+'">'+(usedCount < seatCount ? 'Available' : 'Full')+'</span></td>'+
-      '<td><span class="chip '+(auto ? 'active-chip' : 'info-chip')+'">'+(auto ? 'Auto' : 'Manual')+'</span></td>'+
-      '<td><span class="chip '+riskChipClass(risk)+'">'+(risk === 999999 ? '-' : risk + ' days')+'</span></td>'+
-      '<td>'+window.formatDateVNFixed(next || t.renewal)+'</td>'+
-    '</tr>';
-  }
-  function renderDashboardFixed(){
-    const tools = (typeof state !== "undefined" && Array.isArray(state.tools)) ? state.tools : [];
-    const cost = tools.reduce((s,t)=>s+num(t.cost),0), seats = tools.reduce((s,t)=>s+num(t.seats),0), usedTotal = tools.reduce((s,t)=>s+used(t),0);
-    const apps = tools.filter(isApp).length, licenses = tools.length - apps, fullCount = tools.filter(t=>used(t) >= num(t.seats)).length, availableCount = Math.max(0, tools.length - fullCount);
-    const expiring30 = tools.filter(t=>window.getRiskDays(t) <= 30).length, expiring90 = tools.filter(t=>window.getRiskDays(t) <= 90).length, utilization = seats ? Math.round(usedTotal / seats * 100) : 0;
-    if($("kpiTools")) $("kpiTools").textContent = tools.length; if($("kpiSeats")) $("kpiSeats").textContent = seats; if($("kpiUsers")) $("kpiUsers").textContent = usedTotal; if($("kpiCost")) $("kpiCost").textContent = money(cost);
-    const filtered = window.dashboardFilteredTools();
-    let rows = filtered.map(rowHtml).join('');
-    if(!rows) rows = '<tr><td colspan="8"><div class="dashboard-empty">No software matches current search/filter.</div></td></tr>';
-    const costTable = $("costTable"); if(!costTable) return;
-    costTable.innerHTML = ''+
-      '<div class="dashboard-panel">'+
-        '<div class="dashboard-summary-card"><h3>Portfolio</h3><div class="big">'+tools.length+'</div><div class="sub">'+licenses+' licenses · '+apps+' apps</div></div>'+
-        '<div class="dashboard-summary-card good"><h3>Seat Utilization</h3><div class="big">'+utilization+'%</div><div class="sub">'+usedTotal+'/'+seats+' seats used</div></div>'+
-        '<div class="dashboard-summary-card"><h3>Available</h3><div class="big">'+availableCount+'</div><div class="sub">software still has capacity</div></div>'+
-        '<div class="dashboard-summary-card warn"><h3>Full</h3><div class="big">'+fullCount+'</div><div class="sub">requires review or expansion</div></div>'+
-        '<div class="dashboard-summary-card warn"><h3>≤ 90 Days</h3><div class="big">'+expiring90+'</div><div class="sub">upcoming renewal risk</div></div>'+
-        '<div class="dashboard-summary-card risk"><h3>≤ 30 Days</h3><div class="big">'+expiring30+'</div><div class="sub">urgent renewal risk</div></div>'+
-      '</div>'+
-      '<div class="dashboard-toolbar"><div class="dashboard-toolbar-left">'+
-        '<div class="dashboard-search-wrap"><input id="dashboardSearch" placeholder="Search software, vendor, user..." value="'+esc(window.__dashboardSearch || '')+'"></div>'+
-        '<select id="dashboardTypeFilter"><option value="all">All Types</option><option value="license">License only</option><option value="app">Application only</option></select>'+
-        '<select id="dashboardStatusFilter"><option value="all">All Status</option><option value="available">Available</option><option value="full">Full</option><option value="expiring30">Expiring ≤ 30 days</option><option value="expiring90">Expiring ≤ 90 days</option></select>'+
-      '</div><span class="dashboard-pill">'+filtered.length+'/'+tools.length+' shown</span></div>'+
-      '<div class="dashboard-table"><table><thead><tr><th>Software</th><th>Category</th><th>Cost</th><th>Usage</th><th>Status</th><th>Auto Renew</th><th>Risk</th><th>Next Renewal</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-    const searchEl = document.getElementById("dashboardSearch"), typeEl = document.getElementById("dashboardTypeFilter"), statusEl = document.getElementById("dashboardStatusFilter");
-    if(typeEl) typeEl.value = window.__dashboardTypeFilter || "all"; if(statusEl) statusEl.value = window.__dashboardStatusFilter || "all";
-    if(searchEl) searchEl.oninput = function(){ window.__dashboardSearch = this.value; renderDashboardFixed(); };
-    if(typeEl) typeEl.onchange = function(){ window.__dashboardTypeFilter = this.value; renderDashboardFixed(); };
-    if(statusEl) statusEl.onchange = function(){ window.__dashboardStatusFilter = this.value; renderDashboardFixed(); };
-  }
-  window.renderDashboard = renderDashboardFixed;
-  try{ renderDashboard = renderDashboardFixed; }catch(e){}
-  window.renderAll = function(){ renderDashboardFixed(); if(typeof renderLicenseTools === "function") renderLicenseTools(); if(typeof renderAppTools === "function") renderAppTools(); if(typeof renderEmail === "function") renderEmail(); if(typeof applyAdminMode === "function") applyAdminMode(); };
-  try{ renderAll = window.renderAll; }catch(e){}
-  setTimeout(function(){ try{ renderDashboardFixed(); }catch(e){ console.error("Dashboard final fix failed", e); } }, 300);
-  setTimeout(function(){ try{ renderDashboardFixed(); }catch(e){ console.error("Dashboard final fix failed", e); } }, 1200);
 })();
 </script>
