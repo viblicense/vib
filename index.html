@@ -8951,3 +8951,251 @@ ${sig ? '<div class="vib-signature">' + sig + '</div>' : '<p>Trân trọng,<br>I
   });
 })();
 </script>
+<script>
+// ===== FINAL FIX: AUTO RENEW RISK COUNTS NEXT RENEWAL DATE =====
+(function(){
+  function toDateOnly(d){
+    if(!d) return null;
+    var x = new Date(d);
+    if(isNaN(x)) return null;
+    return new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  }
+
+  function todayDateOnly(){
+    var n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  }
+
+  function isMonthly(tool){
+    return String(tool && tool.billingCycle || "").toLowerCase() === "monthly";
+  }
+
+  function isYearly(tool){
+    return String(tool && tool.billingCycle || "").toLowerCase() === "yearly";
+  }
+
+  function isAutoRenew(tool){
+    return !!(tool && (tool.autoRenew === true || tool.autoRenewMonthly === true || tool.renewalMode === "auto_monthly" || tool.renewalMode === "auto"));
+  }
+
+  window.getNextRenewalDate = function(tool){
+    var next = toDateOnly(tool && tool.renewal);
+    var today = todayDateOnly();
+    if(!next) return null;
+
+    if(isAutoRenew(tool)){
+      // Auto renew monthly: count to the nearest upcoming monthly renewal cycle.
+      if(isMonthly(tool)){
+        while(next < today){
+          next.setMonth(next.getMonth() + 1);
+        }
+      }
+      // Auto renew yearly: if the renewal date already passed this year, count to next yearly cycle.
+      else if(isYearly(tool)){
+        while(next < today){
+          next.setFullYear(next.getFullYear() + 1);
+        }
+      }
+    }
+
+    return next;
+  };
+
+  window.getRiskDays = function(tool){
+    var next = window.getNextRenewalDate(tool);
+    if(!next) return 999999;
+    return Math.ceil((next - todayDateOnly()) / 86400000);
+  };
+
+  window.getRiskLabel = function(tool){
+    var days = window.getRiskDays(tool);
+    return days === 999999 ? "-" : (days + " days");
+  };
+
+  window.getRiskClass = function(tool){
+    var left = window.getRiskDays(tool);
+    if(left <= 7) return "bad-chip";
+    if(left <= 30) return "warn-chip";
+    return "active-chip";
+  };
+
+  window.getAutoRenewLabel = function(tool){
+    if(!isAutoRenew(tool)) return "Manual";
+    if(isMonthly(tool)) return "Auto monthly";
+    if(isYearly(tool)) return "Auto yearly";
+    return "Auto renew";
+  };
+
+  window.getDashboardToolsForRisk = function(){
+    if(typeof dashboardFilteredTools === "function") return dashboardFilteredTools();
+    return (window.state && Array.isArray(state.tools)) ? state.tools : [];
+  };
+
+  window.renderDashboard = function(){
+    var tools = (window.state && Array.isArray(state.tools)) ? state.tools : [];
+    var cost = tools.reduce(function(s,t){ return s + Number(t.cost || 0); }, 0);
+    var seats = tools.reduce(function(s,t){ return s + Number(t.seats || 0); }, 0);
+    var usedTotal = tools.reduce(function(s,t){ return s + (typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : usedSeats(t)); }, 0);
+    var apps = tools.filter(function(t){ return typeof isAppTool === "function" && isAppTool(t); }).length;
+    var licenses = tools.length - apps;
+    var fullCount = tools.filter(function(t){ return (typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : usedSeats(t)) >= Number(t.seats || 0); }).length;
+    var availableCount = Math.max(0, tools.length - fullCount);
+    var expiring30 = tools.filter(function(t){ return window.getRiskDays(t) <= 30; }).length;
+    var expiring90 = tools.filter(function(t){ return window.getRiskDays(t) <= 90; }).length;
+    var utilization = seats ? Math.round(usedTotal / seats * 100) : 0;
+
+    if($("kpiTools")) $("kpiTools").textContent = tools.length;
+    if($("kpiSeats")) $("kpiSeats").textContent = seats;
+    if($("kpiUsers")) $("kpiUsers").textContent = usedTotal;
+    if($("kpiCost")) $("kpiCost").textContent = money(cost);
+
+    var filtered = window.getDashboardToolsForRisk();
+    var rows = filtered.map(function(t){
+      var used = typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : usedSeats(t);
+      var seatCount = Number(t.seats || 0);
+      var percent = seatCount ? Math.round(used / seatCount * 100) : 0;
+      var app = typeof isAppTool === "function" && isAppTool(t);
+      var typeClass = app ? "type-app" : "type-license";
+      var nextRenewal = window.getNextRenewalDate(t);
+      var nextRenewalText = nextRenewal ? formatDateVN(nextRenewal.toISOString().slice(0,10)) : formatDateVN(t.renewal);
+      var originalRenewalText = formatDateVN(t.renewal);
+      var autoLabel = window.getAutoRenewLabel(t);
+      var autoClass = isAutoRenew(t) ? "active-chip" : "info-chip";
+
+      return `<tr>
+        <td>
+          <div class="software-cell">
+            <strong>${esc(t.name)}</strong>
+            <div class="muted">${esc(t.vendor || "-")}</div>
+          </div>
+        </td>
+        <td><span class="dashboard-pill ${typeClass}">${app ? "Application" : "License"}</span></td>
+        <td>${costLabel(t)}</td>
+        <td>
+          <div class="dash-usage-mini">
+            <div class="dash-usage-track">
+              <div class="dash-usage-fill" style="width:${Math.min(100,percent)}%"></div>
+              <span class="dash-usage-num">${used}/${seatCount}</span>
+            </div>
+          </div>
+        </td>
+        <td><span class="chip ${used < seatCount ? "active-chip" : "warn-chip"}">${used < seatCount ? "Available" : "Full"}</span></td>
+        <td><span class="chip ${window.getRiskClass(t)}">${window.getRiskLabel(t)}</span></td>
+        <td>
+          <strong>${nextRenewalText}</strong>
+          ${isAutoRenew(t) && nextRenewalText !== originalRenewalText ? `<div class="muted">Base: ${originalRenewalText}</div>` : ""}
+        </td>
+        <td><span class="chip ${autoClass}">${autoLabel}</span></td>
+      </tr>`;
+    }).join("");
+
+    if(!rows){
+      rows = `<tr><td colspan="8"><div class="dashboard-empty">No software matches current search/filter.</div></td></tr>`;
+    }
+
+    if(!$("costTable")) return;
+    $("costTable").innerHTML = `
+      <div class="dashboard-panel">
+        <div class="dashboard-summary-card"><h3>Portfolio</h3><div class="big">${tools.length}</div><div class="sub">${licenses} licenses · ${apps} apps</div></div>
+        <div class="dashboard-summary-card good"><h3>Seat Utilization</h3><div class="big">${utilization}%</div><div class="sub">${usedTotal}/${seats} seats used</div></div>
+        <div class="dashboard-summary-card"><h3>Available</h3><div class="big">${availableCount}</div><div class="sub">software still has capacity</div></div>
+        <div class="dashboard-summary-card warn"><h3>Full</h3><div class="big">${fullCount}</div><div class="sub">requires review or expansion</div></div>
+        <div class="dashboard-summary-card warn"><h3>≤ 90 Days</h3><div class="big">${expiring90}</div><div class="sub">upcoming renewal risk</div></div>
+        <div class="dashboard-summary-card risk"><h3>≤ 30 Days</h3><div class="big">${expiring30}</div><div class="sub">urgent renewal risk</div></div>
+      </div>
+
+      <div class="dashboard-toolbar">
+        <div class="dashboard-toolbar-left">
+          <div class="dashboard-search-wrap"><input id="dashboardSearch" placeholder="Search software, vendor, user..." value="${esc(window.__dashboardSearch || "")}"></div>
+          <select id="dashboardTypeFilter"><option value="all">All Types</option><option value="license">License only</option><option value="app">Application only</option></select>
+          <select id="dashboardStatusFilter"><option value="all">All Status</option><option value="available">Available</option><option value="full">Full</option><option value="expiring30">Risk ≤ 30 days</option><option value="expiring90">Risk ≤ 90 days</option></select>
+        </div>
+        <span class="dashboard-pill">${filtered.length}/${tools.length} shown</span>
+      </div>
+
+      <div class="dashboard-table">
+        <table>
+          <thead><tr><th>Software</th><th>Category</th><th>Cost</th><th>Usage</th><th>Status</th><th>Risk</th><th>Next Renewal</th><th>Auto Renew</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+    var typeEl = document.getElementById("dashboardTypeFilter");
+    var statusEl = document.getElementById("dashboardStatusFilter");
+    var searchEl = document.getElementById("dashboardSearch");
+    if(typeEl) typeEl.value = window.__dashboardTypeFilter || "all";
+    if(statusEl) statusEl.value = window.__dashboardStatusFilter || "all";
+    if(searchEl) searchEl.oninput = function(){ window.__dashboardSearch = this.value; renderDashboard(); };
+    if(typeEl) typeEl.onchange = function(){ window.__dashboardTypeFilter = this.value; renderDashboard(); };
+    if(statusEl) statusEl.onchange = function(){ window.__dashboardStatusFilter = this.value; renderDashboard(); };
+  };
+
+  var oldDashboardFilteredTools = window.dashboardFilteredTools;
+  window.dashboardFilteredTools = function(){
+    var list = typeof oldDashboardFilteredTools === "function" ? oldDashboardFilteredTools() : ((window.state && state.tools) || []);
+    var statusEl = document.getElementById("dashboardStatusFilter");
+    var status = window.__dashboardStatusFilter || (statusEl ? statusEl.value : "all");
+    if(status === "expiring30") return list.filter(function(t){ return window.getRiskDays(t) <= 30; });
+    if(status === "expiring90") return list.filter(function(t){ return window.getRiskDays(t) <= 90; });
+    return list;
+  };
+
+  var oldToolCard = window.toolCard;
+  window.toolCard = function(t,i){
+    var html = typeof oldToolCard === "function" ? oldToolCard(t,i) : "";
+    if(!html) return html;
+    html = html.replace(/<div class="meta-box"><span>Days Left<\/span><strong>.*?<\/strong><\/div>/, '<div class="meta-box"><span>Risk</span><strong>' + window.getRiskLabel(t) + '</strong></div>');
+    html = html.replace(/<span>Days Left<\/span>/g, '<span>Risk</span>');
+    return html;
+  };
+
+  // Keep old monthly switch, but make the data compatible with generic autoRenew logic.
+  var oldToggle = window.toggleAutoRenewMonthly;
+  if(typeof oldToggle === "function"){
+    window.toggleAutoRenewMonthly = async function(index){
+      await oldToggle.apply(this, arguments);
+      try{
+        var tool = state.tools[index];
+        if(tool){
+          tool.autoRenew = !!tool.autoRenewMonthly;
+          if(typeof saveState === "function") saveState();
+          if(typeof renderAll === "function") renderAll();
+        }
+      }catch(e){ console.error(e); }
+    };
+  }
+
+  setTimeout(function(){ if(typeof renderAll === "function") renderAll(); }, 300);
+})();
+</script>
+<script>
+// ===== FINAL FIX 2: DASHBOARD FILTER USES AUTO-RENEW RISK ONLY =====
+(function(){
+  window.dashboardFilteredTools = function(){
+    var searchEl = document.getElementById("dashboardSearch");
+    var typeEl = document.getElementById("dashboardTypeFilter");
+    var statusEl = document.getElementById("dashboardStatusFilter");
+    var q = (window.__dashboardSearch !== undefined ? window.__dashboardSearch : (searchEl ? searchEl.value : "")).toLowerCase().trim();
+    var type = window.__dashboardTypeFilter || (typeEl ? typeEl.value : "all");
+    var status = window.__dashboardStatusFilter || (statusEl ? statusEl.value : "all");
+
+    return ((window.state && Array.isArray(state.tools)) ? state.tools : []).filter(function(t){
+      var used = typeof dashboardUsedSeats === "function" ? dashboardUsedSeats(t) : (typeof usedSeats === "function" ? usedSeats(t) : 0);
+      var seats = Number(t.seats || 0);
+      var app = typeof isAppTool === "function" ? isAppTool(t) : false;
+      var text = JSON.stringify(t).toLowerCase();
+      var risk = typeof getRiskDays === "function" ? getRiskDays(t) : 999999;
+
+      if(q && !text.includes(q)) return false;
+      if(type === "license" && app) return false;
+      if(type === "app" && !app) return false;
+      if(status === "full" && used < seats) return false;
+      if(status === "available" && used >= seats) return false;
+      if(status === "expiring30" && !(risk <= 30)) return false;
+      if(status === "expiring90" && !(risk <= 90)) return false;
+      return true;
+    });
+  };
+  setTimeout(function(){ if(typeof renderDashboard === "function") renderDashboard(); }, 100);
+})();
+</script>
